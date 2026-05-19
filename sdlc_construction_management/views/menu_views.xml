@@ -2,7 +2,7 @@
 <odoo>
     <!-- Main Menu -->
     <menuitem id="menu_construction_root"
-              name="Construction"
+              name="Projects"
               sequence="50"/>
 
     <!-- Dashboard -->
@@ -141,6 +141,12 @@
               name="Configuration"
               parent="menu_construction_root"
               sequence="99"/>
+
+    <menuitem id="menu_construction_project_stages"
+              name="Project Stages"
+              parent="menu_construction_configuration"
+              action="action_construction_project_stage"
+              sequence="0"/>
 
     <menuitem id="menu_construction_work_types"
               name="Work Types"

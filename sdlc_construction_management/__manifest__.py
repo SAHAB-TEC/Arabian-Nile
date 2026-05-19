@@ -35,8 +35,11 @@ Free lifetime support by SDLC Corp.
         'security/ir.model.access.csv',
         # Data
         'data/sequence_data.xml',
+        'data/construction_project_stage_data.xml',
+        'data/construction_project_stage_assign.xml',
         'data/configuration_data.xml',
         'views/dashboard_views.xml',
+        'views/construction_project_stage_views.xml',
         'views/construction_project_views.xml',
         'views/construction_sub_project_views.xml',
         'views/construction_boq_views.xml',
@@ -63,4 +66,5 @@ Free lifetime support by SDLC Corp.
     'installable': True,
     'application': True,
     'auto_install': False,
+    'post_init_hook': 'post_init_hook',
 }

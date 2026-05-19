@@ -1,6 +1,10 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
+class PurchaseLine(models.Model):
+    _inherit = 'purchase.order.line'
+
+    product_uom_id = fields.Many2one('uom.uom')
 
 class ConstructionMaterialRequisition(models.Model):
     _name = 'construction.material.requisition'
