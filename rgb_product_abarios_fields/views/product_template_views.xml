@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_inherit_rgb_abarios_fields" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.rgb.abarios.fields</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']/group" position="inside">
+                <group string="ABARIOS &amp; unit" name="rgb_abarios_unit">
+                    <field name="rgb_abarios_name"/>
+                    <field name="rgb_unit_size"/>
+                    <field name="rgb_unit_packing"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_tree_view_inherit_rgb_abarios_fields" model="ir.ui.view">
+        <field name="name">product.template.list.inherit.rgb.abarios.fields</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="default_code" position="after">
+                <field name="rgb_abarios_name" optional="show"/>
+                <field name="rgb_unit_size" optional="show"/>
+                <field name="rgb_unit_packing" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="product_template_search_view_inherit_rgb_abarios_fields" model="ir.ui.view">
+        <field name="name">product.template.search.inherit.rgb.abarios.fields</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="rgb_abarios_name"/>
+                <field name="rgb_unit_size"/>
+                <field name="rgb_unit_packing"/>
+            </field>
+            <filter name="categ_id" position="after">
+                <filter string="ABARIOS Name" name="groupby_abarios_name"
+                        context="{'group_by': 'rgb_abarios_name'}"/>
+                <filter string="Unit Size" name="groupby_unit_size"
+                        context="{'group_by': 'rgb_unit_size'}"/>
+                <filter string="Unit Packing" name="groupby_unit_packing"
+                        context="{'group_by': 'rgb_unit_packing'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="product_product_tree_view_inherit_rgb_abarios_fields" model="ir.ui.view">
+        <field name="name">product.product.list.inherit.rgb.abarios.fields</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="default_code" position="after">
+                <field name="rgb_abarios_name" optional="show"/>
+                <field name="rgb_unit_size" optional="show"/>
+                <field name="rgb_unit_packing" optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>
