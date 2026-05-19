@@ -774,7 +774,9 @@ class ConstructionDashboard extends Component {
         });
     }
 
-    onProjectsClick() { this.openView("construction.project", "Projects", [], "kanban,list,form"); }
+    onProjectsClick() {
+        this.action.doAction("sdlc_construction_management.action_construction_project");
+    }
     onSubProjectsClick() { this.openView("construction.sub.project", "Sub Projects"); }
     onMreqClick() { this.openView("construction.material.requisition", "Material Requisitions"); }
     onPhasesClick() { this.openView("construction.phase", "Phases / WBS"); }
