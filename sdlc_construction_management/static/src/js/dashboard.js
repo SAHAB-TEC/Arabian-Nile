@@ -763,14 +763,18 @@ class ConstructionDashboard extends Component {
 
     // ── Navigation handlers ──
 
-    openView(model, name, domain = []) {
+    openView(model, name, domain = [], viewMode = "list,form") {
+        const views =
+            viewMode === "kanban,list,form"
+                ? [[false, "kanban"], [false, "list"], [false, "form"]]
+                : [[false, "list"], [false, "form"]];
         this.action.doAction({
             type: "ir.actions.act_window", name, res_model: model,
-            view_mode: "list,form", views: [[false, "list"], [false, "form"]], domain,
+            view_mode: viewMode, views, domain,
         });
     }
 
-    onProjectsClick() { this.openView("construction.project", "Projects"); }
+    onProjectsClick() { this.openView("construction.project", "Projects", [], "kanban,list,form"); }
     onSubProjectsClick() { this.openView("construction.sub.project", "Sub Projects"); }
     onMreqClick() { this.openView("construction.material.requisition", "Material Requisitions"); }
     onPhasesClick() { this.openView("construction.phase", "Phases / WBS"); }

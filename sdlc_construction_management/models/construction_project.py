@@ -6,9 +6,22 @@ class ConstructionProject(models.Model):
     _name = 'construction.project'
     _description = 'Construction Project'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _order = 'id desc'
+    _order = 'sequence, name, id'
+
+    def _default_stage_id(self):
+        return self.env['construction.project.stage'].search([], order='sequence, id', limit=1)
+
+    @api.model
+    def _assign_default_stages(self):
+        """Called on module install/upgrade for projects without a stage."""
+        stage = self.env['construction.project.stage'].search([], order='sequence, id', limit=1)
+        if stage:
+            self.search([('stage_id', '=', False)]).write({'stage_id': stage.id})
 
     name = fields.Char(string='Project Name', required=True, tracking=True)
+    active = fields.Boolean(default=True, copy=False)
+    sequence = fields.Integer(default=10)
+    color = fields.Integer(string='Color Index')
     reference = fields.Char(string='Reference', readonly=True, default='New', copy=False)
     warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse', tracking=True)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
@@ -35,6 +48,17 @@ class ConstructionProject(models.Model):
     email = fields.Char(string='Email')
 
     # Status
+    stage_id = fields.Many2one(
+        'construction.project.stage',
+        string='Stage',
+        ondelete='restrict',
+        tracking=True,
+        index=True,
+        copy=False,
+        default=_default_stage_id,
+        group_expand='_read_group_expand_full',
+        domain="[('company_id', 'in', (company_id, False))]",
+    )
     state = fields.Selection([
         ('draft', 'Draft'),
         ('in_progress', 'In Progress'),
@@ -58,12 +82,45 @@ class ConstructionProject(models.Model):
     # Permits
     permit_ids = fields.One2many('construction.permit', 'project_id', string='Permits & Approvals')
 
+    @api.onchange('company_id')
+    def _onchange_company_id(self):
+        if self.stage_id.company_id and self.stage_id.company_id != self.company_id:
+            self.stage_id = self.env['construction.project.stage'].search(
+                [('company_id', 'in', [self.company_id.id, False])],
+                order='sequence asc, id',
+                limit=1,
+            )
+
     @api.model_create_multi
     def create(self, vals_list):
+        stages = self.env['construction.project.stage'].search([])
         for vals in vals_list:
             if vals.get('reference', 'New') == 'New':
                 vals['reference'] = self.env['ir.sequence'].next_by_code('construction.project') or 'New'
+            if not vals.get('stage_id'):
+                company_id = vals.get('company_id', self.env.company.id)
+                stage = stages.filtered(
+                    lambda s: s.company_id.id in (False, company_id)
+                )[:1]
+                if stage:
+                    vals['stage_id'] = stage.id
         return super().create(vals_list)
+
+    def write(self, vals):
+        company_id = vals.get('company_id')
+        if company_id is not None:
+            projects_with_wrong_stage = self.filtered(
+                lambda p: p.stage_id.company_id and p.stage_id.company_id.id != company_id
+            )
+            if projects_with_wrong_stage:
+                new_stage = self.env['construction.project.stage'].search(
+                    [('company_id', 'in', (company_id, False))],
+                    order='sequence asc, id',
+                    limit=1,
+                )
+                if new_stage:
+                    super(ConstructionProject, projects_with_wrong_stage).write({'stage_id': new_stage.id})
+        return super().write(vals)
 
     def _compute_counts(self):
         for rec in self:
