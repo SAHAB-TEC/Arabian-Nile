@@ -30,6 +30,7 @@ class AccountMove(models.Model):
         if contract.contract_type == 'sale_contract' and contract.price_list_id:
             self._onchange_partner_id()
         self._apply_contract_analytic_on_lines()
+        self._apply_contract_invoice_template_fields()
 
     def _apply_contract_analytic_on_lines(self):
         distribution = self.contract_id._get_analytic_distribution() if self.contract_id else {}
@@ -37,6 +38,10 @@ class AccountMove(models.Model):
             return
         for line in self.invoice_line_ids:
             line.analytic_distribution = distribution
+
+    def _apply_contract_invoice_template_fields(self):
+        """Hook for account_invoice_templates; no-op when that module is not installed."""
+        return
 
     @api.model_create_multi
     def create(self, vals_list):

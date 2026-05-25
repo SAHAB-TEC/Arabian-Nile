@@ -519,11 +519,6 @@ class RgbContract(models.Model):
                 'default_currency_id': self.currency_id.id,
                 'default_invoice_date': fields.Date.context_today(self),
                 'default_analytic_distribution': self._get_analytic_distribution(),
-                **(
-                    {'default_pricelist_id': self.price_list_id.id}
-                    if self.contract_type == 'sale_contract' and self.price_list_id
-                    else {}
-                ),
             },
         }
 
