@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_contract_approval" model="mail.template">
+        <field name="name">Contract: Approval Request</field>
+        <field name="model_id" ref="model_rgb_contract"/>
+        <field name="subject">Contract approval required: {{ object.name }}</field>
+        <field name="email_to">{{ object.approval_user_id.email }}</field>
+        <field name="body_html" type="html">
+            <p>Hello,</p>
+            <p>Contract <strong><t t-out="object.name"/></strong> requires your approval.</p>
+            <p>Partner: <t t-out="object.partner_id.name"/></p>
+            <p>Contract value: <t t-out="object.contract_value_currency"/> <t t-out="object.currency_id.name"/></p>
+        </field>
+    </record>
+
+    <record id="mail_template_guarantee_expiry" model="mail.template">
+        <field name="name">Contract: Performance Guarantee Expiry Reminder</field>
+        <field name="model_id" ref="model_rgb_contract"/>
+        <field name="subject">Performance guarantee expiring soon: {{ object.name }}</field>
+        <field name="email_to">{{ object.responsible_user_id.email or object.approval_user_id.email }}</field>
+        <field name="body_html" type="html">
+            <p>The performance guarantee for contract <strong><t t-out="object.name"/></strong>
+               expires on <t t-out="object.performance_guarantee_expiry_date"/>.</p>
+        </field>
+    </record>
+
+    <record id="mail_template_contract_expiry" model="mail.template">
+        <field name="name">Contract: Expiry Reminder</field>
+        <field name="model_id" ref="model_rgb_contract"/>
+        <field name="subject">Contract ending soon: {{ object.name }}</field>
+        <field name="email_to">{{ object.responsible_user_id.email or object.approval_user_id.email }}</field>
+        <field name="body_html" type="html">
+            <p>Contract <strong><t t-out="object.name"/></strong> ends on <t t-out="object.date_end"/>.</p>
+        </field>
+    </record>
+</odoo>

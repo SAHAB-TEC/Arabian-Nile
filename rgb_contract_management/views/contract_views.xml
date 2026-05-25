@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List -->
+    <record id="view_rgb_contract_list" model="ir.ui.view">
+        <field name="name">rgb.contract.list</field>
+        <field name="model">rgb.contract</field>
+        <field name="arch" type="xml">
+            <list string="Contracts" decoration-muted="state in ('cancelled', 'expired')">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="contract_type"/>
+                <field name="contract_business_type" optional="show"/>
+                <field name="service_duration_days" optional="show"/>
+                <field name="remaining_days"/>
+                <field name="contract_value_currency"/>
+                <field name="contract_value_lyd"/>
+                <field name="paid_percent_currency" string="Paid %"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'under_approval'"
+                       decoration-success="state in ('approved', 'in_progress', 'done')"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Kanban -->
+    <record id="view_rgb_contract_kanban" model="ir.ui.view">
+        <field name="name">rgb.contract.kanban</field>
+        <field name="model">rgb.contract</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_mobile" sample="1">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="contract_value_currency"/>
+                <field name="remaining_days"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold"/>
+                        <field name="partner_id"/>
+                        <field name="contract_value_currency"/>
+                        <field name="remaining_days"/> days left
+                        <field name="state" widget="badge"/>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="view_rgb_contract_search" model="ir.ui.view">
+        <field name="name">rgb.contract.search</field>
+        <field name="model">rgb.contract</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="under_approval" string="Under Approval" domain="[('state', '=', 'under_approval')]"/>
+                <filter name="in_progress" string="In Progress" domain="[('state', '=', 'in_progress')]"/>
+                <separator/>
+                <filter name="purchase" string="Purchase" domain="[('contract_type', '=', 'purchase_contract')]"/>
+                <filter name="sale" string="Sale" domain="[('contract_type', '=', 'sale_contract')]"/>
+                <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_type" string="Contract Type" context="{'group_by': 'contract_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_rgb_contract_form" model="ir.ui.view">
+        <field name="name">rgb.contract.form</field>
+        <field name="model">rgb.contract</field>
+        <field name="arch" type="xml">
+            <form string="Contract">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="oe_highlight" invisible="state != 'draft'"
+                            groups="rgb_contract_management.group_contract_user"/>
+                    <button name="action_approve" string="Approve" type="object"
+                            class="oe_highlight" invisible="state != 'under_approval'"
+                            groups="rgb_contract_management.group_contract_approver"/>
+                    <button name="action_set_in_progress" string="Start" type="object"
+                            class="oe_highlight" invisible="state != 'approved'"
+                            groups="rgb_contract_management.group_contract_manager"/>
+                    <button name="action_done" string="Done" type="object"
+                            invisible="state != 'in_progress'"
+                            groups="rgb_contract_management.group_contract_manager"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state in ('done', 'cancelled', 'expired')"
+                            groups="rgb_contract_management.group_contract_manager"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object"
+                            invisible="state not in ('under_approval', 'cancelled')"
+                            groups="rgb_contract_management.group_contract_manager"/>
+                    <button name="action_expire" string="Mark Expired" type="object"
+                            invisible="state in ('done', 'cancelled', 'expired')"
+                            groups="rgb_contract_management.group_contract_manager"/>
+                    <button name="action_create_invoice" string="Create Invoice" type="object"
+                            invisible="state not in ('in_progress', 'done')"
+                            groups="rgb_contract_management.group_contract_user"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,under_approval,approved,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices" type="object"
+                                class="oe_stat_button" icon="fa-pencil-square-o">
+                            <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Contract Information">
+                            <field name="contract_type" readonly="state != 'draft'"/>
+                            <field name="contract_business_type"/>
+                            <field name="partner_id"
+                                   domain="[('is_contractor', '=', True)]"
+                                   invisible="contract_type != 'purchase_contract'"
+                                   required="contract_type == 'purchase_contract'"/>
+                            <field name="partner_id"
+                                   invisible="contract_type != 'sale_contract'"
+                                   required="contract_type == 'sale_contract'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="responsible_user_id"/>
+                            <field name="approval_user_id"/>
+                            <field name="analytic_account_id"/>
+                            <field name="price_list_id" invisible="contract_type != 'sale_contract'"/>
+                        </group>
+                        <group string="Dates &amp; Duration">
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="service_duration_days"/>
+                            <field name="remaining_days" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Amounts">
+                        <group>
+                            <field name="currency_id"/>
+                            <field name="contract_value_currency"/>
+                            <field name="exchange_rate"/>
+                            <field name="allow_over_contract_value"/>
+                            <field name="contract_amendment_percent"/>
+                        </group>
+                        <group>
+                            <field name="lyd_currency_id" invisible="1"/>
+                            <field name="contract_value_lyd"/>
+                            <field name="total_invoiced_amount" readonly="1"/>
+                            <field name="paid_invoice_amount" readonly="1"/>
+                            <field name="unpaid_invoice_amount" readonly="1"/>
+                            <field name="paid_percent_currency" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payment Conditions" name="payment">
+                            <field name="payment_terms_text" placeholder="General payment terms..."/>
+                            <field name="payment_condition_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="percentage"/>
+                                    <field name="currency_id"/>
+                                    <field name="amount_currency"/>
+                                    <field name="amount_lyd"/>
+                                    <field name="payment_method"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                            <group>
+                                <field name="advance_payment_percent"/>
+                            </group>
+                        </page>
+                        <page string="Invoices" name="invoices">
+                            <field name="invoice_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="invoice_date"/>
+                                    <field name="state"/>
+                                    <field name="payment_state"/>
+                                    <field name="amount_total"/>
+                                    <field name="amount_residual" string="Unpaid"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Insurance" name="insurance">
+                            <label for="insurance_type_ids"/>
+                            <field name="insurance_type_ids" widget="many2many_tags" nolabel="1"
+                                   domain="['|', ('applicable_contract_type', '=', 'all'), ('applicable_contract_type', '=', contract_type)]"/>
+                            <group string="Insurance Documents (PDF required before activation)">
+                                <field name="insurance_attachment_ids" widget="many2many_binary"/>
+                            </group>
+                        </page>
+                        <page string="Guarantees" name="guarantees">
+                            <group string="Performance Guarantee">
+                                <field name="performance_guarantee_expiry_date"/>
+                                <field name="performance_guarantee_attachment_ids" widget="many2many_binary"/>
+                            </group>
+                            <group string="Bank Guarantee">
+                                <field name="bank_guarantee_status"/>
+                                <field name="bank_guarantee_value"/>
+                                <field name="bank_guarantee_attachment_ids" widget="many2many_binary"/>
+                            </group>
+                        </page>
+                        <page string="Delay Penalty" name="penalty">
+                            <group>
+                                <field name="agreed_execution_date"/>
+                                <field name="actual_execution_date"/>
+                                <field name="delay_penalty_daily_rate"/>
+                                <field name="delay_penalty_max_percent"/>
+                                <field name="delay_penalty_amount" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rgb_contract" model="ir.actions.act_window">
+        <field name="name">Contracts</field>
+        <field name="res_model">rgb.contract</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_rgb_contract_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a new contract</p>
+            <p>Manage purchase contracts with contractors and sale contracts with customers.</p>
+        </field>
+    </record>
+</odoo>
