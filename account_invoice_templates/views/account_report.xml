@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <template id="report_invoice_akakos1">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                <t t-call="account_invoice_templates.report_invoice_document_akakos" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_invoice_waha_A">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                <t t-call="account_invoice_templates.report_invoice_document_waha_A" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_invoice_waha_B">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                <t t-call="account_invoice_templates.report_invoice_document_waha_B" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_invoice_gulf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                <t t-call="account_invoice_templates.report_invoice_document_gulf" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_invoice_gulf_transport">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang or o.company_id.partner_id.lang"/>
+                <t t-call="account_invoice_templates.report_invoice_document_gulf_transport" t-lang="lang"/>
+            </t>
+        </t>
+    </template>
+
+
+    <record id="account_invoices_without_payment_akakos1" model="ir.actions.report">
+        <field name="name">PDF A</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">account_invoice_templates.report_invoice_akakos1</field>
+        <field name="report_file">account_invoice_templates.report_invoice_akakos1</field>
+        <field name="print_report_name">(object._get_report_base_filename() + ' - A')</field>
+        <field name="attachment"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="domain" eval="[('move_type', '!=', 'entry')]"/>
+    </record>
+
+
+    <record id="account_invoices_waha_A" model="ir.actions.report">
+        <field name="name">PDF C</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">account_invoice_templates.report_invoice_waha_A</field>
+        <field name="report_file">account_invoice_templates.report_invoice_waha_A</field>
+        <field name="print_report_name">(object._get_report_base_filename() + ' - C')</field>
+        <field name="attachment"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="domain" eval="[('move_type', '!=', 'entry')]"/>
+    </record>
+    <record id="account_invoices_waha_B" model="ir.actions.report">
+        <field name="name">PDF B</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">account_invoice_templates.report_invoice_waha_B</field>
+        <field name="report_file">account_invoice_templates.report_invoice_waha_B</field>
+        <field name="print_report_name">(object._get_report_base_filename() + ' - B')</field>
+        <field name="attachment"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+
+        <field name="binding_type">report</field>
+        <field name="domain" eval="[('move_type', '!=', 'entry')]"/>
+    </record>
+
+    <record id="account_invoices_gulf" model="ir.actions.report">
+        <field name="name">PDF D</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">account_invoice_templates.report_invoice_gulf</field>
+        <field name="report_file">account_invoice_templates.report_invoice_gulf</field>
+        <field name="print_report_name">(object._get_report_base_filename() + ' - D')</field>
+        <field name="attachment"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="domain" eval="[('move_type', '!=', 'entry')]"/>
+    </record>
+
+    <record id="account_invoices_gulf_transport" model="ir.actions.report">
+        <field name="name">PDF E</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">account_invoice_templates.report_invoice_gulf_transport</field>
+        <field name="report_file">account_invoice_templates.report_invoice_gulf_transport</field>
+        <field name="print_report_name">(object._get_report_base_filename() + ' - E')</field>
+        <field name="attachment"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+        <field name="domain" eval="[('move_type', '!=', 'entry')]"/>
+    </record>
+
+
+    <template id="report_invoice_document_all" inherit_id="account.report_invoice_document">
+
+        <!-- hide terms and conditions -->
+        <xpath expr="//div[@id='payment_term']" position="attributes">
+            <attribute name="style">display: none;</attribute>
+        </xpath>
+        <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
+            <tr class="is-subtotal text-end">
+                <td colspan="99">
+                    <p style="border: 1px solid #000; padding: 1px; display: inline-block;">
+                    <strong class="mr16">USD %</strong>
+                    <span
+                        t-field="o.dollar_percentage"
+                        
+                    />
+                    </p>
+                    <p style="border: 1px solid #000; padding: 1px; display: inline-block;">
+                    --
+                    <strong class="mr16">LYD %</strong>
+                        <span
+                            t-field="o.libya_dinar_percentage"
+                            
+                        />
+                    </p>
+                </td>
+
+            </tr>
+
+        </xpath>
+        <xpath expr="//div[@id='informations']" position="after">
+
+            <div class="akakos-extra-info"
+                style="width: 100%; margin-top: 12px; margin-bottom: 12px; font-size: 0;">
+
+                <div t-if="o.ait_well"
+                    style="display: inline-block; width: 25%; vertical-align: top; margin-bottom: 8px; font-size: 13px;">
+                    <strong>Well</strong><br/>
+                    <span t-field="o.ait_well"/>
+                </div>
+
+                <div t-if="o.ait_service_to"
+                    style="display: inline-block; width: 25%; vertical-align: top; margin-bottom: 8px; font-size: 13px;">
+                    <strong>Service To</strong><br/>
+                    <span t-field="o.ait_service_to"/>
+                </div>
+
+                <div t-if="o.ait_rig"
+                    style="display: inline-block; width: 25%; vertical-align: top; margin-bottom: 8px; font-size: 13px;">
+                    <strong>Rig</strong><br/>
+                    <span t-field="o.ait_rig"/>
+                </div>
+
+                <div t-if="o.ait_field"
+                    style="display: inline-block; width: 25%; vertical-align: top; margin-bottom: 8px; font-size: 13px;">
+                    <strong>Field</strong><br/>
+                    <span t-field="o.ait_field"/>
+                </div>
+
+                <div t-if="o.ait_work_date"
+                    style="display: inline-block; width: 25%; vertical-align: top; margin-bottom: 8px; font-size: 13px;">
+                    <strong>Work Date</strong><br/>
+                    <span t-field="o.ait_work_date"/>
+                </div>
+
+                <div t-if="o.ait_invoice_type"
+                    style="display: inline-block; width: 25%; vertical-align: top; margin-bottom: 8px; font-size: 13px;">
+                    <strong>Invoice Type</strong><br/>
+                    <span t-field="o.ait_invoice_type"/>
+                </div>
+
+                
+
+            </div>
+
+        </xpath>
+
+        <xpath expr="//div[@id='total']" position="after">
+
+            <div t-if="o.partner_bank_id"
+                id="akakos_bank_details"
+                class="clearfix row mt-3"
+                style="page-break-inside: avoid; break-inside: avoid; display: block;">
+
+                <div class="ms-auto"
+                    style="page-break-inside: avoid; break-inside: avoid;">
+
+                    <table class="o_total_table table table-borderless"
+                        style="page-break-inside: avoid; break-inside: avoid;">
+                        <tr>
+                            <td>
+                                <strong>Bank Name:</strong>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="o.partner_bank_id.bank_id.name or ''"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <strong>Bank Address:</strong>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="', '.join(filter(None, [
+                                    o.partner_bank_id.bank_id.street,
+                                    o.partner_bank_id.bank_id.street2,
+                                    o.partner_bank_id.bank_id.city,
+                                    o.partner_bank_id.bank_id.zip,
+                                    o.partner_bank_id.bank_id.country.name
+                                ]))"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <strong>Beneficiary Name:</strong>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="o.partner_bank_id.partner_id.name or o.company_id.name"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <strong>Account Number:</strong>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="o.partner_bank_id.acc_number or ''"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <strong>Currency:</strong>
+                            </td>
+                            <td class="text-end">
+                                <span t-out="o.partner_bank_id.currency_id.name or o.currency_id.name"/>
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+
+        </xpath>
+    </template>
+
+    <template id="report_invoice_document_akakos" inherit_id="account.report_invoice_document" primary="True">
+
+        <xpath expr="//th[@name='th_description']" position="before">
+            <th style="border: 1px solid #000; text-align: center; width: 4%;">No</th>
+            <th name="th_description" class="text-start"><span>Abarios Code</span></th>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="replace">
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id" t-field="line.product_id.name" t-options="{'widget': 'text'}" dir="auto">Bacon Burger</span>
+            </td>
+        </xpath>
+
+        <!-- tbody -->
+        <xpath expr="//tbody" position="before">
+            <t t-set="line_no" t-value="0"/>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="before">
+            <t t-set="line_no" t-value="line_no + 1"/>
+            <td style="border: 1px solid #000; text-align: center;">
+                <span t-out="line_no"/>
+            </td>
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id" t-field="line.product_id.default_code" t-options="{'widget': 'text'}" dir="auto">Bacon Burger</span>
+            </td>
+        </xpath>
+
+        <!-- price_total -->
+        <xpath expr="//th[@name='th_subtotal']" position="after">
+            <th name="th_subtotal" class="text-end"><span>Total</span></th>
+        </xpath>
+        <xpath expr="//td[@name='td_subtotal']" position="after">
+            <td name="td_price_total" class="text-end">
+                <span t-field="line.price_total" class="text-nowrap">9.00</span>
+            </td>
+        </xpath>
+    </template>
+
+    <template id="report_invoice_document_waha_A" inherit_id="account.report_invoice_document" primary="True">
+
+        
+        <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
+            <tr class="is-subtotal text-end">
+                <td colspan="99">
+                    <strong class="mr16">Total USD</strong>
+                    <span
+                        t-field="o.usd_amount"
+                        
+                    />
+                </td>
+            </tr>
+
+        </xpath>
+        <xpath expr="//th[@name='th_description']" position="before">
+            <th style="border: 1px solid #000; text-align: center; width: 4%;">No</th>
+            <th name="th_description" class="text-start"><span>Abarios Code</span></th>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="replace">
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id" t-field="line.product_id.name" t-options="{'widget': 'text'}" dir="auto">Bacon Burger</span>
+            </td>
+        </xpath>
+
+        <!-- tbody -->
+        <xpath expr="//tbody" position="before">
+            <t t-set="line_no" t-value="0"/>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="before">
+            <t t-set="line_no" t-value="line_no + 1"/>
+            <td style="border: 1px solid #000; text-align: center;">
+                <span t-out="line_no"/>
+            </td>
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id" t-field="line.product_id.default_code" t-options="{'widget': 'text'}" dir="auto">Bacon Burger</span>
+            </td>
+        </xpath>
+
+        <!-- price_total -->
+        <xpath expr="//th[@name='th_subtotal']" position="after">
+            <th name="th_subtotal" class="text-end"><span>Total</span></th>
+        </xpath>
+        <xpath expr="//td[@name='td_subtotal']" position="after">
+            <td name="td_price_total" class="text-end">
+                <span t-field="line.price_total" class="text-nowrap">9.00</span>
+            </td>
+        </xpath>
+
+
+    </template>
+
+    <template id="report_invoice_document_waha_B" inherit_id="account.report_invoice_document" primary="True">
+
+        <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
+            
+            <tr class="is-subtotal text-end">
+                <td colspan="99">
+                    <strong class="mr16">Total LYD (share)</strong>
+                    <span class="ms-2" t-field="o.lyd_amount"/>
+                </td>
+            </tr>
+
+        </xpath>
+        <xpath expr="//th[@name='th_description']" position="before">
+            <th style="border: 1px solid #000; text-align: center; width: 4%;">No</th>
+            <th name="th_description" class="text-start"><span>Abarios Code</span></th>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="replace">
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id" t-field="line.product_id.name" t-options="{'widget': 'text'}" dir="auto">Product</span>
+            </td>
+        </xpath>
+
+        <xpath expr="//tbody" position="before">
+            <t t-set="line_no" t-value="0"/>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="before">
+            <t t-set="line_no" t-value="line_no + 1"/>
+            <td style="border: 1px solid #000; text-align: center;">
+                <span t-out="line_no"/>
+            </td>
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id" t-field="line.product_id.default_code" t-options="{'widget': 'text'}" dir="auto">CODE</span>
+            </td>
+        </xpath>
+
+        <xpath expr="//th[@name='th_subtotal']" position="after">
+            <th name="th_subtotal" class="text-end"><span>Total</span></th>
+        </xpath>
+        <xpath expr="//td[@name='td_subtotal']" position="after">
+            <td name="td_price_total" class="text-end">
+                <span t-field="line.price_total" class="text-nowrap">9.00</span>
+            </td>
+        </xpath>
+    </template>
+
+    <template id="report_invoice_document_gulf" inherit_id="account.report_invoice_document" primary="True">
+        <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
+            
+            <tr class="is-subtotal text-end">
+                <td colspan="99">
+                    <strong class="mr16">Total USD (share)</strong>
+                    <span class="ms-2" t-field="o.usd_amount"/>
+                </td>
+            </tr>
+            <tr class="is-subtotal text-end">
+                <td colspan="99">
+                    <strong class="mr16">Total LYD (share)</strong>
+                    <span class="ms-2" t-field="o.lyd_amount"/>
+                </td>
+            </tr>
+        </xpath>
+        <xpath expr="//th[@name='th_description']" position="before">
+            <th style="border: 1px solid #000; text-align: center; width: 4%;">No</th>
+            <th name="th_description" class="text-start"><span>Abarios Code</span></th>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="replace">
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id" t-field="line.product_id.name" t-options="{'widget': 'text'}" dir="auto">Product</span>
+            </td>
+        </xpath>
+
+        <xpath expr="//tbody" position="before">
+            <t t-set="line_no" t-value="0"/>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="before">
+            <t t-set="line_no" t-value="line_no + 1"/>
+            <td style="border: 1px solid #000; text-align: center;">
+                <span t-out="line_no"/>
+            </td>
+            <td name="account_invoice_line_name">
+                <span t-if="line.product_id" t-field="line.product_id.default_code" t-options="{'widget': 'text'}" dir="auto">CODE</span>
+            </td>
+        </xpath>
+
+        <xpath expr="//th[@name='th_subtotal']" position="after">
+            <th name="th_subtotal" class="text-end"><span>Total</span></th>
+        </xpath>
+        <xpath expr="//td[@name='td_subtotal']" position="after">
+            <td name="td_price_total" class="text-end">
+                <span t-field="line.price_total" class="text-nowrap">9.00</span>
+            </td>
+        </xpath>
+    </template>
+
+    <template id="report_invoice_document_gulf_transport" inherit_id="account.report_invoice_document" primary="True">
+        <xpath expr="//th[@name='th_discount']" position="attributes">
+            <attribute name="style">display: none;</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_discount']" position="attributes">
+            <attribute name="style">display: none;</attribute>
+        </xpath>
+        <xpath expr="//th[@name='th_taxes']" position="attributes">
+            <attribute name="style">display: none;</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_taxes']" position="attributes">
+            <attribute name="style">display: none;</attribute>
+        </xpath>
+
+        <xpath expr="//th[@name='th_subtotal']/span" position="replace">
+            <span>LYD</span>
+        </xpath>
+
+        <xpath expr="//th[@name='th_quantity']/span" position="replace">
+            <span>Weight</span>
+        </xpath>
+        <xpath expr="//th[@name='th_description']/span" position="replace">
+            <span>Payload Type</span>
+        </xpath>
+        <xpath expr="//th[@name='th_description']" position="before">
+            <th style="border: 1px solid #000; text-align: center; width: 3%;">No</th>
+        </xpath>
+        <xpath expr="//th[@name='th_description']" position="after">
+            
+            <th style="border: 1px solid #000;">Date</th>
+            
+            
+            <th style="border: 1px solid #000;">D.T No.</th>
+        </xpath>
+
+        <xpath expr="//tbody" position="before">
+            <t t-set="line_no" t-value="0"/>
+        </xpath>
+
+        <xpath expr="//td[@name='account_invoice_line_name']" position="replace">
+            <td name="account_invoice_line_name">
+                <span t-if="line.name" t-field="line.name" t-options="{'widget': 'text'}" dir="auto"/>
+            </td>
+        </xpath>
+
+        <xpath expr="//td[@name='account_invoice_line_name']" position="before">
+            <t t-set="line_no" t-value="line_no + 1"/>
+            <td style="border: 1px solid #000; text-align: center;"><span t-out="line_no"/></td>
+        </xpath>
+        <xpath expr="//td[@name='account_invoice_line_name']" position="after">
+            
+            <td style="border: 1px solid #000;">
+                <span t-if="line.ait_transport_service_date" t-field="line.ait_transport_service_date"/>
+                <span t-if="not line.ait_transport_service_date and o.invoice_date" t-field="o.invoice_date"/>
+            </td>
+            
+            
+            <td style="border: 1px solid #000;"><span t-field="line.ait_transport_dt_no"/></td>
+        </xpath>
+
+        <xpath expr="//td[@name='td_subtotal']" position="replace">
+            <td name="td_subtotal" class="text-end o_price_total">
+                <span class="text-nowrap" t-field="line.price_total"/>
+            </td>
+        </xpath>
+
+        <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
+            <tr class="is-subtotal text-end">
+                <td colspan="99">
+                    <strong class="mr16">Subtotal (incl. tax)</strong>
+                    <span t-field="o.ait_transport_subtotal" class="text-nowrap"
+                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                </td>
+            </tr>
+            <tr class="is-subtotal text-end">
+                <td colspan="99">
+                    <strong class="mr16">Desert charge 15%</strong>
+                    <span t-field="o.ait_transport_desert_charge" class="text-nowrap"
+                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                </td>
+            </tr>
+            <tr class="is-subtotal text-end">
+                <td colspan="99">
+                    <strong class="mr16">Grand total</strong>
+                    <span t-field="o.ait_transport_grand_total" class="text-nowrap"
+                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                </td>
+            </tr>
+        </xpath>
+    </template>
+</odoo>
