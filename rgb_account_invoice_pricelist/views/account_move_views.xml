@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_inherit_pricelist" model="ir.ui.view">
+        <field name="name">account.move.form.pricelist</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="has_sale_order" invisible="1"/>
+                <field name="show_update_pricelist" invisible="1"/>
+                <label for="pricelist_id"
+                       groups="product.group_product_pricelist"
+                       invisible="move_type not in ('out_invoice', 'out_refund', 'out_receipt')"/>
+                <div groups="product.group_product_pricelist"
+                     class="o_row"
+                     invisible="move_type not in ('out_invoice', 'out_refund', 'out_receipt')">
+                    <field name="pricelist_id"
+                           options="{'no_open': True, 'no_create': True}"
+                           readonly="state != 'draft' or has_sale_order"/>
+                    <button name="action_update_invoice_prices"
+                            type="object"
+                            string=" Update Prices"
+                            help="Recompute all prices based on this pricelist"
+                            class="btn-link mb-1 px-0"
+                            icon="fa-refresh"
+                            confirm="This will update the unit price of all products based on the new pricelist."
+                            invisible="not show_update_pricelist"/>
+                </div>
+                <field name="pricelist_id"
+                       invisible="1"
+                       groups="!product.group_product_pricelist"
+                       readonly="state != 'draft' or has_sale_order"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
