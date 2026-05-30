@@ -21,6 +21,8 @@
         <field name="arch" type="xml">
             <kanban highlight_color="color"
                     class="o_kanban_mobile"
+                    action="action_view_tasks"
+                    type="object"
                     quick_create_view="sdlc_construction_management.view_construction_project_form_quick_create"
                     sample="1"
                     default_order="sequence, name, id">

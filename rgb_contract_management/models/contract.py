@@ -20,6 +20,12 @@ class RgbContract(models.Model):
         default=lambda self: _('New'),
         tracking=True,
     )
+    contract_code = fields.Char(
+        string='Contract Code',
+        tracking=True,
+        copy=False,
+        help='Manual unique contract code shown on linked invoice prints.',
+    )
     contract_type = fields.Selection(
         selection=[
             ('purchase_contract', 'Purchase / Contractor Contract'),
@@ -125,6 +131,26 @@ class RgbContract(models.Model):
         string='Amendment Limit (%)',
         default=10.0,
         help='Maximum contract value change allowed (increase or decrease).',
+    )
+    dollar_percentage = fields.Float(
+        string='USD %',
+        tracking=True,
+        help='Percentage of the invoice amount payable in USD.',
+    )
+    libya_dinar_percentage = fields.Float(
+        string='LYD %',
+        tracking=True,
+        help='Percentage of the invoice amount payable in LYD.',
+    )
+    usd_amount = fields.Float(
+        string='USD Amount',
+        compute='_compute_usd_lyd_amount',
+        help='Contract value share in USD based on USD %.',
+    )
+    lyd_amount = fields.Float(
+        string='LYD Amount',
+        compute='_compute_usd_lyd_amount',
+        help='Contract value share in LYD based on LYD %.',
     )
 
     # ── Accounting & responsibility ──
@@ -261,6 +287,23 @@ class RgbContract(models.Model):
         ('name_unique', 'unique(name)', 'Contract number must be unique.'),
     ]
 
+    @api.constrains('contract_code')
+    def _check_contract_code_unique(self):
+        for contract in self.filtered('contract_code'):
+            code = contract.contract_code.strip()
+            if not code:
+                continue
+            duplicate = self.search([
+                ('contract_code', '=', code),
+                ('id', '!=', contract.id),
+            ], limit=1)
+            if duplicate:
+                raise ValidationError(_(
+                    'Contract code "%(code)s" is already used on contract %(contract)s.',
+                    code=code,
+                    contract=duplicate.name,
+                ))
+
     # ── Computes ──
 
     @api.depends('company_id')
@@ -268,6 +311,41 @@ class RgbContract(models.Model):
         lyd = self.env['res.currency'].search([('name', '=', 'LYD')], limit=1)
         for contract in self:
             contract.lyd_currency_id = lyd.id if lyd else contract.currency_id.id
+
+    @api.depends(
+        'contract_value_currency',
+        'currency_id',
+        'dollar_percentage',
+        'libya_dinar_percentage',
+        'date_start',
+        'company_id',
+    )
+    def _compute_usd_lyd_amount(self):
+        usd_currency = self.env.ref('base.USD', raise_if_not_found=False)
+        lyd_currency = self.env.ref('base.LYD', raise_if_not_found=False)
+        for contract in self:
+            contract.usd_amount = 0.0
+            contract.lyd_amount = 0.0
+            if not contract.contract_value_currency or not contract.currency_id:
+                continue
+            conv_date = contract.date_start or fields.Date.context_today(contract)
+            company = contract.company_id or self.env.company
+            if usd_currency:
+                total_usd = contract.currency_id._convert(
+                    contract.contract_value_currency,
+                    usd_currency,
+                    company,
+                    conv_date,
+                )
+                contract.usd_amount = total_usd * (contract.dollar_percentage or 0.0) / 100.0
+            if lyd_currency:
+                total_lyd = contract.currency_id._convert(
+                    contract.contract_value_currency,
+                    lyd_currency,
+                    company,
+                    conv_date,
+                )
+                contract.lyd_amount = total_lyd * (contract.libya_dinar_percentage or 0.0) / 100.0
 
     @api.depends('date_end', 'date_start', 'service_duration_days', 'state')
     def _compute_remaining_days(self):
@@ -363,11 +441,15 @@ class RgbContract(models.Model):
         for vals in vals_list:
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code('rgb.contract') or _('New')
+            if vals.get('contract_code'):
+                vals['contract_code'] = vals['contract_code'].strip()
         contracts = super().create(vals_list)
         contracts._link_attachments()
         return contracts
 
     def write(self, vals):
+        if vals.get('contract_code'):
+            vals['contract_code'] = vals['contract_code'].strip()
         res = super().write(vals)
         if any(k in vals for k in (
             'insurance_attachment_ids',
@@ -487,39 +569,25 @@ class RgbContract(models.Model):
 
     def action_view_invoices(self):
         self.ensure_one()
-        move_type = 'in_invoice' if self.contract_type == 'purchase_contract' else 'out_invoice'
         return {
             'name': _('Contract Invoices'),
             'type': 'ir.actions.act_window',
             'res_model': 'account.move',
             'view_mode': 'list,form',
             'domain': [('contract_id', '=', self.id)],
-            'context': {
-                'default_contract_id': self.id,
-                'default_partner_id': self.partner_id.id,
-                'default_move_type': move_type,
-                'default_analytic_distribution': self._get_analytic_distribution(),
-            },
+            'context': self._prepare_invoice_context(),
         }
 
     def action_create_invoice(self):
         self.ensure_one()
         self._check_insurance_for_activation()
-        move_type = 'in_invoice' if self.contract_type == 'purchase_contract' else 'out_invoice'
         return {
             'name': _('Create Invoice'),
             'type': 'ir.actions.act_window',
             'res_model': 'account.move',
             'view_mode': 'form',
             'target': 'current',
-            'context': {
-                'default_contract_id': self.id,
-                'default_partner_id': self.partner_id.id,
-                'default_move_type': move_type,
-                'default_currency_id': self.currency_id.id,
-                'default_invoice_date': fields.Date.context_today(self),
-                'default_analytic_distribution': self._get_analytic_distribution(),
-            },
+            'context': self._prepare_invoice_context(),
         }
 
     def _get_analytic_distribution(self):
@@ -527,6 +595,21 @@ class RgbContract(models.Model):
         if self.analytic_account_id:
             return {str(self.analytic_account_id.id): 100}
         return {}
+
+    def _prepare_invoice_context(self):
+        """Default values passed when opening/creating invoices from this contract."""
+        self.ensure_one()
+        move_type = 'in_invoice' if self.contract_type == 'purchase_contract' else 'out_invoice'
+        return {
+            'default_contract_id': self.id,
+            'default_partner_id': self.partner_id.id,
+            'default_move_type': move_type,
+            'default_currency_id': self.currency_id.id,
+            'default_invoice_date': fields.Date.context_today(self),
+            'default_analytic_distribution': self._get_analytic_distribution(),
+            'default_dollar_percentage': self.dollar_percentage,
+            'default_libya_dinar_percentage': self.libya_dinar_percentage,
+        }
 
     @api.onchange('contract_type')
     def _onchange_contract_type(self):

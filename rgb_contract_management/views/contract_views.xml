@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <list string="Contracts" decoration-muted="state in ('cancelled', 'expired')">
                 <field name="name"/>
+                <field name="contract_code" optional="show"/>
                 <field name="partner_id"/>
                 <field name="contract_type"/>
                 <field name="contract_business_type" optional="show"/>
@@ -55,6 +56,7 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
+                <field name="contract_code"/>
                 <field name="partner_id"/>
                 <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                 <filter name="under_approval" string="Under Approval" domain="[('state', '=', 'under_approval')]"/>
@@ -114,6 +116,8 @@
                     </div>
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
+                        <label for="contract_code" string="Contract Code"/>
+                        <h2><field name="contract_code" placeholder="e.g. CNT-2026-001"/></h2>
                     </div>
                     <group>
                         <group string="Contract Information">
@@ -150,6 +154,10 @@
                         <group>
                             <field name="lyd_currency_id" invisible="1"/>
                             <field name="contract_value_lyd"/>
+                            <field name="dollar_percentage"/>
+                            <field name="libya_dinar_percentage"/>
+                            <field name="usd_amount" readonly="1"/>
+                            <field name="lyd_amount" readonly="1"/>
                             <field name="total_invoiced_amount" readonly="1"/>
                             <field name="paid_invoice_amount" readonly="1"/>
                             <field name="unpaid_invoice_amount" readonly="1"/>
