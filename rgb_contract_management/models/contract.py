@@ -111,12 +111,28 @@ class RgbContract(models.Model):
         string='Contract Value (LYD)',
         currency_field='lyd_currency_id',
         tracking=True,
+        compute='_compute_contract_value_lyd',
+        store=True,
+        readonly=False,
     )
+    @api.depends('contract_value_currency', 'exchange_rate')
+    def _compute_contract_value_lyd(self):
+        for contract in self:
+            contract.contract_value_lyd = contract.contract_value_currency * (contract.exchange_rate or 0.0)
+    
     exchange_rate = fields.Float(
         string='Exchange Rate',
         digits=(16, 6),
         help='Contract exchange rate (e.g. 1 USD = X LYD).',
+        compute='_compute_exchange_rate',
+        store=True,
+        readonly=True,
     )
+    @api.depends('currency_id')
+    def _compute_exchange_rate(self):
+        for contract in self:
+            contract.exchange_rate = contract.currency_id.rate if contract.currency_id else 1.0
+            
     payment_terms_text = fields.Html(string='Payment Terms')
     price_list_id = fields.Many2one(
         'product.pricelist',
