@@ -13,7 +13,7 @@
     <template id="report_invoice_document_contract" inherit_id="account.report_invoice_document">
         <xpath expr="//div[@id='informations']" position="inside">
             <div t-if="o.contract_code" class="col" name="contract_code">
-                <strong>Contract Code</strong>
+                <strong>Contract No</strong>
                 <div t-field="o.contract_code"/>
             </div>
         </xpath>
@@ -33,7 +33,7 @@
                         <span t-field="o.libya_dinar_percentage"/>
                         —
                         <strong>LYD Amount</strong>
-                        <span t-field="o.lyd_amount"/>
+                        <span t-field="o.lyd_amount" currency="LYD"/>
                     </span>
                 </td>
             </tr>
