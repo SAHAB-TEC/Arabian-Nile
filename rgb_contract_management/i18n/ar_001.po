@@ -1158,3 +1158,70 @@ msgstr "رسائل الموقع"
 msgid ""
 "When checked, this partner appears in contractor lists for purchase contracts.\n"
 msgstr "عند التحديد، يظهر هذا الشريك في قوائم المقاولين لعقود المشتريات."
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__contract_code
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__contract_code
+msgid "Contract Code"
+msgstr "كود العقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,help:rgb_contract_management.field_rgb_contract__contract_code
+msgid "Manual unique contract code shown on linked invoice prints."
+msgstr "كود العقد اليدوي الفريد يظهر في طباعة الفواتير المرتبطة."
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Contract code \"%(code)s\" is already used on contract %(contract)s."
+msgstr "كود العقد \"%(code)s\" مستخدم مسبقاً في العقد %(contract)s."
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__dollar_percentage
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__dollar_percentage
+msgid "USD %"
+msgstr "نسبة الدولار %"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__libya_dinar_percentage
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__libya_dinar_percentage
+msgid "LYD %"
+msgstr "نسبة الدينار %"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__usd_amount
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__usd_amount
+msgid "USD Amount"
+msgstr "مبلغ الدولار"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__lyd_amount
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__lyd_amount
+msgid "LYD Amount"
+msgstr "مبلغ الدينار"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_move_form_contract
+msgid "Currency Split"
+msgstr "تقسيم العملات"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.address_layout_rgb_invoice
+msgid "Customer Details:"
+msgstr "بيانات العميل :"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.address_layout_rgb_invoice
+msgid "Vendor Details:"
+msgstr "بيانات المورد :"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.report_invoice_document_contract
+msgid "Customer Details:"
+msgstr "بيانات العميل :"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.report_invoice_document_contract
+msgid "Vendor Details:"
+msgstr "بيانات المورد :"
+

@@ -17,6 +17,7 @@ class ConstructionDashboard extends Component {
         // Canvas refs
         this.projectTimelineRef = useRef("projectTimelineCanvas");
         this.projectStatusRef = useRef("projectStatusCanvas");
+        this.projectStageRef = useRef("projectStageCanvas");
         this.spStatusRef = useRef("spStatusCanvas");
         this.spTimelineRef = useRef("spTimelineCanvas");
         this.mreqChartRef = useRef("mreqChartCanvas");
@@ -28,6 +29,7 @@ class ConstructionDashboard extends Component {
             phaseCount: 0, workOrderCount: 0, budgetCount: 0,
             // Project status
             projectDraft: 0, projectInProgress: 0, projectCompleted: 0,
+            projectStages: [],
             // Sub project status
             spPlanning: 0, spProcurement: 0, spConstruction: 0, spHandover: 0,
             // MREQ status
@@ -132,6 +134,19 @@ class ConstructionDashboard extends Component {
         const d = this.getDomain();
 
         try {
+            const stages = await this.orm.searchRead(
+                "construction.project.stage",
+                [],
+                ["name", "sequence"],
+                { order: "sequence, id" }
+            );
+            const stageCountPromises = stages.map((stage) =>
+                this.orm.searchCount("construction.project", [...pd, ["stage_id", "=", stage.id]])
+            );
+            stageCountPromises.push(
+                this.orm.searchCount("construction.project", [...pd, ["stage_id", "=", false]])
+            );
+
             const r = await Promise.all([
                 // KPIs [0-5]
                 this.orm.searchCount("construction.project", pd),
@@ -171,7 +186,19 @@ class ConstructionDashboard extends Component {
                 this.orm.searchRead("construction.work.order", d,
                     ["name", "material_total", "equipment_total", "labour_total", "overhead_total"],
                     { limit: 10, order: "id asc" }),
+                ...stageCountPromises,
             ]);
+
+            const stageCounts = r.slice(27);
+            const projectStages = stages.map((stage, index) => ({
+                id: stage.id,
+                name: stage.name,
+                count: stageCounts[index] || 0,
+            }));
+            const noStageCount = stageCounts[stages.length] || 0;
+            if (noStageCount) {
+                projectStages.push({ id: false, name: "No Stage", count: noStageCount });
+            }
 
             Object.assign(this.state, {
                 projectCount: r[0], subProjectCount: r[1], mreqCount: r[2],
@@ -183,6 +210,7 @@ class ConstructionDashboard extends Component {
                 poCount: r[18], itCount: r[19],
                 itDraft: r[20], itInProgress: r[21], itDone: r[22], itForward: r[23],
                 projects: r[24], subProjects: r[25], workOrders: r[26],
+                projectStages,
             });
         } catch (e) {
             console.error("Dashboard fetch error:", e);
@@ -200,6 +228,7 @@ class ConstructionDashboard extends Component {
         this.destroyCharts();
         this._renderProjectTimeline();
         this._renderProjectStatus();
+        this._renderProjectStage();
         this._renderSpStatus();
         this._renderSpTimeline();
         this._renderMreqChart();
@@ -399,6 +428,103 @@ class ConstructionDashboard extends Component {
                     c.restore();
                 }
             }]
+        });
+    }
+
+    // ── Chart: Project Stage (Donut) ──
+
+    _renderProjectStage() {
+        const el = this.projectStageRef.el;
+        if (!el) return;
+
+        const stages = this.state.projectStages.length
+            ? this.state.projectStages
+            : [{ name: "No Data", count: 0 }];
+        const data = stages.map((stage) => stage.count);
+        const labels = stages.map((stage) => stage.name);
+        const ctx = el.getContext("2d");
+
+        const palette = [
+            ["#b2bec3", "#95a5a6"],
+            ["#74b9ff", "#0984e3"],
+            ["#55efc4", "#00b894"],
+            ["#fdcb6e", "#e17055"],
+            ["#a29bfe", "#6c5ce7"],
+            ["#fab1a0", "#e17055"],
+        ];
+        const baseColors = labels.map((_, i) => palette[i % palette.length][0]);
+        const gradients = labels.map((_, i) => {
+            const [start, end] = palette[i % palette.length];
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, start);
+            gradient.addColorStop(1, end);
+            return gradient;
+        });
+
+        this.charts.projectStage = new Chart(el, {
+            type: "doughnut",
+            data: {
+                labels,
+                datasets: [{
+                    data: data.some((value) => value > 0) ? data : [1],
+                    backgroundColor: data.some((value) => value > 0) ? gradients : ["#dfe6e9"],
+                    borderWidth: 0,
+                    hoverOffset: 6,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "68%",
+                animation: { animateRotate: true, duration: 1000, easing: "easeOutQuart" },
+                plugins: {
+                    legend: {
+                        ...this._legendStyle(),
+                        labels: {
+                            ...this._legendStyle().labels,
+                            generateLabels: (chart) => {
+                                const ds = chart.data.datasets[0];
+                                return chart.data.labels.map((label, i) => ({
+                                    text: `${label}  (${ds.data[i]})`,
+                                    fillStyle: baseColors[i],
+                                    strokeStyle: "transparent",
+                                    pointStyle: "circle",
+                                    hidden: false,
+                                }));
+                            },
+                        },
+                    },
+                    tooltip: {
+                        ...this._tooltipStyle(),
+                        callbacks: {
+                            label: (ctx) => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                                return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                            },
+                        },
+                    },
+                },
+            },
+            plugins: [{
+                id: "projectStageCenterText",
+                afterDraw(chart) {
+                    const { ctx: c, chartArea } = chart;
+                    const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    const cx = (chartArea.left + chartArea.right) / 2;
+                    const cy = (chartArea.top + chartArea.bottom) / 2;
+                    c.save();
+                    c.fillStyle = "#2c3e50";
+                    c.font = "bold 22px 'Inter', 'Segoe UI', sans-serif";
+                    c.textAlign = "center";
+                    c.textBaseline = "middle";
+                    c.fillText(total, cx, cy - 8);
+                    c.fillStyle = "#95a5a6";
+                    c.font = "500 11px 'Inter', 'Segoe UI', sans-serif";
+                    c.fillText("Total", cx, cy + 12);
+                    c.restore();
+                },
+            }],
         });
     }
 

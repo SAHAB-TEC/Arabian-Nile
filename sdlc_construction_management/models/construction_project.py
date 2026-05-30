@@ -185,14 +185,12 @@ class ConstructionProject(models.Model):
         }
 
     def action_view_tasks(self):
-        return {
-            'name': _('Tasks'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'construction.task',
-            'view_mode': 'list,form',
-            'domain': [('project_id', '=', self.id)],
-            'context': {'default_project_id': self.id},
-        }
+        self.ensure_one()
+        action = self.env['ir.actions.act_window'].with_context(active_id=self.id)._for_xml_id(
+            'sdlc_construction_management.act_construction_project_2_construction_task_all'
+        )
+        action['display_name'] = self.name
+        return action
 
     def action_view_phases(self):
         return {

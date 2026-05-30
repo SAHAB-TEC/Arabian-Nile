@@ -9,7 +9,20 @@
                 <field name="contract_id"
                        domain="[('state', 'in', ('approved', 'in_progress', 'done'))]"
                        options="{'no_create': True}"/>
+                <field name="contract_code" readonly="1" invisible="not contract_id"/>
                 <field name="contract_type" invisible="1"/>
+            </xpath>
+            <xpath expr="//group[hasclass('oe_invoice_lines_tab')]" position="after">
+                <group string="Currency Split" invisible="not contract_id">
+                    <group>
+                        <field name="dollar_percentage"/>
+                        <field name="usd_amount" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="libya_dinar_percentage"/>
+                        <field name="lyd_amount" readonly="1"/>
+                    </group>
+                </group>
             </xpath>
         </field>
     </record>

@@ -82,9 +82,9 @@
                     </div>
                 </div>
 
-                <!-- ═══ Project Timeline + Project Status ═══ -->
+                <!-- ═══ Project Timeline + Project Status + Project Stage ═══ -->
                 <div class="row g-3 mb-4">
-                    <div class="col-lg-8">
+                    <div class="col-lg-6">
                         <div class="chart-card">
                             <div class="chart-card-header">Project Timeline</div>
                             <div class="chart-container chart-timeline">
@@ -92,11 +92,19 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="chart-card">
                             <div class="chart-card-header">Project Status</div>
                             <div class="chart-container chart-donut">
                                 <canvas t-ref="projectStatusCanvas"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="chart-card">
+                            <div class="chart-card-header">Project Stage</div>
+                            <div class="chart-container chart-donut">
+                                <canvas t-ref="projectStageCanvas"/>
                             </div>
                         </div>
                     </div>
