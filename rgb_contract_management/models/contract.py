@@ -107,32 +107,23 @@ class RgbContract(models.Model):
         store=True,
         readonly=False,
     )
+    exchange_rate = fields.Float(
+        string='Exchange Rate',
+        digits=(16, 6),
+        default=1.0,
+        tracking=True,
+        help='Multiplier to LYD: Contract Value (LYD) = Contract Value × Exchange Rate '
+             '(e.g. rate 5 → 6,000 becomes 30,000 LYD).',
+    )
     contract_value_lyd = fields.Monetary(
         string='Contract Value (LYD)',
         currency_field='lyd_currency_id',
         tracking=True,
         compute='_compute_contract_value_lyd',
         store=True,
-        readonly=False,
-    )
-    @api.depends('contract_value_currency', 'exchange_rate')
-    def _compute_contract_value_lyd(self):
-        for contract in self:
-            contract.contract_value_lyd = contract.contract_value_currency * (contract.exchange_rate or 0.0)
-    
-    exchange_rate = fields.Float(
-        string='Exchange Rate',
-        digits=(16, 6),
-        help='Contract exchange rate (e.g. 1 USD = X LYD).',
-        compute='_compute_exchange_rate',
-        store=True,
         readonly=True,
     )
-    @api.depends('currency_id')
-    def _compute_exchange_rate(self):
-        for contract in self:
-            contract.exchange_rate = contract.currency_id.rate if contract.currency_id else 1.0
-            
+
     payment_terms_text = fields.Html(string='Payment Terms')
     price_list_id = fields.Many2one(
         'product.pricelist',
@@ -327,6 +318,30 @@ class RgbContract(models.Model):
         lyd = self.env['res.currency'].search([('name', '=', 'LYD')], limit=1)
         for contract in self:
             contract.lyd_currency_id = lyd.id if lyd else contract.currency_id.id
+
+    def _get_suggested_exchange_rate(self):
+        """Default rate from Odoo (contract currency → LYD at start date). User may override."""
+        self.ensure_one()
+        lyd_currency = self.env.ref('base.LYD', raise_if_not_found=False)
+        if not self.currency_id or not lyd_currency or self.currency_id == lyd_currency:
+            return 1.0
+        conv_date = self.date_start or fields.Date.context_today(self)
+        company = self.company_id or self.env.company
+        return self.env['res.currency']._get_conversion_rate(
+            self.currency_id,
+            lyd_currency,
+            company,
+            conv_date,
+        )
+
+    @api.onchange('currency_id', 'date_start', 'company_id')
+    def _onchange_currency_exchange_rate(self):
+        self.exchange_rate = self._get_suggested_exchange_rate()
+
+    @api.depends('contract_value_currency', 'exchange_rate')
+    def _compute_contract_value_lyd(self):
+        for contract in self:
+            contract.contract_value_lyd = contract.contract_value_currency * (contract.exchange_rate or 0.0)
 
     @api.depends(
         'contract_value_currency',
