@@ -34,12 +34,10 @@ class AccountMove(models.Model):
     usd_amount = fields.Float(
         string='USD Amount',
         compute='_compute_legacy_currency_split_fields',
-        store=True,
     )
     lyd_amount = fields.Float(
         string='LYD Amount',
         compute='_compute_legacy_currency_split_fields',
-        store=True,
     )
     currency_split_ids = fields.One2many(
         'rgb.account.move.currency.split',
@@ -55,9 +53,7 @@ class AccountMove(models.Model):
 
     @api.constrains('currency_split_ids')
     def _check_currency_split_total(self):
-        for move in self:
-            if not move.currency_split_ids:
-                continue
+        for move in self.filtered(lambda m: m.exists() and m.currency_split_ids):
             total = sum(move.currency_split_ids.mapped('percentage'))
             if abs(total - 100.0) > 0.0001:
                 raise ValidationError(_(
@@ -78,9 +74,13 @@ class AccountMove(models.Model):
             )
 
     @api.depends(
-        'currency_split_ids',
-        'currency_split_ids.amount',
+        'currency_split_ids.percentage',
         'currency_split_ids.currency_id',
+        'amount_total',
+        'currency_id',
+        'invoice_date',
+        'date',
+        'company_id',
     )
     def _compute_legacy_currency_split_fields(self):
         usd_currency = self.env.ref('base.USD', raise_if_not_found=False)
@@ -88,33 +88,82 @@ class AccountMove(models.Model):
         for move in self:
             move.usd_amount = 0.0
             move.lyd_amount = 0.0
+            if not move.currency_split_ids or not move.amount_total or not move.currency_id:
+                continue
+            conv_date = move.invoice_date or move.date or fields.Date.context_today(move)
             for line in move.currency_split_ids:
+                if not line.currency_id:
+                    continue
+                converted_total = move.currency_id._convert(
+                    move.amount_total,
+                    line.currency_id,
+                    move.company_id,
+                    conv_date,
+                )
+                amount = converted_total * (line.percentage or 0.0) / 100.0
                 if usd_currency and line.currency_id == usd_currency:
-                    move.usd_amount = line.amount
+                    move.usd_amount = amount
                 if lyd_currency and line.currency_id == lyd_currency:
-                    move.lyd_amount = line.amount
+                    move.lyd_amount = amount
 
-    def _apply_contract_currency_split(self):
+    def unlink(self):
+        split_ids = self.mapped('currency_split_ids').ids
+        if split_ids:
+            self.env['rgb.account.move.currency.split'].browse(split_ids).unlink()
+        return super().unlink()
+
+    def _apply_contract_currency_split(self, force=False):
         for move in self:
             if not move.contract_id or not move.contract_id.currency_split_ids:
-                move.currency_split_ids = [(5, 0, 0)]
+                if force:
+                    move.currency_split_ids = [(5, 0, 0)]
                 continue
-            move.currency_split_ids = [(5, 0, 0)] + move.contract_id._prepare_currency_split_commands()
+            if move.currency_split_ids and not force:
+                continue
+            move.currency_split_ids = [
+                (5, 0, 0),
+            ] + move.contract_id._prepare_currency_split_commands()
+
+    def _apply_contract_invoice_lines(self, force=False):
+        """Copy contract lines to the invoice only when empty or contract changed."""
+        for move in self:
+            if not move.contract_id or not move.contract_id.contract_line_ids:
+                if force:
+                    move.invoice_line_ids = [(5, 0, 0)]
+                continue
+            if move.invoice_line_ids and not force:
+                continue
+            move.invoice_line_ids = [
+                (5, 0, 0),
+            ] + move.contract_id._prepare_invoice_line_commands()
+
+    def _contract_id_changed(self):
+        self.ensure_one()
+        return bool(
+            self._origin.contract_id
+            and self._origin.contract_id != self.contract_id
+        )
 
     @api.model
     def default_get(self, fields_list):
         vals = super().default_get(fields_list)
         contract_id = vals.get('contract_id') or self.env.context.get('default_contract_id')
-        if contract_id:
-            contract = self.env['rgb.contract'].browse(contract_id)
-            if contract.currency_split_ids and 'currency_split_ids' in fields_list:
+        if not contract_id:
+            return vals
+        contract = self.env['rgb.contract'].browse(contract_id)
+        if contract.currency_split_ids and 'currency_split_ids' in fields_list:
+            if not vals.get('currency_split_ids'):
                 vals['currency_split_ids'] = contract._prepare_currency_split_commands()
+        if contract.contract_line_ids and 'invoice_line_ids' in fields_list:
+            if not vals.get('invoice_line_ids'):
+                vals['invoice_line_ids'] = contract._prepare_invoice_line_commands()
         return vals
 
     @api.onchange('contract_id')
     def _onchange_contract_id(self):
         if not self.contract_id:
             self.currency_split_ids = [(5, 0, 0)]
+            self.invoice_line_ids = [(5, 0, 0)]
             return
         contract = self.contract_id
         if contract.partner_id:
@@ -123,7 +172,13 @@ class AccountMove(models.Model):
             self.currency_id = contract.currency_id
         if contract.contract_type == 'sale_contract' and contract.price_list_id:
             self._onchange_partner_id()
-        self._apply_contract_currency_split()
+
+        contract_changed = self._contract_id_changed()
+        if contract_changed or not self.currency_split_ids:
+            self._apply_contract_currency_split(force=True)
+        if contract_changed or not self.invoice_line_ids:
+            self._apply_contract_invoice_lines(force=True)
+
         self._apply_contract_analytic_on_lines()
         self._apply_contract_invoice_template_fields()
 
@@ -140,13 +195,12 @@ class AccountMove(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        for vals in vals_list:
-            if vals.get('contract_id') and 'currency_split_ids' not in vals:
-                contract = self.env['rgb.contract'].browse(vals['contract_id'])
-                if contract.currency_split_ids:
-                    vals['currency_split_ids'] = contract._prepare_currency_split_commands()
+        # Contract lines and currency splits are loaded from default_get / web_save
+        # only. Injecting them here duplicates records on create + write.
         moves = super().create(vals_list)
-        moves.filtered('contract_id')._apply_contract_analytic_on_lines()
+        contract_moves = moves.filtered(lambda m: m.contract_id and m.invoice_line_ids)
+        contract_moves._apply_contract_analytic_on_lines()
+        contract_moves.mapped('contract_id')._clear_staging_invoice_lines()
         return moves
 
     def write(self, vals):

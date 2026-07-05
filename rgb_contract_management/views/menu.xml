@@ -21,4 +21,10 @@
               parent="menu_rgb_contract_config"
               action="action_rgb_contract_insurance_type"
               sequence="1"/>
+    <menuitem id="menu_rgb_contract_business_type"
+              name="Business Types"
+              parent="menu_rgb_contract_root"
+              action="action_rgb_contract_business_type"
+              sequence="95"
+              groups="rgb_contract_management.group_contract_business_type_editor"/>
 </odoo>

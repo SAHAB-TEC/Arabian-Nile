@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+import logging
+from datetime import date, timedelta
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class RgbContract(models.Model):
@@ -21,10 +24,11 @@ class RgbContract(models.Model):
         tracking=True,
     )
     contract_code = fields.Char(
-        string='Contract Number',
+        string='Client Reference Number',
         tracking=True,
         copy=False,
-        help='Manual unique contract code shown on linked invoice prints.',
+        index=True,
+        help='Unique client reference number shown on linked invoice prints.',
     )
     contract_name = fields.Char(
         string='Contract Name',
@@ -33,23 +37,19 @@ class RgbContract(models.Model):
     )
     contract_type = fields.Selection(
         selection=[
-            ('purchase_contract', 'Purchase / Contractor Contract'),
-            ('sale_contract', 'Sale / Customer Contract'),
+            ('purchase_contract', 'Expenses Contract'),
+            ('sale_contract', 'Income Contract'),
         ],
         string='Contract Type',
         required=True,
         default='purchase_contract',
         tracking=True,
     )
-    contract_business_type = fields.Selection(
-        selection=[
-            ('supply', 'Supply Only'),
-            ('supply_install', 'Supply & Installation'),
-            ('construction', 'Construction'),
-            ('rental', 'Equipment Rental / Service'),
-        ],
+    contract_business_type_id = fields.Many2one(
+        'rgb.contract.business.type',
         string='Business Type',
         tracking=True,
+        ondelete='restrict',
     )
     partner_id = fields.Many2one(
         'res.partner',
@@ -174,6 +174,26 @@ class RgbContract(models.Model):
         string='Split Total (%)',
         compute='_compute_currency_split_percentage_total',
         digits=(16, 4),
+    )
+    contract_line_ids = fields.One2many(
+        'rgb.contract.line',
+        'contract_id',
+        string='Invoice Lines',
+        copy=True,
+    )
+    contract_lines_total = fields.Monetary(
+        string='Lines Total',
+        currency_field='currency_id',
+        compute='_compute_contract_lines_total',
+        store=True,
+    )
+    tax_type_use = fields.Selection(
+        selection=[
+            ('sale', 'Sales'),
+            ('purchase', 'Purchases'),
+        ],
+        compute='_compute_tax_type_use',
+        store=True,
     )
 
     # ── Accounting & responsibility ──
@@ -310,22 +330,65 @@ class RgbContract(models.Model):
         ('name_unique', 'unique(name)', 'Contract number must be unique.'),
     ]
 
-    @api.constrains('contract_code')
+    @api.constrains('contract_code', 'company_id')
     def _check_contract_code_unique(self):
         for contract in self.filtered('contract_code'):
             code = contract.contract_code.strip()
             if not code:
                 continue
-            duplicate = self.search([
-                ('contract_code', '=', code),
+            code_key = code.lower()
+            duplicates = self.search([
                 ('id', '!=', contract.id),
-            ], limit=1)
-            if duplicate:
-                raise ValidationError(_(
-                    'Contract code "%(code)s" is already used on contract %(contract)s.',
-                    code=code,
-                    contract=duplicate.name,
-                ))
+                ('company_id', '=', contract.company_id.id),
+                ('contract_code', '!=', False),
+            ])
+            for duplicate in duplicates:
+                if (duplicate.contract_code or '').strip().lower() == code_key:
+                    raise ValidationError(_(
+                        'Client reference number "%(code)s" is already used on contract %(contract)s.',
+                        code=code,
+                        contract=duplicate.name,
+                    ))
+
+    @api.model
+    def _deduplicate_contract_codes_for_unique_index(self):
+        """Rename duplicate client references so the unique index can be created."""
+        self.env.cr.execute("""
+            WITH ranked AS (
+                SELECT id,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY company_id, lower(btrim(contract_code))
+                           ORDER BY id
+                       ) AS rn
+                FROM rgb_contract
+                WHERE contract_code IS NOT NULL AND btrim(contract_code) <> ''
+            )
+            UPDATE rgb_contract c
+            SET contract_code = btrim(c.contract_code) || '-' || c.id::text
+            FROM ranked r
+            WHERE c.id = r.id AND r.rn > 1
+            RETURNING c.id, c.contract_code
+        """)
+        renamed = self.env.cr.fetchall()
+        if renamed:
+            _logger.warning(
+                'Renamed %s duplicate rgb.contract client reference(s) before '
+                'creating unique index: %s',
+                len(renamed),
+                renamed,
+            )
+
+    @api.model
+    def init(self):
+        super().init()
+        cr = self.env.cr
+        cr.execute("DROP INDEX IF EXISTS rgb_contract_client_ref_unique_ci")
+        self._deduplicate_contract_codes_for_unique_index()
+        cr.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS rgb_contract_client_ref_unique_ci
+            ON rgb_contract (company_id, lower(btrim(contract_code)))
+            WHERE contract_code IS NOT NULL AND btrim(contract_code) <> ''
+        """)
 
     # ── Computes ──
 
@@ -385,6 +448,18 @@ class RgbContract(models.Model):
                 contract.currency_split_ids.mapped('percentage')
             )
 
+    @api.depends('contract_type')
+    def _compute_tax_type_use(self):
+        for contract in self:
+            contract.tax_type_use = (
+                'sale' if contract.contract_type == 'sale_contract' else 'purchase'
+            )
+
+    @api.depends('contract_line_ids.price_subtotal')
+    def _compute_contract_lines_total(self):
+        for contract in self:
+            contract.contract_lines_total = sum(contract.contract_line_ids.mapped('price_subtotal'))
+
     @api.depends(
         'currency_split_ids',
         'currency_split_ids.percentage',
@@ -414,6 +489,65 @@ class RgbContract(models.Model):
             })
             for line in self.currency_split_ids
         ]
+
+    def _prepare_invoice_line_commands(self):
+        """Return One2many commands to copy contract lines to an invoice."""
+        self.ensure_one()
+        return [
+            (0, 0, line._prepare_invoice_line_vals())
+            for line in self.contract_line_ids
+        ]
+
+    def _clear_staging_invoice_lines(self):
+        """Empty contract invoice lines after they were copied to an invoice."""
+        for contract in self:
+            if not contract.contract_line_ids:
+                continue
+            contract.contract_line_ids.unlink()
+            contract.message_post(
+                body=_(
+                    'Invoice lines were cleared after creating an invoice. '
+                    'Add new lines to prepare the next invoice.',
+                ),
+            )
+
+    def _get_expiry_notification_users(self):
+        self.ensure_one()
+        group = self.env.ref(
+            'rgb_contract_management.group_contract_expiry_notification',
+            raise_if_not_found=False,
+        )
+        users = group.users.filtered('active') if group else self.env['res.users']
+        if not users:
+            users = (self.responsible_user_id | self.approval_user_id).filtered('active')
+        return users
+
+    def _notify_expiry_group(self, template_xmlid, summary, chatter_body, date_deadline):
+        self.ensure_one()
+        users = self._get_expiry_notification_users()
+        if not users:
+            return
+        template = self.env.ref(template_xmlid, raise_if_not_found=False)
+        for user in users:
+            self.activity_schedule(
+                'mail.mail_activity_data_todo',
+                user_id=user.id,
+                summary=summary,
+                date_deadline=date_deadline,
+            )
+        emails = ','.join(filter(None, users.mapped('email')))
+        if template and emails:
+            template.send_mail(
+                self.id,
+                force_send=False,
+                email_values={'email_to': emails},
+            )
+        self.message_post(
+            body=chatter_body,
+            partner_ids=users.partner_id.ids,
+            message_type='notification',
+            subtype_xmlid='mail.mt_note',
+        )
 
     @api.depends('date_end', 'date_start', 'service_duration_days', 'state')
     def _compute_remaining_days(self):
@@ -668,16 +802,17 @@ class RgbContract(models.Model):
         """Default values passed when opening/creating invoices from this contract."""
         self.ensure_one()
         move_type = 'in_invoice' if self.contract_type == 'purchase_contract' else 'out_invoice'
-        return {
+        context = {
             'default_contract_id': self.id,
             'default_partner_id': self.partner_id.id,
             'default_move_type': move_type,
             'default_currency_id': self.currency_id.id,
             'default_invoice_date': fields.Date.context_today(self),
             'default_analytic_distribution': self._get_analytic_distribution(),
-            'default_dollar_percentage': self.dollar_percentage,
-            'default_libya_dinar_percentage': self.libya_dinar_percentage,
         }
+        if self.contract_line_ids:
+            context['default_invoice_line_ids'] = self._prepare_invoice_line_commands()
+        return context
 
     @api.onchange('contract_type')
     def _onchange_contract_type(self):
@@ -692,10 +827,30 @@ class RgbContract(models.Model):
             self.price_list_id = self.partner_id.property_product_pricelist
 
     @api.model
+    def _cron_performance_guarantee_group_reminder(self):
+        """Daily: notify group 10 days before performance guarantee expiry."""
+        today = fields.Date.context_today(self)
+        target = today + timedelta(days=10)
+        contracts = self.search([
+            ('performance_guarantee_expiry_date', '=', target),
+            ('state', 'in', ('approved', 'in_progress')),
+        ])
+        for contract in contracts:
+            contract._notify_expiry_group(
+                'rgb_contract_management.mail_template_performance_guarantee_group_expiry',
+                summary=_('Performance guarantee expires in 10 days: %s') % contract.name,
+                chatter_body=_(
+                    'Performance guarantee expiry reminder: guarantee for this contract '
+                    'expires on %(date)s (10 days remaining).',
+                    date=contract.performance_guarantee_expiry_date,
+                ),
+                date_deadline=contract.performance_guarantee_expiry_date,
+            )
+
+    @api.model
     def _cron_performance_guarantee_reminder(self):
         """Daily: remind 60 days before performance guarantee expiry."""
         today = fields.Date.context_today(self)
-        from datetime import timedelta
         target = today + timedelta(days=60)
         contracts = self.search([
             ('performance_guarantee_expiry_date', '=', target),
@@ -719,17 +874,21 @@ class RgbContract(models.Model):
 
     @api.model
     def _cron_contract_expiry_reminder(self):
+        """Daily: notify group 10 days before contract end date."""
         today = fields.Date.context_today(self)
-        from datetime import timedelta
-        target = today + timedelta(days=30)
+        target = today + timedelta(days=10)
         contracts = self.search([
             ('date_end', '=', target),
             ('state', 'in', ('approved', 'in_progress')),
         ])
-        template = self.env.ref(
-            'rgb_contract_management.mail_template_contract_expiry',
-            raise_if_not_found=False,
-        )
         for contract in contracts:
-            if template:
-                template.send_mail(contract.id, force_send=False)
+            contract._notify_expiry_group(
+                'rgb_contract_management.mail_template_contract_expiry',
+                summary=_('Contract expires in 10 days: %s') % contract.name,
+                chatter_body=_(
+                    'Contract expiry reminder: this contract ends on %(date)s '
+                    '(10 days remaining).',
+                    date=contract.date_end,
+                ),
+                date_deadline=contract.date_end,
+            )

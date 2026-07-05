@@ -11,7 +11,7 @@
                 <field name="contract_name" optional="show"/>
                 <field name="partner_id"/>
                 <field name="contract_type"/>
-                <field name="contract_business_type" optional="show"/>
+                <field name="contract_business_type_id" optional="show"/>
                 <field name="service_duration_days" optional="show"/>
                 <field name="remaining_days"/>
                 <field name="contract_value_currency"/>
@@ -119,7 +119,7 @@
                     </div>
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
-                        <label for="contract_code" string="Contract Number"/>
+                        <label for="contract_code" string="Client Reference Number"/>
                         <h2><field name="contract_code" placeholder="e.g. CNT-2026-001"/></h2>
                         <label for="contract_name" string="Contract Name"/>
                         <h2><field name="contract_name" placeholder="e.g. Contract Name"/></h2>
@@ -127,7 +127,8 @@
                     <group>
                         <group string="Contract Information">
                             <field name="contract_type" readonly="state != 'draft'"/>
-                            <field name="contract_business_type"/>
+                            <field name="contract_business_type_id"
+                                   options="{'no_create': True, 'no_create_edit': True}"/>
                             <field name="partner_id"
                                    domain="[('is_contractor', '=', True)]"
                                    invisible="contract_type != 'purchase_contract'"
@@ -198,6 +199,50 @@
                             </field>
                             <group>
                                 <field name="advance_payment_percent"/>
+                            </group>
+                        </page>
+                        <page string="Invoice Lines" name="invoice_lines">
+                            <field name="tax_type_use" invisible="1"/>
+                            <field name="contract_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="line_role" column_invisible="1"/>
+                                    <field name="show_advance_button" column_invisible="1"/>
+                                    <field name="show_retention_button" column_invisible="1"/>
+                                    <field name="show_performance_button" column_invisible="1"/>
+                                    <field name="advance_payment_line_id" column_invisible="1"/>
+                                    <field name="retention_guarantee_line_id" column_invisible="1"/>
+                                    <field name="performance_guarantee_line_id" column_invisible="1"/>
+                                    <field name="source_line_id" column_invisible="1"/>
+                                    <field name="product_id"/>
+                                    <field name="name"/>
+                                    <field name="quantity"/>
+                                    <field name="product_uom_id" optional="show"/>
+                                    <field name="price_unit"/>
+                                    <field name="discount" optional="hide"/>
+                                    <field name="tax_ids" widget="many2many_tags" optional="show"/>
+                                    <field name="account_id" optional="hide"/>
+                                    <field name="price_subtotal" readonly="1"/>
+                                    <button name="action_add_advance_payment"
+                                            type="object"
+                                            string="Add Advance Payment"
+                                            icon="fa-minus-circle"
+                                            invisible="not show_advance_button"/>
+                                    <button name="action_add_retention_guarantee"
+                                            type="object"
+                                            string="Add Retention Guarantee"
+                                            icon="fa-shield"
+                                            invisible="not show_retention_button"/>
+                                    <button name="action_add_performance_guarantee"
+                                            type="object"
+                                            string="Add Performance Guarantee"
+                                            icon="fa-certificate"
+                                            invisible="not show_performance_button"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                            <group>
+                                <field name="contract_lines_total" readonly="1"/>
                             </group>
                         </page>
                         <page string="Invoices" name="invoices">

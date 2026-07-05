@@ -24,13 +24,32 @@
         </field>
     </record>
 
-    <record id="mail_template_contract_expiry" model="mail.template">
-        <field name="name">Contract: Expiry Reminder</field>
+    <record id="mail_template_performance_guarantee_group_expiry" model="mail.template">
+        <field name="name">Contract: Performance Guarantee Group Reminder (10 days)</field>
         <field name="model_id" ref="model_rgb_contract"/>
-        <field name="subject">Contract ending soon: {{ object.name }}</field>
+        <field name="subject">Performance guarantee ending in 10 days: {{ object.name }}</field>
         <field name="email_to">{{ object.responsible_user_id.email or object.approval_user_id.email }}</field>
         <field name="body_html" type="html">
-            <p>Contract <strong><t t-out="object.name"/></strong> ends on <t t-out="object.date_end"/>.</p>
+            <p>The performance guarantee for contract
+               <strong><t t-out="object.name"/></strong>
+               (<t t-out="object.contract_code or ''"/>) expires on
+               <strong><t t-out="object.performance_guarantee_expiry_date"/></strong>.</p>
+            <p>Partner: <t t-out="object.partner_id.name"/></p>
+            <p>This is an automatic reminder sent 10 days before the performance guarantee expiry date.</p>
+        </field>
+    </record>
+
+    <record id="mail_template_contract_expiry" model="mail.template">
+        <field name="name">Contract: Expiry Reminder (10 days)</field>
+        <field name="model_id" ref="model_rgb_contract"/>
+        <field name="subject">Contract ending in 10 days: {{ object.name }}</field>
+        <field name="email_to">{{ object.responsible_user_id.email or object.approval_user_id.email }}</field>
+        <field name="body_html" type="html">
+            <p>Contract <strong><t t-out="object.name"/></strong>
+               (<t t-out="object.contract_code or ''"/>) ends on
+               <strong><t t-out="object.date_end"/></strong>.</p>
+            <p>Partner: <t t-out="object.partner_id.name"/></p>
+            <p>This is an automatic reminder sent 10 days before the contract end date.</p>
         </field>
     </record>
 </odoo>

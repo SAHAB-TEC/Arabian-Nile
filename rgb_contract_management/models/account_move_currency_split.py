@@ -29,7 +29,6 @@ class RgbAccountMoveCurrencySplit(models.Model):
         string='Amount',
         currency_field='currency_id',
         compute='_compute_amount',
-        store=True,
     )
 
     @api.depends(
