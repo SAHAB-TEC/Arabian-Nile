@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class AccountMove(models.Model):
@@ -25,49 +25,81 @@ class AccountMove(models.Model):
     )
     dollar_percentage = fields.Float(
         string='USD %',
-        help='Percentage of the invoice amount payable in USD.',
+        help='Deprecated: migrated to Payment Currency Split.',
     )
     libya_dinar_percentage = fields.Float(
         string='LYD %',
-        help='Percentage of the invoice amount payable in LYD.',
+        help='Deprecated: migrated to Payment Currency Split.',
     )
     usd_amount = fields.Float(
         string='USD Amount',
-        compute='_compute_usd_lyd_amount',
-        help='Invoice amount share in USD based on USD %.',
+        compute='_compute_legacy_currency_split_fields',
+        store=True,
     )
     lyd_amount = fields.Float(
         string='LYD Amount',
-        compute='_compute_usd_lyd_amount',
-        help='Invoice amount share in LYD based on LYD %.',
+        compute='_compute_legacy_currency_split_fields',
+        store=True,
+    )
+    currency_split_ids = fields.One2many(
+        'rgb.account.move.currency.split',
+        'move_id',
+        string='Payment Currency Split',
+        copy=True,
+    )
+    currency_split_percentage_total = fields.Float(
+        string='Split Total (%)',
+        compute='_compute_currency_split_percentage_total',
+        digits=(16, 4),
     )
 
-    @api.depends('amount_total', 'dollar_percentage', 'libya_dinar_percentage', 'currency_id', 'date', 'invoice_date')
-    def _compute_usd_lyd_amount(self):
+    @api.constrains('currency_split_ids')
+    def _check_currency_split_total(self):
+        for move in self:
+            if not move.currency_split_ids:
+                continue
+            total = sum(move.currency_split_ids.mapped('percentage'))
+            if abs(total - 100.0) > 0.0001:
+                raise ValidationError(_(
+                    'Payment currency split must total 100%% (current total: %(total).2f%%).',
+                    total=total,
+                ))
+            currency_ids = move.currency_split_ids.mapped('currency_id')
+            if len(currency_ids) != len(set(currency_ids.ids)):
+                raise ValidationError(_(
+                    'Each currency can appear only once in the payment split.',
+                ))
+
+    @api.depends('currency_split_ids.percentage')
+    def _compute_currency_split_percentage_total(self):
+        for move in self:
+            move.currency_split_percentage_total = sum(
+                move.currency_split_ids.mapped('percentage')
+            )
+
+    @api.depends(
+        'currency_split_ids',
+        'currency_split_ids.amount',
+        'currency_split_ids.currency_id',
+    )
+    def _compute_legacy_currency_split_fields(self):
         usd_currency = self.env.ref('base.USD', raise_if_not_found=False)
         lyd_currency = self.env.ref('base.LYD', raise_if_not_found=False)
         for move in self:
             move.usd_amount = 0.0
             move.lyd_amount = 0.0
-            if not move.amount_total or not move.currency_id:
+            for line in move.currency_split_ids:
+                if usd_currency and line.currency_id == usd_currency:
+                    move.usd_amount = line.amount
+                if lyd_currency and line.currency_id == lyd_currency:
+                    move.lyd_amount = line.amount
+
+    def _apply_contract_currency_split(self):
+        for move in self:
+            if not move.contract_id or not move.contract_id.currency_split_ids:
+                move.currency_split_ids = [(5, 0, 0)]
                 continue
-            conv_date = move.invoice_date or move.date or fields.Date.context_today(move)
-            if usd_currency:
-                total_usd = move.currency_id._convert(
-                    move.amount_total,
-                    usd_currency,
-                    move.company_id,
-                    conv_date,
-                )
-                move.usd_amount = total_usd * (move.dollar_percentage or 0.0) / 100.0
-            if lyd_currency:
-                total_lyd = move.currency_id._convert(
-                    move.amount_total,
-                    lyd_currency,
-                    move.company_id,
-                    conv_date,
-                )
-                move.lyd_amount = total_lyd * (move.libya_dinar_percentage or 0.0) / 100.0
+            move.currency_split_ids = [(5, 0, 0)] + move.contract_id._prepare_currency_split_commands()
 
     @api.model
     def default_get(self, fields_list):
@@ -75,15 +107,14 @@ class AccountMove(models.Model):
         contract_id = vals.get('contract_id') or self.env.context.get('default_contract_id')
         if contract_id:
             contract = self.env['rgb.contract'].browse(contract_id)
-            if 'dollar_percentage' in fields_list and 'dollar_percentage' not in vals:
-                vals['dollar_percentage'] = contract.dollar_percentage
-            if 'libya_dinar_percentage' in fields_list and 'libya_dinar_percentage' not in vals:
-                vals['libya_dinar_percentage'] = contract.libya_dinar_percentage
+            if contract.currency_split_ids and 'currency_split_ids' in fields_list:
+                vals['currency_split_ids'] = contract._prepare_currency_split_commands()
         return vals
 
     @api.onchange('contract_id')
     def _onchange_contract_id(self):
         if not self.contract_id:
+            self.currency_split_ids = [(5, 0, 0)]
             return
         contract = self.contract_id
         if contract.partner_id:
@@ -92,8 +123,7 @@ class AccountMove(models.Model):
             self.currency_id = contract.currency_id
         if contract.contract_type == 'sale_contract' and contract.price_list_id:
             self._onchange_partner_id()
-        self.dollar_percentage = contract.dollar_percentage
-        self.libya_dinar_percentage = contract.libya_dinar_percentage
+        self._apply_contract_currency_split()
         self._apply_contract_analytic_on_lines()
         self._apply_contract_invoice_template_fields()
 
@@ -111,10 +141,10 @@ class AccountMove(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('contract_id') and 'dollar_percentage' not in vals:
+            if vals.get('contract_id') and 'currency_split_ids' not in vals:
                 contract = self.env['rgb.contract'].browse(vals['contract_id'])
-                vals.setdefault('dollar_percentage', contract.dollar_percentage)
-                vals.setdefault('libya_dinar_percentage', contract.libya_dinar_percentage)
+                if contract.currency_split_ids:
+                    vals['currency_split_ids'] = contract._prepare_currency_split_commands()
         moves = super().create(vals_list)
         moves.filtered('contract_id')._apply_contract_analytic_on_lines()
         return moves

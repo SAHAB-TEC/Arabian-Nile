@@ -146,23 +146,34 @@ class RgbContract(models.Model):
     )
     dollar_percentage = fields.Float(
         string='USD %',
-        tracking=True,
-        help='Percentage of the invoice amount payable in USD.',
+        help='Deprecated: migrated to Payment Currency Split. Kept for upgrade migration.',
     )
     libya_dinar_percentage = fields.Float(
         string='LYD %',
-        tracking=True,
-        help='Percentage of the invoice amount payable in LYD.',
+        help='Deprecated: migrated to Payment Currency Split. Kept for upgrade migration.',
     )
     usd_amount = fields.Float(
         string='USD Amount',
-        compute='_compute_usd_lyd_amount',
-        help='Contract value share in USD based on USD %.',
+        compute='_compute_legacy_currency_split_fields',
+        store=True,
+        help='Contract value share in USD from payment currency split.',
     )
     lyd_amount = fields.Float(
         string='LYD Amount',
-        compute='_compute_usd_lyd_amount',
-        help='Contract value share in LYD based on LYD %.',
+        compute='_compute_legacy_currency_split_fields',
+        store=True,
+        help='Contract value share in LYD from payment currency split.',
+    )
+    currency_split_ids = fields.One2many(
+        'rgb.contract.currency.split',
+        'contract_id',
+        string='Payment Currency Split',
+        copy=True,
+    )
+    currency_split_percentage_total = fields.Float(
+        string='Split Total (%)',
+        compute='_compute_currency_split_percentage_total',
+        digits=(16, 4),
     )
 
     # ── Accounting & responsibility ──
@@ -348,40 +359,61 @@ class RgbContract(models.Model):
         for contract in self:
             contract.contract_value_lyd = contract.contract_value_currency * (contract.exchange_rate or 0.0)
 
+    @api.constrains('currency_split_ids')
+    def _check_currency_split_total(self):
+        usd = self.env.ref('base.USD', raise_if_not_found=False)
+        lyd = self.env.ref('base.LYD', raise_if_not_found=False)
+        for contract in self:
+            if not contract.currency_split_ids:
+                continue
+            total = sum(contract.currency_split_ids.mapped('percentage'))
+            if abs(total - 100.0) > 0.0001:
+                raise ValidationError(_(
+                    'Payment currency split must total 100%% (current total: %(total).2f%%).',
+                    total=total,
+                ))
+            currency_ids = contract.currency_split_ids.mapped('currency_id')
+            if len(currency_ids) != len(set(currency_ids.ids)):
+                raise ValidationError(_(
+                    'Each currency can appear only once in the payment split.',
+                ))
+
+    @api.depends('currency_split_ids.percentage')
+    def _compute_currency_split_percentage_total(self):
+        for contract in self:
+            contract.currency_split_percentage_total = sum(
+                contract.currency_split_ids.mapped('percentage')
+            )
+
     @api.depends(
-        'contract_value_currency',
-        'currency_id',
-        'dollar_percentage',
-        'libya_dinar_percentage',
-        'date_start',
-        'company_id',
+        'currency_split_ids',
+        'currency_split_ids.percentage',
+        'currency_split_ids.amount',
+        'currency_split_ids.currency_id',
     )
-    def _compute_usd_lyd_amount(self):
+    def _compute_legacy_currency_split_fields(self):
         usd_currency = self.env.ref('base.USD', raise_if_not_found=False)
         lyd_currency = self.env.ref('base.LYD', raise_if_not_found=False)
         for contract in self:
             contract.usd_amount = 0.0
             contract.lyd_amount = 0.0
-            if not contract.contract_value_currency or not contract.currency_id:
-                continue
-            conv_date = contract.date_start or fields.Date.context_today(contract)
-            company = contract.company_id or self.env.company
-            if usd_currency:
-                total_usd = contract.currency_id._convert(
-                    contract.contract_value_currency,
-                    usd_currency,
-                    company,
-                    conv_date,
-                )
-                contract.usd_amount = total_usd * (contract.dollar_percentage or 0.0) / 100.0
-            if lyd_currency:
-                total_lyd = contract.currency_id._convert(
-                    contract.contract_value_currency,
-                    lyd_currency,
-                    company,
-                    conv_date,
-                )
-                contract.lyd_amount = total_lyd * (contract.libya_dinar_percentage or 0.0) / 100.0
+            for line in contract.currency_split_ids:
+                if usd_currency and line.currency_id == usd_currency:
+                    contract.usd_amount = line.amount
+                if lyd_currency and line.currency_id == lyd_currency:
+                    contract.lyd_amount = line.amount
+
+    def _prepare_currency_split_commands(self):
+        """Return One2many commands to copy payment split lines to an invoice."""
+        self.ensure_one()
+        return [
+            (0, 0, {
+                'sequence': line.sequence,
+                'currency_id': line.currency_id.id,
+                'percentage': line.percentage,
+            })
+            for line in self.currency_split_ids
+        ]
 
     @api.depends('date_end', 'date_start', 'service_duration_days', 'state')
     def _compute_remaining_days(self):

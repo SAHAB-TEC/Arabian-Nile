@@ -1206,6 +1206,65 @@ msgid "Currency Split"
 msgstr "تقسيم العملات"
 
 #. module: rgb_contract_management
+#: model:ir.model,name:rgb_contract_management.model_rgb_contract_currency_split
+msgid "Contract Payment Currency Split"
+msgstr "توزيع الدفع بالعملات للعقد"
+
+#. module: rgb_contract_management
+#: model:ir.model,name:rgb_contract_management.model_rgb_account_move_currency_split
+msgid "Invoice Payment Currency Split"
+msgstr "توزيع الدفع بالعملات للفاتورة"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__currency_split_ids
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__currency_split_ids
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_move_form_contract
+msgid "Payment Currency Split"
+msgstr "توزيع الدفع بالعملات"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__currency_split_percentage_total
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__currency_split_percentage_total
+msgid "Split Total (%)"
+msgstr "مجموع النسب (%)"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_currency_split__percentage
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_account_move_currency_split__percentage
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_payment_condition__percentage
+msgid "Percentage (%)"
+msgstr "النسبة (%)"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_currency_split__amount
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_account_move_currency_split__amount
+msgid "Amount"
+msgstr "المبلغ"
+
+#. module: rgb_contract_management
+#: code:addons/rgb_contract_management/models/contract.py:0
+#: code:addons/rgb_contract_management/models/account_move.py:0
+msgid "Payment currency split must total 100%% (current total: %(total).2f%%)."
+msgstr "يجب أن يكون مجموع توزيع الدفع 100%% (المجموع الحالي: %(total).2f%%)."
+
+#. module: rgb_contract_management
+#: code:addons/rgb_contract_management/models/contract.py:0
+#: code:addons/rgb_contract_management/models/account_move.py:0
+msgid "Each currency can appear only once in the payment split."
+msgstr "لا يمكن تكرار نفس العملة أكثر من مرة في توزيع الدفع."
+
+#. module: rgb_contract_management
+#: code:addons/rgb_contract_management/models/contract_currency_split.py:0
+msgid "Currency %(currency)s is already used in the payment split for this contract."
+msgstr "العملة %(currency)s مستخدمة مسبقاً في توزيع الدفع لهذا العقد."
+
+#. module: rgb_contract_management
+#: code:addons/rgb_contract_management/models/account_move_currency_split.py:0
+msgid "Currency %(currency)s is already used in the payment split for this invoice."
+msgstr "العملة %(currency)s مستخدمة مسبقاً في توزيع الدفع لهذه الفاتورة."
+
+#. module: rgb_contract_management
 #: model_terms:ir.ui.view,arch_db:rgb_contract_management.address_layout_rgb_invoice
 msgid "Customer Details:"
 msgstr "بيانات العميل :"

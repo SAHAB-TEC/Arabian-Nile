@@ -18,23 +18,20 @@
             </div>
         </xpath>
         <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
-            <tr t-if="o.contract_id and (o.dollar_percentage or o.libya_dinar_percentage)"
+            <tr t-if="o.contract_id and o.currency_split_ids"
                 class="is-subtotal text-end">
                 <td colspan="99">
-                    <span t-if="o.dollar_percentage" style="margin-right: 16px;">
-                        <strong>USD %</strong>
-                        <span t-field="o.dollar_percentage"/>
-                        —
-                        <strong>USD Amount</strong>
-                        <span t-field="o.usd_amount"/>
-                    </span>
-                    <span t-if="o.libya_dinar_percentage">
-                        <strong>LYD %</strong>
-                        <span t-field="o.libya_dinar_percentage"/>
-                        —
-                        <strong>LYD Amount</strong>
-                        <span t-field="o.lyd_amount" currency="LYD"/>
-                    </span>
+                    <t t-foreach="o.currency_split_ids" t-as="split">
+                        <span style="margin-right: 16px;">
+                            <strong t-field="split.currency_id"/>
+                            <strong> %</strong>
+                            <span t-field="split.percentage"/>
+                            —
+                            <strong>Amount</strong>
+                            <span t-field="split.amount"
+                                  t-options="{'widget': 'monetary', 'display_currency': split.currency_id}"/>
+                        </span>
+                    </t>
                 </td>
             </tr>
         </xpath>
