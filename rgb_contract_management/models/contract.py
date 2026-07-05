@@ -21,10 +21,15 @@ class RgbContract(models.Model):
         tracking=True,
     )
     contract_code = fields.Char(
-        string='Contract Code',
+        string='Contract Number',
         tracking=True,
         copy=False,
         help='Manual unique contract code shown on linked invoice prints.',
+    )
+    contract_name = fields.Char(
+        string='Contract Name',
+        tracking=True,
+        copy=False,
     )
     contract_type = fields.Selection(
         selection=[

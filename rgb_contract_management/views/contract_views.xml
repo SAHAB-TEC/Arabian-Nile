@@ -8,6 +8,7 @@
             <list string="Contracts" decoration-muted="state in ('cancelled', 'expired')">
                 <field name="name"/>
                 <field name="contract_code" optional="show"/>
+                <field name="contract_name" optional="show"/>
                 <field name="partner_id"/>
                 <field name="contract_type"/>
                 <field name="contract_business_type" optional="show"/>
@@ -39,6 +40,7 @@
                 <templates>
                     <t t-name="card">
                         <field name="name" class="fw-bold"/>
+                        <field name="contract_name" class="fw-bold"/>
                         <field name="partner_id"/>
                         <field name="contract_value_currency"/>
                         <field name="remaining_days"/> days left
@@ -57,6 +59,7 @@
             <search>
                 <field name="name"/>
                 <field name="contract_code"/>
+                <field name="contract_name"/>
                 <field name="partner_id"/>
                 <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                 <filter name="under_approval" string="Under Approval" domain="[('state', '=', 'under_approval')]"/>
@@ -116,8 +119,10 @@
                     </div>
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
-                        <label for="contract_code" string="Contract Code"/>
+                        <label for="contract_code" string="Contract Number"/>
                         <h2><field name="contract_code" placeholder="e.g. CNT-2026-001"/></h2>
+                        <label for="contract_name" string="Contract Name"/>
+                        <h2><field name="contract_name" placeholder="e.g. Contract Name"/></h2>
                     </div>
                     <group>
                         <group string="Contract Information">
