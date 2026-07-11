@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_workover_rig_user,workover.rig.user,model_workover_rig,group_workover_user,1,0,0,0
+access_workover_rig_manager,workover.rig.manager,model_workover_rig,group_workover_manager,1,1,1,1
+access_workover_well_user,workover.well.user,model_workover_well,group_workover_user,1,0,0,0
+access_workover_well_manager,workover.well.manager,model_workover_well,group_workover_manager,1,1,1,1
+access_workover_operator_user,workover.operator.user,model_workover_operator,group_workover_user,1,0,0,0
+access_workover_operator_manager,workover.operator.manager,model_workover_operator,group_workover_manager,1,1,1,1
+access_workover_time_category_user,workover.time.category.user,model_workover_time_category,group_workover_user,1,0,0,0
+access_workover_time_category_manager,workover.time.category.manager,model_workover_time_category,group_workover_manager,1,1,1,1
+access_workover_daily_report_user,workover.daily.report.user,model_workover_daily_report,group_workover_user,1,1,1,0
+access_workover_daily_report_manager,workover.daily.report.manager,model_workover_daily_report,group_workover_manager,1,1,1,1
+access_workover_present_operation_user,workover.present.operation.line.user,model_workover_present_operation_line,group_workover_user,1,1,1,1
+access_workover_time_breakdown_user,workover.time.breakdown.line.user,model_workover_time_breakdown_line,group_workover_user,1,1,1,1
+access_workover_daily_export_wizard,workover.daily.export.wizard,model_workover_daily_report_export_wizard,group_workover_user,1,1,1,1
+access_workover_summary_export_wizard,workover.summary.export.wizard,model_workover_summary_report_export_wizard,group_workover_user,1,1,1,1

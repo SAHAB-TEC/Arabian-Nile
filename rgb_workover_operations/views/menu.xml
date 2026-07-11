@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_workover_root"
+              name="Operations"
+              sequence="46"/>
+
+    <menuitem id="menu_workover_daily_report"
+              name="Daily Reports"
+              parent="menu_workover_root"
+              action="action_workover_daily_report"
+              sequence="1"/>
+
+    <menuitem id="menu_workover_reports"
+              name="Reports"
+              parent="menu_workover_root"
+              sequence="20"/>
+
+    <menuitem id="menu_workover_export_daily"
+              name="Export Daily Excel"
+              parent="menu_workover_reports"
+              action="action_workover_daily_export_wizard"
+              sequence="1"/>
+
+    <menuitem id="menu_workover_export_summary"
+              name="Export Summary Excel"
+              parent="menu_workover_reports"
+              action="action_workover_summary_export_wizard"
+              sequence="2"/>
+
+    <menuitem id="menu_workover_config"
+              name="Configuration"
+              parent="menu_workover_root"
+              sequence="90"
+              groups="rgb_workover_operations.group_workover_manager"/>
+
+    <menuitem id="menu_workover_rig"
+              name="Rigs"
+              parent="menu_workover_config"
+              action="action_workover_rig"
+              sequence="1"/>
+
+    <menuitem id="menu_workover_well"
+              name="Wells"
+              parent="menu_workover_config"
+              action="action_workover_well"
+              sequence="2"/>
+
+    <menuitem id="menu_workover_operator"
+              name="Operators"
+              parent="menu_workover_config"
+              action="action_workover_operator"
+              sequence="3"/>
+
+    <menuitem id="menu_workover_time_category"
+              name="Time Categories"
+              parent="menu_workover_config"
+              action="action_workover_time_category"
+              sequence="4"/>
+</odoo>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="time_category_operation" model="workover.time.category">
+        <field name="name">OPERATION</field>
+        <field name="code">operation</field>
+        <field name="sequence">10</field>
+        <field name="summary_column">full_ops</field>
+    </record>
+    <record id="time_category_rig_move" model="workover.time.category">
+        <field name="name">RIG MOVE &amp; RIG /UP</field>
+        <field name="code">rig_move</field>
+        <field name="sequence">20</field>
+        <field name="summary_column">rd_ru_rmtime</field>
+    </record>
+    <record id="time_category_standby_wcrew" model="workover.time.category">
+        <field name="name">STANDBY W/CREW</field>
+        <field name="code">standby_wcrew</field>
+        <field name="sequence">30</field>
+        <field name="summary_column">standby_wcrew</field>
+    </record>
+    <record id="time_category_down_time" model="workover.time.category">
+        <field name="name">DOWN TIME</field>
+        <field name="code">down_time</field>
+        <field name="sequence">40</field>
+        <field name="summary_column">standby_wocrew</field>
+    </record>
+    <record id="time_category_shut_down" model="workover.time.category">
+        <field name="name">SHUT DOWN</field>
+        <field name="code">shut_down</field>
+        <field name="sequence">50</field>
+        <field name="summary_column">standby_wocrew</field>
+    </record>
+    <record id="time_category_repair" model="workover.time.category">
+        <field name="name">REPAIR</field>
+        <field name="code">repair</field>
+        <field name="sequence">60</field>
+        <field name="summary_column">full_repair</field>
+    </record>
+    <record id="time_category_standby_wocrew" model="workover.time.category">
+        <field name="name">STANDBY W-O/CREW</field>
+        <field name="code">standby_wocrew</field>
+        <field name="sequence">70</field>
+        <field name="summary_column">standby_wocrew</field>
+    </record>
+    <record id="time_category_zero_rate" model="workover.time.category">
+        <field name="name">Zero Rate</field>
+        <field name="code">zero_rate</field>
+        <field name="sequence">80</field>
+        <field name="summary_column">zero_rate</field>
+    </record>
+    <record id="time_category_force_majeure" model="workover.time.category">
+        <field name="name">Force Majeure</field>
+        <field name="code">force_majeure</field>
+        <field name="sequence">90</field>
+        <field name="summary_column">force_majeure</field>
+    </record>
+</odoo>
