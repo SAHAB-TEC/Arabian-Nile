@@ -24,11 +24,11 @@ class RgbContract(models.Model):
         tracking=True,
     )
     contract_code = fields.Char(
-        string='Client Reference Number',
+        string='Contract No',
         tracking=True,
         copy=False,
         index=True,
-        help='Unique client reference number shown on linked invoice prints.',
+        help='Unique contract number shown on linked invoice prints.',
     )
     contract_name = fields.Char(
         string='Contract Name',
@@ -345,7 +345,7 @@ class RgbContract(models.Model):
             for duplicate in duplicates:
                 if (duplicate.contract_code or '').strip().lower() == code_key:
                     raise ValidationError(_(
-                        'Client reference number "%(code)s" is already used on contract %(contract)s.',
+                        'Contract No "%(code)s" is already used on contract %(contract)s.',
                         code=code,
                         contract=duplicate.name,
                     ))

@@ -5,15 +5,28 @@
         <field name="model">ait.invoice.summary.report.wizard</field>
         <field name="arch" type="xml">
             <form string="Invoice Summary Report">
-                <group>
+                <field name="from_selection" invisible="1"/>
+                <group invisible="from_selection">
                     <group>
-                        <field name="date_from"/>
-                        <field name="date_to"/>
+                        <field name="date_from" required="not from_selection"/>
+                        <field name="date_to" required="not from_selection"/>
                     </group>
                     <group>
                         <field name="partner_id"/>
                         <field name="ait_rig"/>
                     </group>
+                </group>
+                <group invisible="not from_selection">
+                    <field name="invoice_ids" nolabel="1" colspan="2">
+                        <list>
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="invoice_date"/>
+                            <field name="ait_rig"/>
+                            <field name="amount_total"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
                 </group>
                 <footer>
                     <button name="action_export_xlsx" type="object" string="Export Excel" class="btn-primary" data-hotkey="q"/>
@@ -28,6 +41,15 @@
         <field name="res_model">ait.invoice.summary.report.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
+    </record>
+
+    <record id="action_ait_invoice_summary_report_from_invoices" model="ir.actions.act_window">
+        <field name="name">Invoice Summary Report</field>
+        <field name="res_model">ait.invoice.summary.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
     </record>
 
     <menuitem id="menu_ait_invoice_summary_report"

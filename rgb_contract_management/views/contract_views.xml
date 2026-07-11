@@ -119,7 +119,7 @@
                     </div>
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
-                        <label for="contract_code" string="Client Reference Number"/>
+                        <label for="contract_code" string="Contract No"/>
                         <h2><field name="contract_code" placeholder="e.g. CNT-2026-001"/></h2>
                         <label for="contract_name" string="Contract Name"/>
                         <h2><field name="contract_name" placeholder="e.g. Contract Name"/></h2>

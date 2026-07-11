@@ -18,7 +18,7 @@ class AccountMove(models.Model):
         readonly=True,
     )
     contract_code = fields.Char(
-        string='Contract Code',
+        string='Contract No',
         related='contract_id.contract_code',
         store=True,
         readonly=True,

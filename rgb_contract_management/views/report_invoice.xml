@@ -11,12 +11,7 @@
     </template>
 
     <template id="report_invoice_document_contract" inherit_id="account.report_invoice_document">
-        <xpath expr="//div[@id='informations']" position="inside">
-            <div t-if="o.contract_code" class="col" name="contract_code">
-                <strong>Contract No</strong>
-                <div t-field="o.contract_code"/>
-            </div>
-        </xpath>
+
         <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
             <tr t-if="o.contract_id and o.currency_split_ids"
                 class="is-subtotal text-end">
@@ -34,6 +29,46 @@
                     </t>
                 </td>
             </tr>
+        </xpath>
+
+        <!-- Vendor invoice: deliverer / receiver signatures at report footer -->
+        <xpath expr="//div[@id='payment_term']" position="after">
+            <div t-if="o.is_purchase_document(include_receipts=True)"
+                 class="mt-5 avoid-page-break-inside"
+                 name="vendor_invoice_signatures">
+                <div class="row mt-4">
+                    <div class="col-6 pe-4">
+                        <div class="text-center fw-bold mb-3">المسلم / Deliverer</div>
+                        <div class="mb-3">
+                            <span>الاسم / Name:</span>
+                            <span style="display:inline-block; min-width:70%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                        </div>
+                        <div class="mb-3">
+                            <span>التوقيع / Signature:</span>
+                            <span style="display:inline-block; min-width:60%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                        </div>
+                        <div>
+                            <span>التاريخ / Date:</span>
+                            <span style="display:inline-block; min-width:65%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                        </div>
+                    </div>
+                    <div class="col-6 ps-4">
+                        <div class="text-center fw-bold mb-3">المستلم / Receiver</div>
+                        <div class="mb-3">
+                            <span>الاسم / Name:</span>
+                            <span style="display:inline-block; min-width:70%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                        </div>
+                        <div class="mb-3">
+                            <span>التوقيع / Signature:</span>
+                            <span style="display:inline-block; min-width:60%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                        </div>
+                        <div>
+                            <span>التاريخ / Date:</span>
+                            <span style="display:inline-block; min-width:65%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </xpath>
     </template>
 </odoo>

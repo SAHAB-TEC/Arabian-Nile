@@ -495,13 +495,13 @@ msgstr "توريد وتركيب"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__contract_type__purchase_contract
-msgid "Purchase / Contractor Contract"
-msgstr "عقد مشتريات / مقاول"
+msgid "Expenses Contract"
+msgstr "عقد مصروفات"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__contract_type__sale_contract
-msgid "Sale / Customer Contract"
-msgstr "عقد مبيعات / عميل"
+msgid "Income Contract"
+msgstr "عقد إيرادات"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__state__approved
@@ -1162,19 +1162,20 @@ msgstr "عند التحديد، يظهر هذا الشريك في قوائم ا�
 #. module: rgb_contract_management
 #: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__contract_code
 #: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__contract_code
-msgid "Contract Code"
-msgstr "الرقم المرجعي للعميل"
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Contract No"
+msgstr "رقم العقد"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields,help:rgb_contract_management.field_rgb_contract__contract_code
-msgid "Manual unique contract code shown on linked invoice prints."
-msgstr "رقم مرجعي فريد للعميل يظهر في طباعة الفواتير المرتبطة."
+msgid "Unique contract number shown on linked invoice prints."
+msgstr "رقم عقد فريد يظهر في طباعة الفواتير المرتبطة."
 
 #. module: rgb_contract_management
 #. odoo-python
 #: code:addons/rgb_contract_management/models/contract.py:0
-msgid "Contract code \"%(code)s\" is already used on contract %(contract)s."
-msgstr "الرقم المرجعي للعميل \"%(code)s\" مستخدم مسبقاً في العقد %(contract)s."
+msgid "Contract No \"%(code)s\" is already used on contract %(contract)s."
+msgstr "رقم العقد \"%(code)s\" مستخدم مسبقاً في العقد %(contract)s."
 
 #. module: rgb_contract_management
 #: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__dollar_percentage
@@ -1350,23 +1351,6 @@ msgid "Add Retention Guarantee"
 msgstr "إضافة ضمان الاحتفاظ"
 
 #. module: rgb_contract_management
-#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__contract_code
-#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__contract_code
-msgid "Client Reference Number"
-msgstr "الرقم المرجعي للعميل"
-
-#. module: rgb_contract_management
-#: model:ir.model.fields,help:rgb_contract_management.field_rgb_contract__contract_code
-msgid "Unique client reference number shown on linked invoice prints."
-msgstr "رقم مرجعي فريد للعميل يظهر في طباعة الفواتير المرتبطة."
-
-#. module: rgb_contract_management
-#. odoo-python
-#: code:addons/rgb_contract_management/models/contract.py:0
-msgid "Client reference number \"%(code)s\" is already used on contract %(contract)s."
-msgstr "الرقم المرجعي للعميل \"%(code)s\" مستخدم مسبقاً في العقد %(contract)s."
-
-#. module: rgb_contract_management
 #: model:ir.model.fields,field_description:rgb_contract_management.field_product_template__is_contract_performance_guarantee
 msgid "Contract Performance Guarantee"
 msgstr "ضمان حسن الأداء للعقد"
@@ -1420,11 +1404,6 @@ msgstr "يمكن تحديد منتج واحد فقط كضمان حسن الأد�
 #: code:addons/rgb_contract_management/models/product_template.py:0
 msgid "Performance guarantee percentage must be greater than zero on \"%(product)s\"."
 msgstr "يجب أن تكون نسبة ضمان حسن الأداء أكبر من صفر على \"%(product)s\"."
-
-#. module: rgb_contract_management
-#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
-msgid "Client Reference Number"
-msgstr "الرقم المرجعي للعميل"
 
 #. module: rgb_contract_management
 #: model:res.groups,name:rgb_contract_management.group_contract_expiry_notification

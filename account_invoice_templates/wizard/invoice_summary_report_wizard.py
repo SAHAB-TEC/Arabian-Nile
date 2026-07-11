@@ -12,10 +12,16 @@ class AitInvoiceSummaryReportWizard(models.TransientModel):
     _name = 'ait.invoice.summary.report.wizard'
     _description = 'Invoice Summary Excel Report'
 
-    date_from = fields.Date(string='From', required=True)
-    date_to = fields.Date(string='To', required=True)
+    date_from = fields.Date(string='From')
+    date_to = fields.Date(string='To')
     partner_id = fields.Many2one('res.partner', string='Customer')
     ait_rig = fields.Char(string='Rig')
+    invoice_ids = fields.Many2many(
+        'account.move',
+        string='Selected Invoices',
+        domain="[('move_type', '=', 'out_invoice')]",
+    )
+    from_selection = fields.Boolean(default=False)
     xlsx_file = fields.Binary(string='Report File', readonly=True)
     xlsx_filename = fields.Char(string='Filename', readonly=True)
 
@@ -23,12 +29,44 @@ class AitInvoiceSummaryReportWizard(models.TransientModel):
     def default_get(self, fields_list):
         vals = super().default_get(fields_list)
         today = fields.Date.context_today(self)
-        vals.setdefault('date_from', today.replace(day=1))
-        vals.setdefault('date_to', today)
+        active_model = self.env.context.get('active_model')
+        active_ids = self.env.context.get('active_ids') or []
+        if active_model == 'account.move' and active_ids:
+            moves = self.env['account.move'].browse(active_ids).filtered(
+                lambda m: m.move_type == 'out_invoice'
+            )
+            vals['invoice_ids'] = [(6, 0, moves.ids)]
+            vals['from_selection'] = True
+            dates = moves.filtered('invoice_date').mapped('invoice_date')
+            if dates:
+                vals['date_from'] = min(dates)
+                vals['date_to'] = max(dates)
+            else:
+                vals.setdefault('date_from', today.replace(day=1))
+                vals.setdefault('date_to', today)
+        else:
+            vals.setdefault('date_from', today.replace(day=1))
+            vals.setdefault('date_to', today)
+            vals.setdefault('from_selection', False)
         return vals
 
     def _get_invoices(self):
         self.ensure_one()
+        if self.invoice_ids:
+            moves = self.invoice_ids.filtered(
+                lambda m: m.move_type == 'out_invoice' and m.state == 'posted'
+            )
+            if not moves:
+                raise UserError(_(
+                    'No posted customer invoices found among the selected records.'
+                ))
+            return moves.sorted(key=lambda m: (m.invoice_date or fields.Date.today(), m.name or '', m.id))
+
+        if not self.date_from or not self.date_to:
+            raise UserError(_('Please set the date range.'))
+        if self.date_from > self.date_to:
+            raise UserError(_('The start date must be before or equal to the end date.'))
+
         domain = [
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
@@ -242,15 +280,14 @@ class AitInvoiceSummaryReportWizard(models.TransientModel):
 
     def action_export_xlsx(self):
         self.ensure_one()
-        if self.date_from > self.date_to:
-            raise UserError(_('The start date must be before or equal to the end date.'))
-
         lyd_currency = self.env.ref('base.LYD', raise_if_not_found=False)
         moves = self._get_invoices()
         extra_currencies = self._collect_extra_currencies(moves, lyd_currency)
 
         content = self._build_xlsx(moves, extra_currencies, lyd_currency)
-        filename = 'invoice_summary_%s_%s.xlsx' % (self.date_from, self.date_to)
+        date_from = self.date_from or fields.Date.context_today(self)
+        date_to = self.date_to or date_from
+        filename = 'invoice_summary_%s_%s.xlsx' % (date_from, date_to)
         self.write({
             'xlsx_file': base64.b64encode(content),
             'xlsx_filename': filename,
