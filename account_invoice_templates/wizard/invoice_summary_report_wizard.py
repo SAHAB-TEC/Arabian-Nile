@@ -256,8 +256,12 @@ class AitInvoiceSummaryReportWizard(models.TransientModel):
         for col_offset, currency in enumerate(extra_currencies, start=3):
             sheet.write(row, col_offset, totals[currency.id], total_money_fmt)
 
-        if usd_currency and usd_currency in extra_currencies and totals.get(usd_currency.id):
-            exchange_rate = totals['lyd'] / totals[usd_currency.id]
+        if usd_currency and usd_currency in extra_currencies and lyd_currency:
+            rate_date = self.date_to or fields.Date.context_today(self)
+            # Official company rate (LYD per 1 USD), not LYD-split / USD-split.
+            exchange_rate = usd_currency._convert(
+                1.0, lyd_currency, self.env.company, rate_date,
+            )
             rate_row = row + 2
             sheet.set_row(rate_row, 30)
             sheet.write(rate_row, 0, 'سعر الصرف\nExchange Rate', rate_label_fmt)
