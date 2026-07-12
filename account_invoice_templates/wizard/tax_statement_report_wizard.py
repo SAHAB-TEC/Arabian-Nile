@@ -91,18 +91,22 @@ class AitTaxStatementReportWizard(models.TransientModel):
         })
         return wizard.action_export_xlsx()
 
-    def _get_split_amounts(self, move, lyd_currency):
-        amounts = {}
-        if move.currency_split_ids:
-            for split in move.currency_split_ids:
-                amounts[split.currency_id] = amounts.get(split.currency_id, 0.0) + split.amount
-        else:
-            usd = self.env.ref('base.USD', raise_if_not_found=False)
-            if usd and move.usd_amount:
-                amounts[usd] = move.usd_amount
-            if lyd_currency and move.lyd_amount:
-                amounts[lyd_currency] = move.lyd_amount
-        return amounts
+    def _conversion_date(self, move):
+        return move.invoice_date or move.date or fields.Date.context_today(self)
+
+    def _get_invoice_amount_in_currency(self, move, currency):
+        """Full invoice total converted to ``currency`` (ignores payment splits)."""
+        total = move.amount_total or 0.0
+        if not currency or not move.currency_id:
+            return 0.0
+        if move.currency_id == currency:
+            return total
+        return move.currency_id._convert(
+            total,
+            currency,
+            move.company_id,
+            self._conversion_date(move),
+        )
 
     def _group_invoices_by_rig(self, moves):
         groups = OrderedDict()
@@ -112,65 +116,45 @@ class AitTaxStatementReportWizard(models.TransientModel):
             groups[rig] |= move
         return groups
 
-    def _get_foreign_currency(self, amounts, lyd_currency):
-        usd = self.env.ref('base.USD', raise_if_not_found=False)
-        if usd and amounts.get(usd):
-            return usd, amounts[usd]
-        for currency, amount in amounts.items():
-            if lyd_currency and currency == lyd_currency:
-                continue
-            if amount:
-                return currency, amount
-        return usd or self.env['res.currency'], 0.0
-
     def _compute_table_rate(self, moves, usd_currency, lyd_currency):
-        total_usd = 0.0
-        total_lyd = 0.0
-        for move in moves:
-            amounts = self._get_split_amounts(move, lyd_currency)
-            foreign_currency, foreign_amount = self._get_foreign_currency(amounts, lyd_currency)
-            if usd_currency and foreign_currency == usd_currency:
-                total_usd += foreign_amount
-            elif foreign_amount and usd_currency and foreign_currency != usd_currency:
-                conv_date = move.invoice_date or move.date or fields.Date.context_today(self)
-                total_usd += foreign_currency._convert(
-                    foreign_amount, usd_currency, move.company_id, conv_date,
-                )
-            lyd_amount = amounts.get(lyd_currency, 0.0) if lyd_currency else 0.0
-            total_lyd += lyd_amount
-        if total_usd:
-            return total_lyd / total_usd
-        if usd_currency and lyd_currency:
-            return usd_currency._convert(
-                1.0, lyd_currency, self.env.company, self.date_to,
-            )
-        return 0.0
+        """Official company rate: LYD per 1 USD (not split-portion ratio)."""
+        if not usd_currency or not lyd_currency:
+            return 0.0
+        rate_date = self.date_to or fields.Date.context_today(self)
+        if moves:
+            dates = moves.filtered('invoice_date').mapped('invoice_date')
+            if dates:
+                rate_date = max(dates)
+        return usd_currency._convert(
+            1.0, lyd_currency, self.env.company, rate_date,
+        )
 
     def _prepare_rig_rows(self, moves, table_rate, lyd_currency):
         usd_currency = self.env.ref('base.USD', raise_if_not_found=False)
         rows = []
         for move in moves:
-            amounts = self._get_split_amounts(move, lyd_currency)
-            foreign_currency, foreign_amount = self._get_foreign_currency(amounts, lyd_currency)
-            if usd_currency and foreign_currency == usd_currency:
-                usd_amount = foreign_amount
-            elif foreign_amount and usd_currency:
-                conv_date = move.invoice_date or move.date or fields.Date.context_today(self)
-                usd_amount = foreign_currency._convert(
-                    foreign_amount, usd_currency, move.company_id, conv_date,
-                )
+            if usd_currency:
+                usd_amount = self._get_invoice_amount_in_currency(move, usd_currency)
+                currency_symbol = usd_currency.symbol or usd_currency.name
             else:
-                usd_amount = foreign_amount
+                usd_amount = move.amount_total or 0.0
+                currency_symbol = move.currency_id.symbol or move.currency_id.name or ''
 
-            lyd_amount = usd_amount * table_rate if table_rate else amounts.get(lyd_currency, 0.0)
+            if lyd_currency:
+                lyd_amount = self._get_invoice_amount_in_currency(move, lyd_currency)
+            elif table_rate:
+                lyd_amount = usd_amount * table_rate
+            else:
+                lyd_amount = 0.0
+
             tax_1 = lyd_amount * TAX_RATE_1
             tax_05 = lyd_amount * TAX_RATE_05
             tax_total = float_round(tax_1 + tax_05, precision_digits=0)
 
             rows.append({
                 'name': move.name or '',
-                'currency_symbol': foreign_currency.symbol or foreign_currency.name,
-                'foreign_amount': foreign_amount,
+                'currency_symbol': currency_symbol,
+                'foreign_amount': usd_amount,
                 'usd_amount': usd_amount,
                 'lyd_amount': lyd_amount,
                 'tax_1': tax_1,
