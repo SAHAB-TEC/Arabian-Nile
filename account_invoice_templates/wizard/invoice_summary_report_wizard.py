@@ -80,27 +80,32 @@ class AitInvoiceSummaryReportWizard(models.TransientModel):
         })
         return wizard.action_export_xlsx()
 
-    def _get_split_amounts(self, move, lyd_currency):
-        """Return {currency: amount} for report rows, using currency splits or legacy fields."""
-        amounts = {}
-        if move.currency_split_ids:
-            for split in move.currency_split_ids:
-                amounts[split.currency_id] = amounts.get(split.currency_id, 0.0) + split.amount
-        else:
-            usd = self.env.ref('base.USD', raise_if_not_found=False)
-            if usd and move.usd_amount:
-                amounts[usd] = move.usd_amount
-            if lyd_currency and move.lyd_amount:
-                amounts[lyd_currency] = move.lyd_amount
-        return amounts
+    def _conversion_date(self, move):
+        return move.invoice_date or move.date or fields.Date.context_today(self)
+
+    def _get_invoice_amount_in_currency(self, move, currency):
+        """Full invoice total converted to ``currency`` (ignores payment splits)."""
+        total = move.amount_total or 0.0
+        if not currency or not move.currency_id:
+            return 0.0
+        if move.currency_id == currency:
+            return total
+        return move.currency_id._convert(
+            total,
+            currency,
+            move.company_id,
+            self._conversion_date(move),
+        )
 
     def _collect_extra_currencies(self, moves, lyd_currency):
+        """Invoice currencies other than LYD (base), for report columns."""
         currencies = self.env['res.currency']
         for move in moves:
-            for currency in self._get_split_amounts(move, lyd_currency):
-                if lyd_currency and currency == lyd_currency:
-                    continue
-                currencies |= currency
+            if not move.currency_id:
+                continue
+            if lyd_currency and move.currency_id == lyd_currency:
+                continue
+            currencies |= move.currency_id
         return currencies.sorted(key=lambda c: c.name)
 
     def _currency_header(self, currency):
@@ -233,8 +238,7 @@ class AitInvoiceSummaryReportWizard(models.TransientModel):
         seq = 0
         for move in moves:
             seq += 1
-            amounts = self._get_split_amounts(move, lyd_currency)
-            lyd_amount = amounts.get(lyd_currency, 0.0) if lyd_currency else 0.0
+            lyd_amount = self._get_invoice_amount_in_currency(move, lyd_currency) if lyd_currency else 0.0
             totals['lyd'] += lyd_amount
 
             row += 1
@@ -244,7 +248,7 @@ class AitInvoiceSummaryReportWizard(models.TransientModel):
             sheet.write(row, 2, lyd_amount, money_fmt)
 
             for col_offset, currency in enumerate(extra_currencies, start=3):
-                amount = amounts.get(currency, 0.0)
+                amount = self._get_invoice_amount_in_currency(move, currency)
                 totals[currency.id] += amount
                 sheet.write(row, col_offset, amount, money_fmt)
 
