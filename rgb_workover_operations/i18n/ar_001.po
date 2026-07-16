@@ -362,42 +362,42 @@ msgstr "عمود الملخص"
 #. module: rgb_workover_operations
 #: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__full_ops
 msgid "Full Ops Hrs"
-msgstr "ساعات التشغيل الكامل"
+msgstr "Full Ops Hrs"
 
 #. module: rgb_workover_operations
 #: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__standby_wcrew
 msgid "Stand-By W/Crew"
-msgstr "انتظار مع الطاقم"
+msgstr "Stand-By W/Crew"
 
 #. module: rgb_workover_operations
 #: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__standby_wocrew
 msgid "Stand-By W-O/Crew"
-msgstr "انتظار بدون طاقم"
+msgstr "Stand-By W-O/Crew"
 
 #. module: rgb_workover_operations
 #: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__full_repair
 msgid "Full Repair Rate"
-msgstr "معدل الإصلاح الكامل"
+msgstr "Full Repair Rate"
 
 #. module: rgb_workover_operations
 #: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__zero_rate
 msgid "Zero Rate"
-msgstr "معدل صفر"
+msgstr "Zero Rate"
 
 #. module: rgb_workover_operations
 #: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__force_majeure
 msgid "Force Majeure"
-msgstr "قوة قاهرة"
+msgstr "Force Majeure"
 
 #. module: rgb_workover_operations
 #: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__rd_ru_rmtime
 msgid "R/D, R/U & R/MTime"
-msgstr "نزول/رفع/نقل الحفارة"
+msgstr "R/D, R/U & R/MTime"
 
 #. module: rgb_workover_operations
 #: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__none
 msgid "Not in Summary"
-msgstr "غير موجود في الملخص"
+msgstr "Not in Summary"
 
 #. module: rgb_workover_operations
 #: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report_export_wizard__date_from
@@ -461,3 +461,34 @@ msgstr "لم يتم العثور على تقارير يومية للفلاتر �
 #: code:addons/rgb_workover_operations/wizard/summary_report_export_wizard.py:0
 msgid "No confirmed daily reports found for the selected filters."
 msgstr "لم يتم العثور على تقارير يومية مؤكدة للفلاتر المحددة."
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Rig Summary Report"
+msgstr "ملخص الحفارة"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__rig_summary_date_from
+msgid "Summary From"
+msgstr "من"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__rig_summary_date_to
+msgid "Summary To"
+msgstr "إلى"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Period"
+msgstr "الفترة"
+
+#. module: rgb_workover_operations
+#: model:res.groups,name:rgb_workover_operations.group_workover_rig_summary
+msgid "Rig Summary"
+msgstr "ملخص الحفارة"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Print Rig Summary"
+msgstr "طباعة ملخص الحفارة"
+

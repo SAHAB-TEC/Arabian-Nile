@@ -61,8 +61,8 @@
                             <field name="present_operation_ids">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
-                                    <field name="time_from" widget="float_time"/>
-                                    <field name="time_to" widget="float_time"/>
+                                    <field name="time_from" widget="datetime_time"/>
+                                    <field name="time_to" widget="datetime_time"/>
                                     <field name="type_category_id"/>
                                     <field name="operation_type" column_invisible="1"/>
                                     <field name="description"/>
@@ -79,6 +79,39 @@
                                     <field name="sequence"/>
                                     <field name="category_id"/>
                                     <field name="hours"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Rig Summary Report"
+                              groups="rgb_workover_operations.group_workover_rig_summary">
+                            <div class="oe_button_box mb-2">
+                                <button name="%(action_report_workover_rig_summary)d"
+                                        type="action"
+                                        string="Print Rig Summary"
+                                        class="btn-secondary"
+                                        icon="fa-print"/>
+                            </div>
+                            <group>
+                                <group string="Period">
+                                    <field name="rig_summary_date_from"/>
+                                    <field name="rig_summary_date_to"/>
+                                </group>
+                            </group>
+                            <field name="rig_summary_report_ids" nolabel="1" readonly="1">
+                                <list create="0" delete="0" edit="0">
+                                    <field name="report_date"/>
+                                    <field name="well_id"/>
+                                    <field name="summary_full_ops" sum="Full Ops Hrs"/>
+                                    <field name="summary_standby_wcrew" sum="Stand-By W/Crew"/>
+                                    <field name="summary_standby_wocrew" sum="Stand-By W-O/Crew"/>
+                                    <field name="summary_full_repair" sum="Full Repair Rate"/>
+                                    <field name="summary_zero_rate" sum="Zero Rate"/>
+                                    <field name="summary_force_majeure" sum="Force Majeure"/>
+                                    <field name="summary_rd_ru_rmtime" sum="R/D, R/U &amp; R/MTime"/>
+                                    <field name="summary_total_hours" sum="Total"/>
+                                    <field name="summary_type"/>
+                                    <field name="operations_summary"/>
+                                    <field name="state" column_invisible="1"/>
                                 </list>
                             </field>
                         </page>

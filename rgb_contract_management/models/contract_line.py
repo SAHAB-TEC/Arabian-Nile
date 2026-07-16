@@ -53,6 +53,16 @@ class RgbContractLine(models.Model):
     show_advance_button = fields.Boolean(compute='_compute_button_visibility')
     show_retention_button = fields.Boolean(compute='_compute_button_visibility')
     show_performance_button = fields.Boolean(compute='_compute_button_visibility')
+    is_first_invoice_line = fields.Boolean(
+        string='First Invoice Line',
+        compute='_compute_is_first_invoice_line',
+    )
+    contract_value_percent = fields.Float(
+        string='Contract Value %',
+        digits=(16, 4),
+        help='Only on the first line: price = this %% of contract value (LYD), '
+             'converted to the invoice lines currency using the contract exchange rate.',
+    )
     product_id = fields.Many2one(
         'product.product',
         string='Product',
@@ -95,7 +105,9 @@ class RgbContractLine(models.Model):
         store=True,
     )
     currency_id = fields.Many2one(
-        related='contract_id.currency_id',
+        'res.currency',
+        string='Currency',
+        compute='_compute_currency_id',
         store=True,
     )
     company_id = fields.Many2one(
@@ -105,6 +117,82 @@ class RgbContractLine(models.Model):
     tax_type_use = fields.Selection(
         related='contract_id.tax_type_use',
     )
+
+    @api.depends('contract_id.invoice_currency_id', 'contract_id.currency_id')
+    def _compute_currency_id(self):
+        for line in self:
+            line.currency_id = (
+                line.contract_id.invoice_currency_id
+                or line.contract_id.currency_id
+            )
+
+    @api.depends(
+        'contract_id',
+        'contract_id.contract_line_ids',
+        'contract_id.contract_line_ids.sequence',
+        'sequence',
+    )
+    def _compute_is_first_invoice_line(self):
+        for line in self:
+            if not line.contract_id:
+                line.is_first_invoice_line = False
+                continue
+            first = line.contract_id.contract_line_ids[:1]
+            line.is_first_invoice_line = bool(first and first == line)
+
+    def _get_price_from_contract_percent(self):
+        """LYD share of contract value, converted to invoice lines currency."""
+        self.ensure_one()
+        contract = self.contract_id
+        percent = self.contract_value_percent or 0.0
+        if not percent:
+            return 0.0
+        lyd_amount = (contract.contract_value_lyd or 0.0) * percent / 100.0
+        target = contract.invoice_currency_id or contract.currency_id
+        lyd = contract.lyd_currency_id or self.env.ref('base.LYD', raise_if_not_found=False)
+        if not target or not lyd or target == lyd:
+            return lyd_amount
+        # Prefer manual invoice exchange rate (LYD per 1 invoice currency).
+        if contract.invoice_exchange_rate:
+            return lyd_amount / contract.invoice_exchange_rate
+        if target == contract.currency_id and contract.exchange_rate:
+            return lyd_amount / contract.exchange_rate
+        company = contract.company_id or self.env.company
+        conv_date = contract.date_start or fields.Date.context_today(self)
+        return lyd._convert(lyd_amount, target, company, conv_date)
+
+    def _apply_contract_value_percent_price(self):
+        for line in self:
+            if not line.contract_value_percent or not line.contract_id:
+                continue
+            first = line.contract_id.contract_line_ids[:1]
+            if first and first != line:
+                continue
+            line.price_unit = line._get_price_from_contract_percent()
+            if not line.quantity:
+                line.quantity = 1.0
+
+    @api.onchange('contract_value_percent')
+    def _onchange_contract_value_percent(self):
+        if self.contract_value_percent and not self.is_first_invoice_line:
+            # Allow setting on empty first row in the editor
+            siblings = self.contract_id.contract_line_ids if self.contract_id else self
+            if siblings and siblings[0] != self:
+                self.contract_value_percent = 0.0
+                return
+        if self.contract_value_percent:
+            self._apply_contract_value_percent_price()
+            if self.line_role == 'normal':
+                self._sync_linked_deduction_lines()
+
+    @api.constrains('contract_value_percent')
+    def _check_contract_value_percent_first_line(self):
+        for line in self.filtered('contract_value_percent'):
+            first = line.contract_id.contract_line_ids[:1]
+            if first and first != line:
+                raise UserError(_(
+                    'Contract Value %% can only be set on the first invoice line.'
+                ))
 
     @api.depends('quantity', 'price_unit', 'discount', 'tax_ids', 'currency_id')
     def _compute_amount(self):
@@ -305,17 +393,23 @@ class RgbContractLine(models.Model):
             line.performance_guarantee_line_id = deduction.id
         return True
 
+    def write(self, vals):
+        res = super().write(vals)
+        if 'contract_value_percent' in vals:
+            self.filtered('contract_value_percent')._apply_contract_value_percent_price()
+            self.filtered(lambda l: l.line_role == 'normal')._sync_linked_deduction_lines()
+        elif {'quantity', 'price_unit', 'discount', 'name'} & set(vals):
+            self.filtered(lambda l: l.line_role == 'normal')._sync_linked_deduction_lines()
+        return res
+
     @api.model_create_multi
     def create(self, vals_list):
         lines = super().create(vals_list)
+        percent_lines = lines.filtered('contract_value_percent')
+        if percent_lines:
+            percent_lines._apply_contract_value_percent_price()
         lines.filtered(lambda l: l.line_role == 'normal')._sync_linked_deduction_lines()
         return lines
-
-    def write(self, vals):
-        res = super().write(vals)
-        if {'quantity', 'price_unit', 'discount', 'name'} & set(vals):
-            self.filtered(lambda l: l.line_role == 'normal')._sync_linked_deduction_lines()
-        return res
 
     @api.onchange('quantity', 'price_unit', 'discount', 'name')
     def _onchange_sync_deduction_lines(self):
@@ -354,22 +448,26 @@ class RgbContractLine(models.Model):
             return
         if contract.contract_type == 'sale_contract':
             self.name = product.get_product_multiline_description_sale() or product.display_name
-            if contract.price_list_id:
-                self.price_unit = contract.price_list_id._get_product_price(
-                    product,
-                    self.quantity or 1.0,
-                )
-            else:
-                self.price_unit = product.lst_price
+            if not self.contract_value_percent:
+                if contract.price_list_id:
+                    self.price_unit = contract.price_list_id._get_product_price(
+                        product,
+                        self.quantity or 1.0,
+                    )
+                else:
+                    self.price_unit = product.lst_price
             self.tax_ids = product.taxes_id.filtered(
                 lambda tax: tax.company_id == contract.company_id
             )
         else:
             self.name = product.display_name
-            self.price_unit = product.standard_price
+            if not self.contract_value_percent:
+                self.price_unit = product.standard_price
             self.tax_ids = product.supplier_taxes_id.filtered(
                 lambda tax: tax.company_id == contract.company_id
             )
+        if self.contract_value_percent:
+            self._apply_contract_value_percent_price()
         if self.line_role == 'normal':
             self._sync_linked_deduction_lines()
 

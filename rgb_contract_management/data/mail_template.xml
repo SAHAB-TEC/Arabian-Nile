@@ -52,4 +52,21 @@
             <p>This is an automatic reminder sent 10 days before the contract end date.</p>
         </field>
     </record>
+
+    <record id="mail_template_advance_payment_due" model="mail.template">
+        <field name="name">Contract: Advance Payment Reminder (10 days)</field>
+        <field name="model_id" ref="model_rgb_contract"/>
+        <field name="subject">Advance payment due soon: {{ object.name }}</field>
+        <field name="email_to">{{ object.responsible_user_id.email or object.approval_user_id.email }}</field>
+        <field name="body_html" type="html">
+            <p>Advance payment for contract <strong><t t-out="object.name"/></strong>
+               (<t t-out="object.contract_code or ''"/>) is due on
+               <strong><t t-out="object.advance_payment_due_date"/></strong>.</p>
+            <p>Amount: <t t-out="object.advance_payment_amount"/>
+               <t t-out="object.currency_id.name"/>
+               (<t t-out="object.advance_payment_percent"/>%).</p>
+            <p>Partner: <t t-out="object.partner_id.name"/></p>
+            <p>This is an automatic reminder sent when 10 days or fewer remain until the due date.</p>
+        </field>
+    </record>
 </odoo>

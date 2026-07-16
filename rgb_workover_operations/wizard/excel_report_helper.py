@@ -30,9 +30,13 @@ def _template_path(filename):
     return os.path.join(module_path, 'report', 'excel_templates', filename)
 
 
-def _float_to_time(value):
+def _value_to_time(value, env=None):
     if not value:
         return None
+    if isinstance(value, datetime):
+        if env is not None:
+            value = fields.Datetime.context_timestamp(env.user, value)
+        return value.time().replace(second=0, microsecond=0)
     hours = int(value)
     minutes = int(round((value - hours) * 60))
     if minutes >= 60:
@@ -49,8 +53,38 @@ def _format_report_date(value):
     return value.strftime('%d/%m/%Y')
 
 
+def _clear_daily_template_samples(ws):
+    """Remove sample/demo values that ship with the Excel template."""
+    # Present operations sample rows (FROM/TO/type/description)
+    for row in range(23, 40):
+        for col in (1, 2, 3, 4):
+            _set_cell_value(ws, row, col, None)
+    # Time breakdown sample rows only (keep consumable/drilling labels below)
+    for row in range(23, 32):
+        for col in (11, 12, 13, 14):
+            _set_cell_value(ws, row, col, None)
+    # Present operation title / transport sample counts
+    _set_cell_value(ws, 21, 3, None)
+    for row, col in ((20, 9), (21, 9)):
+        _set_cell_value(ws, row, col, None)
+    # Consumables sample quantities (keep labels in column K)
+    for row in (36, 37, 38, 39, 40):
+        _set_cell_value(ws, row, 13, None)
+    # Drilling line & ton miles sample numbers
+    for row in (42, 43, 44, 45):
+        _set_cell_value(ws, row, 13, None)
+    # Personnel names/counts sample
+    for col in (1, 3, 5, 7, 10, 12):
+        _set_cell_value(ws, 48, col, None)
+    # Pump sample leftovers (rewritten below; clear first for safety)
+    for row in (12, 13, 14, 15):
+        _set_cell_value(ws, row, 12, None)
+
+
 def fill_daily_report_sheet(ws, report, company_name):
     """Fill one daily report worksheet from a workover.daily.report record."""
+    _clear_daily_template_samples(ws)
+
     rig_label = report.rig_id.code or report.rig_id.name or ''
     _set_cell_value(ws, 1, 4, '%s ( %s )' % (company_name, rig_label))
     _set_cell_value(ws, 7, 3, rig_label)
@@ -106,8 +140,8 @@ def fill_daily_report_sheet(ws, report, company_name):
     for idx, line in enumerate(report.present_operation_ids):
         row = present_start + idx
         if idx == 0:
-            _set_cell_value(ws, row, 1, _float_to_time(line.time_from))
-            _set_cell_value(ws, row, 2, _float_to_time(line.time_to))
+            _set_cell_value(ws, row, 1, _value_to_time(line.time_from, report.env))
+            _set_cell_value(ws, row, 2, _value_to_time(line.time_to, report.env))
         _set_cell_value(ws, row, 3, line.operation_type or '')
         _set_cell_value(ws, row, 4, line.description or '')
 

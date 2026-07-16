@@ -70,7 +70,8 @@ class RgbContract(models.Model):
             ('under_approval', 'Under Approval'),
             ('approved', 'Approved'),
             ('in_progress', 'In Progress'),
-            ('done', 'Done'),
+            ('done', 'Done Unlocked'),
+            ('done_locked', 'Done Locked'),
             ('cancelled', 'Cancelled'),
             ('expired', 'Expired'),
         ],
@@ -175,6 +176,23 @@ class RgbContract(models.Model):
         compute='_compute_currency_split_percentage_total',
         digits=(16, 4),
     )
+    invoice_currency_id = fields.Many2one(
+        'res.currency',
+        string='Invoice Currency',
+        help='Currency used for the staged invoice lines and applied when creating the next invoice.',
+        default=lambda self: self.env.company.currency_id,
+        tracking=True,
+        copy=False,
+    )
+    invoice_exchange_rate = fields.Float(
+        string='Invoice Exchange Rate',
+        digits=(16, 6),
+        default=1.0,
+        tracking=True,
+        copy=False,
+        help='Manual rate for invoice lines: LYD per 1 unit of Invoice Currency. '
+             'Used when creating the invoice instead of system currency rates.',
+    )
     contract_line_ids = fields.One2many(
         'rgb.contract.line',
         'contract_id',
@@ -183,7 +201,7 @@ class RgbContract(models.Model):
     )
     contract_lines_total = fields.Monetary(
         string='Lines Total',
-        currency_field='currency_id',
+        currency_field='invoice_currency_id',
         compute='_compute_contract_lines_total',
         store=True,
     )
@@ -241,6 +259,60 @@ class RgbContract(models.Model):
         string='Performance Guarantee Expiry',
         tracking=True,
     )
+    # Reminder tracking (catch-up safe: mark sent so missed cron days still fire once)
+    reminder_contract_expiry_sent = fields.Boolean(
+        string='Contract Expiry Reminder Sent',
+        copy=False,
+        default=False,
+    )
+    reminder_guarantee_10_sent = fields.Boolean(
+        string='Guarantee 10-Day Reminder Sent',
+        copy=False,
+        default=False,
+    )
+    reminder_guarantee_60_sent = fields.Boolean(
+        string='Guarantee 60-Day Reminder Sent',
+        copy=False,
+        default=False,
+    )
+    reminder_advance_payment_sent = fields.Boolean(
+        string='Advance Payment Reminder Sent',
+        copy=False,
+        default=False,
+    )
+    reminder_dismissed_guarantee_10 = fields.Boolean(copy=False, default=False)
+    reminder_dismissed_guarantee_60 = fields.Boolean(copy=False, default=False)
+    reminder_dismissed_contract_expiry = fields.Boolean(copy=False, default=False)
+    reminder_dismissed_advance_payment = fields.Boolean(copy=False, default=False)
+    reminder_alert = fields.Boolean(
+        string='Reminder Alert',
+        compute='_compute_reminder_alert',
+        store=True,
+    )
+    reminder_alert_type = fields.Selection(
+        selection=[
+            ('contract_expiry', 'Contract Expiry Soon'),
+            ('guarantee_10', 'Performance Guarantee (10 days)'),
+            ('guarantee_60', 'Performance Guarantee (60 days)'),
+            ('advance_payment', 'Advance Payment Due'),
+        ],
+        string='Reminder Alert Type',
+        compute='_compute_reminder_alert',
+        store=True,
+    )
+    alert_guarantee_10_active = fields.Boolean(compute='_compute_reminder_banners')
+    alert_guarantee_60_active = fields.Boolean(compute='_compute_reminder_banners')
+    alert_contract_expiry_active = fields.Boolean(compute='_compute_reminder_banners')
+    alert_advance_payment_active = fields.Boolean(compute='_compute_reminder_banners')
+    alert_guarantee_10_visible = fields.Boolean(compute='_compute_reminder_banners')
+    alert_guarantee_60_visible = fields.Boolean(compute='_compute_reminder_banners')
+    alert_contract_expiry_visible = fields.Boolean(compute='_compute_reminder_banners')
+    alert_advance_payment_visible = fields.Boolean(compute='_compute_reminder_banners')
+    alert_guarantee_10_label = fields.Char(compute='_compute_reminder_banners')
+    alert_guarantee_60_label = fields.Char(compute='_compute_reminder_banners')
+    alert_contract_expiry_label = fields.Char(compute='_compute_reminder_banners')
+    alert_advance_payment_label = fields.Char(compute='_compute_reminder_banners')
+    has_hidden_reminder_alerts = fields.Boolean(compute='_compute_reminder_banners')
     bank_guarantee_status = fields.Selection(
         selection=[
             ('sent', 'Correspondence Sent'),
@@ -263,6 +335,17 @@ class RgbContract(models.Model):
 
     # ── Payment & penalties ──
     advance_payment_percent = fields.Float(string='Advance Payment (%)', digits=(16, 4))
+    advance_payment_amount = fields.Monetary(
+        string='Advance Payment Amount',
+        currency_field='currency_id',
+        compute='_compute_advance_payment_amount',
+        store=True,
+        readonly=True,
+    )
+    advance_payment_due_date = fields.Date(
+        string='Advance Payment Due Date',
+        tracking=True,
+    )
     delay_penalty_daily_rate = fields.Float(
         string='Daily Delay Penalty Rate (%)',
         digits=(16, 4),
@@ -413,9 +496,64 @@ class RgbContract(models.Model):
             conv_date,
         )
 
+    def _suggest_lyd_per_currency_rate(self, currency):
+        """Suggested manual rate: LYD amount for 1 unit of ``currency``."""
+        self.ensure_one()
+        lyd = self.lyd_currency_id or self.env.ref('base.LYD', raise_if_not_found=False)
+        if not currency or not lyd:
+            return 1.0
+        if currency == lyd:
+            return 1.0
+        conv_date = self.date_start or fields.Date.context_today(self)
+        company = self.company_id or self.env.company
+        return currency._convert(1.0, lyd, company, conv_date)
+
+    def _to_odoo_invoice_currency_rate(self, lyd_per_invoice_currency, invoice_currency):
+        """Convert LYD-per-invoice-currency to Odoo ``invoice_currency_rate``
+        (company currency → invoice currency).
+        """
+        self.ensure_one()
+        if not lyd_per_invoice_currency or not invoice_currency:
+            return False
+        company_currency = (self.company_id or self.env.company).currency_id
+        lyd = self.lyd_currency_id or self.env.ref('base.LYD', raise_if_not_found=False)
+        if not company_currency or not lyd:
+            return False
+        if company_currency == invoice_currency:
+            return 1.0
+        if company_currency == lyd:
+            # Odoo rate = invoice units per 1 LYD
+            return 1.0 / lyd_per_invoice_currency
+        # 1 company → LYD → invoice
+        conv_date = self.date_start or fields.Date.context_today(self)
+        company = self.company_id or self.env.company
+        company_to_lyd = company_currency._convert(1.0, lyd, company, conv_date)
+        if not company_to_lyd:
+            return False
+        return company_to_lyd / lyd_per_invoice_currency
+
     @api.onchange('currency_id', 'date_start', 'company_id')
     def _onchange_currency_exchange_rate(self):
         self.exchange_rate = self._get_suggested_exchange_rate()
+        if self.currency_id and not self.invoice_currency_id:
+            self.invoice_currency_id = self.currency_id
+        if self.invoice_currency_id:
+            self.invoice_exchange_rate = self._suggest_lyd_per_currency_rate(
+                self.invoice_currency_id,
+            )
+        self._recompute_first_line_from_percent()
+
+    @api.onchange('invoice_currency_id')
+    def _onchange_invoice_currency_id_rate(self):
+        if self.invoice_currency_id:
+            self.invoice_exchange_rate = self._suggest_lyd_per_currency_rate(
+                self.invoice_currency_id,
+            )
+        self._recompute_first_line_from_percent()
+
+    @api.onchange('contract_value_currency', 'exchange_rate', 'invoice_currency_id', 'invoice_exchange_rate')
+    def _onchange_recompute_percent_invoice_line(self):
+        self._recompute_first_line_from_percent()
 
     @api.depends('contract_value_currency', 'exchange_rate')
     def _compute_contract_value_lyd(self):
@@ -485,6 +623,7 @@ class RgbContract(models.Model):
             (0, 0, {
                 'sequence': line.sequence,
                 'currency_id': line.currency_id.id,
+                'exchange_rate': line.exchange_rate or 1.0,
                 'percentage': line.percentage,
             })
             for line in self.currency_split_ids
@@ -512,29 +651,215 @@ class RgbContract(models.Model):
             )
 
     def _get_expiry_notification_users(self):
+        """Responsible user plus optional expiry-notification group members."""
         self.ensure_one()
+        users = (self.responsible_user_id | self.approval_user_id).filtered('active')
         group = self.env.ref(
             'rgb_contract_management.group_contract_expiry_notification',
             raise_if_not_found=False,
         )
-        users = group.users.filtered('active') if group else self.env['res.users']
-        if not users:
-            users = (self.responsible_user_id | self.approval_user_id).filtered('active')
+        if group:
+            users |= group.users.filtered('active')
         return users
 
+    @api.depends(
+        'reminder_contract_expiry_sent',
+        'reminder_guarantee_10_sent',
+        'reminder_guarantee_60_sent',
+        'reminder_advance_payment_sent',
+        'date_end',
+        'performance_guarantee_expiry_date',
+        'advance_payment_due_date',
+        'state',
+    )
+    def _compute_reminder_alert(self):
+        """Any active reminder → list/kanban highlight (primary type for badge)."""
+        today = fields.Date.context_today(self)
+        for contract in self:
+            if contract.state not in ('approved', 'in_progress'):
+                contract.reminder_alert = False
+                contract.reminder_alert_type = False
+                continue
+            active = []
+            if (
+                contract.reminder_guarantee_10_sent
+                and contract.performance_guarantee_expiry_date
+                and contract.performance_guarantee_expiry_date >= today
+            ):
+                active.append('guarantee_10')
+            if (
+                contract.reminder_advance_payment_sent
+                and contract.advance_payment_due_date
+                and contract.advance_payment_due_date >= today
+            ):
+                active.append('advance_payment')
+            if (
+                contract.reminder_contract_expiry_sent
+                and contract.date_end
+                and contract.date_end >= today
+            ):
+                active.append('contract_expiry')
+            if (
+                contract.reminder_guarantee_60_sent
+                and contract.performance_guarantee_expiry_date
+                and contract.performance_guarantee_expiry_date >= today
+            ):
+                active.append('guarantee_60')
+            contract.reminder_alert = bool(active)
+            contract.reminder_alert_type = active[0] if active else False
+
+    @api.depends(
+        'reminder_contract_expiry_sent',
+        'reminder_guarantee_10_sent',
+        'reminder_guarantee_60_sent',
+        'reminder_advance_payment_sent',
+        'reminder_dismissed_guarantee_10',
+        'reminder_dismissed_guarantee_60',
+        'reminder_dismissed_contract_expiry',
+        'reminder_dismissed_advance_payment',
+        'date_end',
+        'performance_guarantee_expiry_date',
+        'advance_payment_due_date',
+        'state',
+    )
+    def _compute_reminder_banners(self):
+        today = fields.Date.context_today(self)
+        for contract in self:
+            in_force = contract.state in ('approved', 'in_progress')
+
+            g10_active = bool(
+                in_force
+                and contract.reminder_guarantee_10_sent
+                and contract.performance_guarantee_expiry_date
+                and contract.performance_guarantee_expiry_date >= today
+            )
+            g60_active = bool(
+                in_force
+                and contract.reminder_guarantee_60_sent
+                and contract.performance_guarantee_expiry_date
+                and contract.performance_guarantee_expiry_date >= today
+            )
+            expiry_active = bool(
+                in_force
+                and contract.reminder_contract_expiry_sent
+                and contract.date_end
+                and contract.date_end >= today
+            )
+            advance_active = bool(
+                in_force
+                and contract.reminder_advance_payment_sent
+                and contract.advance_payment_due_date
+                and contract.advance_payment_due_date >= today
+            )
+
+            contract.alert_guarantee_10_active = g10_active
+            contract.alert_guarantee_60_active = g60_active
+            contract.alert_contract_expiry_active = expiry_active
+            contract.alert_advance_payment_active = advance_active
+
+            contract.alert_guarantee_10_visible = g10_active and not contract.reminder_dismissed_guarantee_10
+            contract.alert_guarantee_60_visible = g60_active and not contract.reminder_dismissed_guarantee_60
+            contract.alert_contract_expiry_visible = (
+                expiry_active and not contract.reminder_dismissed_contract_expiry
+            )
+            contract.alert_advance_payment_visible = (
+                advance_active and not contract.reminder_dismissed_advance_payment
+            )
+
+            contract.alert_guarantee_10_label = _(
+                'Performance guarantee expires on %(date)s — action required',
+                date=contract.performance_guarantee_expiry_date or '',
+            ) if g10_active else False
+            contract.alert_guarantee_60_label = _(
+                'Performance guarantee expires on %(date)s — early reminder',
+                date=contract.performance_guarantee_expiry_date or '',
+            ) if g60_active else False
+            contract.alert_contract_expiry_label = _(
+                'Contract expires on %(date)s — action required',
+                date=contract.date_end or '',
+            ) if expiry_active else False
+            contract.alert_advance_payment_label = _(
+                'Advance payment due on %(date)s — action required',
+                date=contract.advance_payment_due_date or '',
+            ) if advance_active else False
+
+            contract.has_hidden_reminder_alerts = bool(
+                (g10_active and contract.reminder_dismissed_guarantee_10)
+                or (g60_active and contract.reminder_dismissed_guarantee_60)
+                or (expiry_active and contract.reminder_dismissed_contract_expiry)
+                or (advance_active and contract.reminder_dismissed_advance_payment)
+            )
+
+    def action_hide_reminder_guarantee_10(self):
+        self.write({'reminder_dismissed_guarantee_10': True})
+        return True
+
+    def action_hide_reminder_guarantee_60(self):
+        self.write({'reminder_dismissed_guarantee_60': True})
+        return True
+
+    def action_hide_reminder_contract_expiry(self):
+        self.write({'reminder_dismissed_contract_expiry': True})
+        return True
+
+    def action_hide_reminder_advance_payment(self):
+        self.write({'reminder_dismissed_advance_payment': True})
+        return True
+
+    def action_show_reminder_alerts(self):
+        """Re-display all previously hidden reminder banners."""
+        self.write({
+            'reminder_dismissed_guarantee_10': False,
+            'reminder_dismissed_guarantee_60': False,
+            'reminder_dismissed_contract_expiry': False,
+            'reminder_dismissed_advance_payment': False,
+        })
+        return True
+
+    @api.depends('advance_payment_percent', 'contract_value_currency')
+    def _compute_advance_payment_amount(self):
+        for contract in self:
+            contract.advance_payment_amount = (
+                (contract.contract_value_currency or 0.0)
+                * (contract.advance_payment_percent or 0.0)
+                / 100.0
+            )
+
     def _notify_expiry_group(self, template_xmlid, summary, chatter_body, date_deadline):
+        """Notify responsible (+ group): activity, inbox notification, email, chatter."""
         self.ensure_one()
         users = self._get_expiry_notification_users()
         if not users:
-            return
-        template = self.env.ref(template_xmlid, raise_if_not_found=False)
-        for user in users:
-            self.activity_schedule(
-                'mail.mail_activity_data_todo',
-                user_id=user.id,
-                summary=summary,
-                date_deadline=date_deadline,
+            _logger.warning(
+                'No users to notify for contract reminder on %s', self.display_name,
             )
+            return
+
+        activity_type = self.env.ref('mail.mail_activity_data_todo', raise_if_not_found=False)
+        for user in users:
+            existing = self.activity_ids.filtered(
+                lambda a, u=user, s=summary: (
+                    a.user_id == u
+                    and a.summary == s
+                    and a.activity_type_id == activity_type
+                )
+            ) if activity_type else self.env['mail.activity']
+            if not existing:
+                self.activity_schedule(
+                    'mail.mail_activity_data_todo',
+                    user_id=user.id,
+                    summary=summary,
+                    note=chatter_body,
+                    date_deadline=date_deadline,
+                )
+
+        self.message_notify(
+            partner_ids=users.partner_id.ids,
+            subject=summary,
+            body=chatter_body,
+        )
+
+        template = self.env.ref(template_xmlid, raise_if_not_found=False)
         emails = ','.join(filter(None, users.mapped('email')))
         if template and emails:
             template.send_mail(
@@ -542,12 +867,29 @@ class RgbContract(models.Model):
                 force_send=False,
                 email_values={'email_to': emails},
             )
+
         self.message_post(
             body=chatter_body,
             partner_ids=users.partner_id.ids,
             message_type='notification',
             subtype_xmlid='mail.mt_note',
         )
+
+    @api.model
+    def _search_contracts_for_reminder(self, date_field, days_before, sent_field):
+        """Catch-up safe: any date in [today, today+days_before] not yet reminded.
+
+        If the cron misses the exact day (today+N), the next run still finds the
+        contract while expiry is within the remaining window, then marks it sent.
+        """
+        today = fields.Date.context_today(self)
+        window_end = today + timedelta(days=days_before)
+        return self.search([
+            (date_field, '>=', today),
+            (date_field, '<=', window_end),
+            (sent_field, '=', False),
+            ('state', 'in', ('approved', 'in_progress')),
+        ])
 
     @api.depends('date_end', 'date_start', 'service_duration_days', 'state')
     def _compute_remaining_days(self):
@@ -645,13 +987,56 @@ class RgbContract(models.Model):
                 vals['name'] = self.env['ir.sequence'].next_by_code('rgb.contract') or _('New')
             if vals.get('contract_code'):
                 vals['contract_code'] = vals['contract_code'].strip()
+            if not vals.get('invoice_currency_id') and vals.get('currency_id'):
+                vals['invoice_currency_id'] = vals['currency_id']
         contracts = super().create(vals_list)
+        for contract in contracts.filtered(lambda c: not c.invoice_currency_id and c.currency_id):
+            contract.invoice_currency_id = contract.currency_id
         contracts._link_attachments()
         return contracts
+
+    def init(self):
+        """Backfill invoice currency from contract currency on upgrade."""
+        self.env.cr.execute("""
+            UPDATE rgb_contract
+               SET invoice_currency_id = currency_id
+             WHERE invoice_currency_id IS NULL
+               AND currency_id IS NOT NULL
+        """)
 
     def write(self, vals):
         if vals.get('contract_code'):
             vals['contract_code'] = vals['contract_code'].strip()
+        # Block edits on locked contracts except unlocking / chatter-safe fields.
+        if not self.env.su and self.filtered(lambda c: c.state == 'done_locked'):
+            allowed_keys = {
+                'state',
+                'message_main_attachment_id',
+                'activity_ids',
+                'message_follower_ids',
+            }
+            if set(vals) - allowed_keys:
+                raise UserError(_(
+                    'This contract is Done Locked. Only users with Unlock permission '
+                    'can change the status back to Done Unlocked.'
+                ))
+            if 'state' in vals and vals['state'] != 'done':
+                raise UserError(_(
+                    'A locked contract can only be moved back to Done Unlocked.'
+                ))
+            if 'state' in vals:
+                self._check_stage_group(
+                    'rgb_contract_management.group_contract_stage_unlock',
+                    _('Unlock Done'),
+                )
+        # Reset reminder flags when the related date changes so a new window can fire.
+        if 'date_end' in vals:
+            vals['reminder_contract_expiry_sent'] = False
+        if 'performance_guarantee_expiry_date' in vals:
+            vals['reminder_guarantee_10_sent'] = False
+            vals['reminder_guarantee_60_sent'] = False
+        if 'advance_payment_due_date' in vals:
+            vals['reminder_advance_payment_sent'] = False
         res = super().write(vals)
         if any(k in vals for k in (
             'insurance_attachment_ids',
@@ -659,7 +1044,22 @@ class RgbContract(models.Model):
             'bank_guarantee_attachment_ids',
         )):
             self._link_attachments()
+        if {
+            'contract_value_currency',
+            'exchange_rate',
+            'invoice_currency_id',
+            'currency_id',
+        } & set(vals):
+            self._recompute_first_line_from_percent()
         return res
+
+    def _recompute_first_line_from_percent(self):
+        """Refresh first invoice line unit price when contract value/FX changes."""
+        for contract in self:
+            first = contract.contract_line_ids[:1]
+            if first and first.contract_value_percent:
+                first._apply_contract_value_percent_price()
+                first.filtered(lambda l: l.line_role == 'normal')._sync_linked_deduction_lines()
 
     def _link_attachments(self):
         for contract in self:
@@ -728,7 +1128,28 @@ class RgbContract(models.Model):
 
     # ── Workflow actions ──
 
+    def _check_stage_group(self, group_xmlid, action_label):
+        if self.env.su:
+            return
+        if not self.env.user.has_group(group_xmlid):
+            raise UserError(_(
+                'You are not allowed to perform "%(action)s". Missing security group.',
+                action=action_label,
+            ))
+
+    def _ensure_not_locked(self):
+        locked = self.filtered(lambda c: c.state == 'done_locked')
+        if locked:
+            raise UserError(_(
+                'Contract(s) %(names)s are locked (Done Locked). Unlock them first.',
+                names=', '.join(locked.mapped('name')),
+            ))
+
     def action_confirm(self):
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_confirm',
+            _('Confirm'),
+        )
         for contract in self.filtered(lambda c: c.state == 'draft'):
             if not contract.approval_user_id:
                 raise UserError(_('Set an approval responsible before confirming the contract.'))
@@ -738,6 +1159,10 @@ class RgbContract(models.Model):
         return True
 
     def action_approve(self):
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_approve',
+            _('Approve'),
+        )
         for contract in self.filtered(lambda c: c.state == 'under_approval'):
             if not contract._is_approver():
                 raise UserError(_('You are not allowed to approve this contract.'))
@@ -746,6 +1171,10 @@ class RgbContract(models.Model):
         return True
 
     def action_set_in_progress(self):
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_start',
+            _('Start'),
+        )
         for contract in self.filtered(lambda c: c.state == 'approved'):
             contract._check_insurance_for_activation()
             contract.write({'state': 'in_progress'})
@@ -753,20 +1182,66 @@ class RgbContract(models.Model):
         return True
 
     def action_done(self):
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_done',
+            _('Done Unlocked'),
+        )
         self.filtered(lambda c: c.state == 'in_progress').write({'state': 'done'})
         return True
 
+    def action_lock_done(self):
+        """Move Done Unlocked → Done Locked."""
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_lock',
+            _('Lock Done'),
+        )
+        contracts = self.filtered(lambda c: c.state == 'done')
+        contracts.write({'state': 'done_locked'})
+        for contract in contracts:
+            contract.message_post(body=_('Contract locked (Done Locked).'))
+        return True
+
+    def action_unlock_done(self):
+        """Move Done Locked → Done Unlocked."""
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_unlock',
+            _('Unlock Done'),
+        )
+        contracts = self.filtered(lambda c: c.state == 'done_locked')
+        contracts.write({'state': 'done'})
+        for contract in contracts:
+            contract.message_post(body=_('Contract unlocked (Done Unlocked).'))
+        return True
+
     def action_cancel(self):
-        cancellable = self.filtered(lambda c: c.state not in ('done', 'cancelled'))
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_cancel',
+            _('Cancel'),
+        )
+        self._ensure_not_locked()
+        cancellable = self.filtered(
+            lambda c: c.state not in ('done', 'done_locked', 'cancelled', 'expired')
+        )
         cancellable.write({'state': 'cancelled'})
         return True
 
     def action_reset_to_draft(self):
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_reset',
+            _('Reset to Draft'),
+        )
         self.filtered(lambda c: c.state in ('under_approval', 'cancelled')).write({'state': 'draft'})
         return True
 
     def action_expire(self):
-        self.filtered(lambda c: c.state not in ('done', 'cancelled')).write({'state': 'expired'})
+        self._check_stage_group(
+            'rgb_contract_management.group_contract_stage_expire',
+            _('Mark Expired'),
+        )
+        self._ensure_not_locked()
+        self.filtered(
+            lambda c: c.state not in ('done', 'done_locked', 'cancelled', 'expired')
+        ).write({'state': 'expired'})
         return True
 
     def action_view_invoices(self):
@@ -798,18 +1273,30 @@ class RgbContract(models.Model):
             return {str(self.analytic_account_id.id): 100}
         return {}
 
+    def _get_invoice_currency(self):
+        """Currency for the next invoice created from staged lines."""
+        self.ensure_one()
+        return self.invoice_currency_id or self.currency_id
+
     def _prepare_invoice_context(self):
         """Default values passed when opening/creating invoices from this contract."""
         self.ensure_one()
         move_type = 'in_invoice' if self.contract_type == 'purchase_contract' else 'out_invoice'
+        invoice_currency = self._get_invoice_currency()
+        odoo_rate = self._to_odoo_invoice_currency_rate(
+            self.invoice_exchange_rate, invoice_currency,
+        )
         context = {
             'default_contract_id': self.id,
             'default_partner_id': self.partner_id.id,
             'default_move_type': move_type,
-            'default_currency_id': self.currency_id.id,
+            'default_currency_id': invoice_currency.id if invoice_currency else False,
             'default_invoice_date': fields.Date.context_today(self),
             'default_analytic_distribution': self._get_analytic_distribution(),
+            'default_contract_manual_exchange_rate': self.invoice_exchange_rate or 0.0,
         }
+        if odoo_rate:
+            context['default_invoice_currency_rate'] = odoo_rate
         if self.contract_line_ids:
             context['default_invoice_line_ids'] = self._prepare_invoice_line_commands()
         return context
@@ -828,67 +1315,110 @@ class RgbContract(models.Model):
 
     @api.model
     def _cron_performance_guarantee_group_reminder(self):
-        """Daily: notify group 10 days before performance guarantee expiry."""
-        today = fields.Date.context_today(self)
-        target = today + timedelta(days=10)
-        contracts = self.search([
-            ('performance_guarantee_expiry_date', '=', target),
-            ('state', 'in', ('approved', 'in_progress')),
-        ])
+        """Daily: notify when ≤10 days remain until performance guarantee expiry."""
+        contracts = self._search_contracts_for_reminder(
+            'performance_guarantee_expiry_date', 10, 'reminder_guarantee_10_sent',
+        )
         for contract in contracts:
+            remaining = (contract.performance_guarantee_expiry_date - fields.Date.context_today(self)).days
+            contract.write({
+                'reminder_guarantee_10_sent': True,
+                'reminder_dismissed_guarantee_10': False,
+            })
             contract._notify_expiry_group(
                 'rgb_contract_management.mail_template_performance_guarantee_group_expiry',
-                summary=_('Performance guarantee expires in 10 days: %s') % contract.name,
+                summary=_('Performance guarantee expires in %(days)s days: %(name)s') % {
+                    'days': remaining,
+                    'name': contract.name,
+                },
                 chatter_body=_(
                     'Performance guarantee expiry reminder: guarantee for this contract '
-                    'expires on %(date)s (10 days remaining).',
+                    'expires on %(date)s (%(days)s day(s) remaining).',
                     date=contract.performance_guarantee_expiry_date,
+                    days=remaining,
                 ),
                 date_deadline=contract.performance_guarantee_expiry_date,
             )
 
     @api.model
     def _cron_performance_guarantee_reminder(self):
-        """Daily: remind 60 days before performance guarantee expiry."""
-        today = fields.Date.context_today(self)
-        target = today + timedelta(days=60)
-        contracts = self.search([
-            ('performance_guarantee_expiry_date', '=', target),
-            ('state', 'in', ('approved', 'in_progress')),
-        ])
-        template = self.env.ref(
-            'rgb_contract_management.mail_template_guarantee_expiry',
-            raise_if_not_found=False,
+        """Daily: notify when ≤60 days remain until performance guarantee expiry."""
+        contracts = self._search_contracts_for_reminder(
+            'performance_guarantee_expiry_date', 60, 'reminder_guarantee_60_sent',
         )
         for contract in contracts:
-            if template:
-                template.send_mail(contract.id, force_send=False)
-            user = contract.responsible_user_id or contract.approval_user_id
-            if user:
-                contract.activity_schedule(
-                    'mail.mail_activity_data_todo',
-                    user_id=user.id,
-                    summary=_('Performance guarantee expires in 60 days: %s') % contract.name,
-                    date_deadline=contract.performance_guarantee_expiry_date,
-                )
+            remaining = (contract.performance_guarantee_expiry_date - fields.Date.context_today(self)).days
+            contract.write({
+                'reminder_guarantee_60_sent': True,
+                'reminder_dismissed_guarantee_60': False,
+            })
+            contract._notify_expiry_group(
+                'rgb_contract_management.mail_template_guarantee_expiry',
+                summary=_('Performance guarantee expires in %(days)s days: %(name)s') % {
+                    'days': remaining,
+                    'name': contract.name,
+                },
+                chatter_body=_(
+                    'Performance guarantee early reminder: guarantee for this contract '
+                    'expires on %(date)s (%(days)s day(s) remaining).',
+                    date=contract.performance_guarantee_expiry_date,
+                    days=remaining,
+                ),
+                date_deadline=contract.performance_guarantee_expiry_date,
+            )
 
     @api.model
     def _cron_contract_expiry_reminder(self):
-        """Daily: notify group 10 days before contract end date."""
-        today = fields.Date.context_today(self)
-        target = today + timedelta(days=10)
-        contracts = self.search([
-            ('date_end', '=', target),
-            ('state', 'in', ('approved', 'in_progress')),
-        ])
+        """Daily: notify when ≤10 days remain until contract end date."""
+        contracts = self._search_contracts_for_reminder(
+            'date_end', 10, 'reminder_contract_expiry_sent',
+        )
         for contract in contracts:
+            remaining = (contract.date_end - fields.Date.context_today(self)).days
+            contract.write({
+                'reminder_contract_expiry_sent': True,
+                'reminder_dismissed_contract_expiry': False,
+            })
             contract._notify_expiry_group(
                 'rgb_contract_management.mail_template_contract_expiry',
-                summary=_('Contract expires in 10 days: %s') % contract.name,
+                summary=_('Contract expires in %(days)s days: %(name)s') % {
+                    'days': remaining,
+                    'name': contract.name,
+                },
                 chatter_body=_(
                     'Contract expiry reminder: this contract ends on %(date)s '
-                    '(10 days remaining).',
+                    '(%(days)s day(s) remaining).',
                     date=contract.date_end,
+                    days=remaining,
                 ),
                 date_deadline=contract.date_end,
+            )
+
+    @api.model
+    def _cron_advance_payment_reminder(self):
+        """Daily: notify when ≤10 days remain until advance payment due date."""
+        contracts = self._search_contracts_for_reminder(
+            'advance_payment_due_date', 10, 'reminder_advance_payment_sent',
+        )
+        for contract in contracts:
+            remaining = (contract.advance_payment_due_date - fields.Date.context_today(self)).days
+            contract.write({
+                'reminder_advance_payment_sent': True,
+                'reminder_dismissed_advance_payment': False,
+            })
+            contract._notify_expiry_group(
+                'rgb_contract_management.mail_template_advance_payment_due',
+                summary=_('Advance payment due in %(days)s days: %(name)s') % {
+                    'days': remaining,
+                    'name': contract.name,
+                },
+                chatter_body=_(
+                    'Advance payment reminder: due on %(date)s '
+                    '(%(days)s day(s) remaining). Amount: %(amount)s %(currency)s.',
+                    date=contract.advance_payment_due_date,
+                    days=remaining,
+                    amount=contract.advance_payment_amount,
+                    currency=contract.currency_id.name if contract.currency_id else '',
+                ),
+                date_deadline=contract.advance_payment_due_date,
             )

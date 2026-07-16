@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, time
+
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 from odoo.tools.float_utils import float_round
@@ -15,14 +17,30 @@ class WorkoverPresentOperationLine(models.Model):
         ondelete='cascade',
     )
     sequence = fields.Integer(default=10)
-    time_from = fields.Float(string='From')
-    time_to = fields.Float(string='To')
+    time_from = fields.Datetime(string='From')
+    time_to = fields.Datetime(string='To')
     type_category_id = fields.Many2one(
         'workover.time.category',
         string='Type',
     )
     operation_type = fields.Char(string='Type', default='')
     description = fields.Text(string='Description')
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        report = self.env['workover.daily.report'].browse(
+            self.env.context.get('default_report_id')
+        )
+        if report.report_date:
+            base = fields.Datetime.to_datetime(
+                datetime.combine(report.report_date, time(0, 0))
+            )
+            if 'time_from' in fields_list and not res.get('time_from'):
+                res['time_from'] = base
+            if 'time_to' in fields_list and not res.get('time_to'):
+                res['time_to'] = base
+        return res
 
     @api.onchange('type_category_id')
     def _onchange_type_category_id(self):
@@ -31,9 +49,9 @@ class WorkoverPresentOperationLine(models.Model):
 
     def _get_duration_hours(self):
         self.ensure_one()
-        if self.time_from is False and self.time_to is False:
+        if not self.time_from or not self.time_to:
             return 0.0
-        duration = (self.time_to or 0.0) - (self.time_from or 0.0)
+        duration = (self.time_to - self.time_from).total_seconds() / 3600.0
         if duration < 0:
             duration += 24.0
         return float_round(max(duration, 0.0), precision_digits=2)

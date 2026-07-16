@@ -9,7 +9,7 @@ from odoo.tools.float_utils import float_round
 from odoo.tools.misc import format_date, xlsxwriter
 
 TAX_RATE_1 = 0.01
-TAX_RATE_05 = 0.005
+TAX_RATE_05 = 0.0005  # 0.05%
 
 
 class AitTaxStatementReportWizard(models.TransientModel):
@@ -134,22 +134,28 @@ class AitTaxStatementReportWizard(models.TransientModel):
         rows = []
         for move in moves:
             if usd_currency:
-                usd_amount = self._get_invoice_amount_in_currency(move, usd_currency)
+                usd_amount = float_round(
+                    self._get_invoice_amount_in_currency(move, usd_currency),
+                    precision_digits=3,
+                )
                 currency_symbol = usd_currency.symbol or usd_currency.name
             else:
-                usd_amount = move.amount_total or 0.0
+                usd_amount = float_round(move.amount_total or 0.0, precision_digits=3)
                 currency_symbol = move.currency_id.symbol or move.currency_id.name or ''
 
             if lyd_currency:
-                lyd_amount = self._get_invoice_amount_in_currency(move, lyd_currency)
+                lyd_amount = float_round(
+                    self._get_invoice_amount_in_currency(move, lyd_currency),
+                    precision_digits=3,
+                )
             elif table_rate:
-                lyd_amount = usd_amount * table_rate
+                lyd_amount = float_round(usd_amount * table_rate, precision_digits=3)
             else:
                 lyd_amount = 0.0
 
-            tax_1 = lyd_amount * TAX_RATE_1
-            tax_05 = lyd_amount * TAX_RATE_05
-            tax_total = float_round(tax_1 + tax_05, precision_digits=0)
+            tax_1 = float_round(lyd_amount * TAX_RATE_1, precision_digits=3)
+            tax_05 = float_round(lyd_amount * TAX_RATE_05, precision_digits=3)
+            tax_total = float_round(tax_1 + tax_05, precision_digits=3)
 
             rows.append({
                 'name': move.name or '',
@@ -206,7 +212,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
             'money': workbook.add_format({
                 'font_size': 10, 'font_name': font_name,
                 'align': 'right', 'valign': 'vcenter',
-                'num_format': '#,##0.00', **border,
+                'num_format': '#,##0.000', **border,
             }),
             'money_lyd': workbook.add_format({
                 'font_size': 10, 'font_name': font_name,
@@ -216,7 +222,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
             'tax_total': workbook.add_format({
                 'font_size': 10, 'font_name': font_name,
                 'align': 'right', 'valign': 'vcenter',
-                'num_format': '#,##0', 'bg_color': '#FFFFFF', **border,
+                'num_format': '#,##0.000', 'bg_color': '#FFFFFF', **border,
             }),
             'total_label': workbook.add_format({
                 'bold': True, 'font_size': 10, 'font_name': font_name,
@@ -226,7 +232,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
             'total_money': workbook.add_format({
                 'bold': True, 'font_size': 10, 'font_name': font_name,
                 'align': 'right', 'valign': 'vcenter',
-                'num_format': '#,##0.00', 'bg_color': color_total, **border,
+                'num_format': '#,##0.000', 'bg_color': color_total, **border,
             }),
             'total_lyd': workbook.add_format({
                 'bold': True, 'font_size': 10, 'font_name': font_name,
@@ -236,7 +242,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
             'total_tax': workbook.add_format({
                 'bold': True, 'font_size': 10, 'font_name': font_name,
                 'align': 'right', 'valign': 'vcenter',
-                'num_format': '#,##0', 'bg_color': color_tax_total, **border,
+                'num_format': '#,##0.000', 'bg_color': color_tax_total, **border,
             }),
             'footer': workbook.add_format({
                 'font_size': 10, 'font_name': font_name, 'align': 'right', 'valign': 'vcenter',
@@ -274,7 +280,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
             _('Amount in USD'),
             rate_header,
             '1%',
-            '0.50%',
+            '0.05%',
             _('Total'),
         ]
         for col, header in enumerate(headers):
@@ -321,7 +327,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
         sheet.write(row, 4, totals['lyd'], formats['total_lyd'])
         sheet.write(row, 5, totals['tax_1'], formats['total_lyd'])
         sheet.write(row, 6, totals['tax_05'], formats['total_lyd'])
-        sheet.write(row, 7, float_round(totals['tax_total'], precision_digits=0), formats['total_tax'])
+        sheet.write(row, 7, float_round(totals['tax_total'], precision_digits=3), formats['total_tax'])
 
         return row + 2, header_row
 
