@@ -94,8 +94,8 @@
                         <group string="Details">
                             <field name="engineer_id" readonly="state != 'draft'"/>
                             <field name="partner_company_id" readonly="state != 'draft'"/>
-                            <field name="well_id" readonly="state != 'draft'"/>
                             <field name="rig_id" readonly="state != 'draft'"/>
+                            <field name="well_id" readonly="state != 'draft'"/>
                             <field name="analytic_account_id" readonly="state != 'draft'"/>
                             <field name="product_id" readonly="state != 'draft'"/>
                         </group>

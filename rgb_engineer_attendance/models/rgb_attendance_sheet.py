@@ -76,15 +76,15 @@ class RgbAttendanceSheet(models.Model):
         help="Client / operator company.",
     )
     well_id = fields.Many2one(
-        "rgb.well",
+        "workover.well",
         string="Well",
         tracking=True,
+        domain="['|', ('rig_id', '=', rig_id), ('rig_id', '=', False)]",
     )
     rig_id = fields.Many2one(
-        "rgb.rig",
+        "workover.rig",
         string="Rig",
         tracking=True,
-        domain="[('well_id', '=', well_id)]",
     )
     product_id = fields.Many2one(
         "product.product",
@@ -266,6 +266,16 @@ class RgbAttendanceSheet(models.Model):
                     total += 1
             sheet.days_count = total
 
+    @api.onchange("well_id")
+    def _onchange_well_id(self):
+        if self.well_id and self.well_id.rig_id:
+            self.rig_id = self.well_id.rig_id
+
+    @api.onchange("rig_id")
+    def _onchange_rig_id(self):
+        if self.well_id and self.well_id.rig_id and self.well_id.rig_id != self.rig_id:
+            self.well_id = False
+
     @api.constrains("engineer_id")
     def _check_engineer_partner(self):
         for sheet in self:
@@ -387,9 +397,6 @@ class RgbAttendanceSheet(models.Model):
             "partner_id": self.engineer_id.id,
             "invoice_date": date(int(self.year), int(self.month), 1),
             "ref": self.name,
-            "well_id": self.well_id.id,
-            "rig_id": self.rig_id.id,
-            
             "invoice_line_ids": [(0, 0, {
                 "product_id": product.id,
                 "name": _("%(product)s — %(period)s — %(well)s / %(rig)s") % {

@@ -23,7 +23,7 @@ Assign **only** `Engineer Attendance / User` to users who must not see other app
 
 ## Dependencies
 
-- `account`, `mail`, `product`, `rgb_crm_project_custom` (wells)
+- `account`, `mail`, `product`, `rgb_workover_operations` (wells / rigs)
 
 ## Install
 

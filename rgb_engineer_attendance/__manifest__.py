@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "RGB Engineer Attendance",
-    "version": "18.0.1.0.4",
+    "version": "18.0.1.0.5",
     "category": "Human Resources",
     "summary": "Monthly engineer attendance grid, approval, and vendor invoice",
     "description": """
@@ -14,7 +14,7 @@ Monthly day checkboxes, approval workflow, vendor bill generation, PDF/Excel exp
         "account",
         "mail",
         "product",
-        "rgb_crm_project_custom",
+        "rgb_workover_operations",
     ],
     "data": [
         "security/rgb_attendance_security.xml",

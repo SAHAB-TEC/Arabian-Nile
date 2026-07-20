@@ -21,7 +21,14 @@
     <menuitem id="menu_rgb_attendance_rigs"
               name="Rigs"
               parent="menu_rgb_attendance_root"
-              action="rgb_crm_project_custom.action_rgb_rig"
+              action="rgb_workover_operations.action_workover_rig"
               sequence="20"
+              groups="rgb_engineer_attendance.group_rgb_attendance_manager"/>
+
+    <menuitem id="menu_rgb_attendance_wells"
+              name="Wells"
+              parent="menu_rgb_attendance_root"
+              action="rgb_workover_operations.action_workover_well"
+              sequence="21"
               groups="rgb_engineer_attendance.group_rgb_attendance_manager"/>
 </odoo>
