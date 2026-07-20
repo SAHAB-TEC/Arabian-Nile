@@ -25,7 +25,6 @@
             <thead>
                 <tr>
                     <th style="width: 25%;">Employee</th>
-                    <th style="width: 20%;">Department</th>
                     <th style="width: 15%;" class="text-end">Net Salary</th>
                     <th style="width: 20%;">Bank Account</th>
                     <th style="width: 20%;">Bank</th>
@@ -34,7 +33,6 @@
             <tbody>
                 <tr t-foreach="lines" t-as="line">
                     <td><span t-field="line.employee_id"/></td>
-                    <td><span t-field="line.department_id"/></td>
                     <td class="text-end">
                         <span t-field="line.net_salary"/>
                     </td>
@@ -42,16 +40,20 @@
                     <td><span t-field="line.bank_id"/></td>
                 </tr>
                 <tr t-if="not lines">
-                    <td colspan="5" class="text-center">No paid/done payslips found for the selected criteria.</td>
+                    <td colspan="4" class="text-center">
+                        No paid/done payslips found for the selected criteria.
+                    </td>
                 </tr>
             </tbody>
             <tfoot t-if="lines">
                 <tr>
-                    <th colspan="2" class="text-end">Total</th>
+                    <th class="text-end">Total</th>
                     <th class="text-end">
-                        <span t-esc="total_net_salary" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        <span t-esc="total_net_salary"
+                            t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                     </th>
-                    <th colspan="2"></th>
+                    <th></th>
+                    <th></th>
                 </tr>
             </tfoot>
         </table>
@@ -137,4 +139,5 @@
         <xpath expr="//div[@id='employee_marital']" position="replace"/>
 
     </template>
+        
 </odoo>
