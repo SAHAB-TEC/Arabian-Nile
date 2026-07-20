@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_pob_root"
+              name="POB"
+              sequence="45"
+              groups="rgb_pob.group_pob_user"/>
+
+    <menuitem id="menu_pob_operations"
+              name="Operations"
+              parent="menu_pob_root"
+              sequence="10"/>
+
+    <menuitem id="menu_pob_request"
+              name="POB Requests"
+              parent="menu_pob_operations"
+              action="action_pob_request"
+              sequence="10"/>
+
+    <menuitem id="menu_pob_request_active"
+              name="Active Onboard"
+              parent="menu_pob_operations"
+              action="action_pob_request_active"
+              sequence="20"/>
+
+    <menuitem id="menu_pob_extension"
+              name="Extensions"
+              parent="menu_pob_operations"
+              action="action_pob_extension"
+              sequence="30"
+              groups="rgb_pob.group_pob_operations,rgb_pob.group_pob_manager"/>
+
+    <menuitem id="menu_pob_config"
+              name="Configuration"
+              parent="menu_pob_root"
+              sequence="90"
+              groups="rgb_pob.group_pob_manager"/>
+
+    <menuitem id="menu_pob_well"
+              name="Wells"
+              parent="menu_pob_config"
+              action="action_pob_well"
+              sequence="10"/>
+
+    <menuitem id="menu_pob_rig"
+              name="Rigs"
+              parent="menu_pob_config"
+              action="action_pob_rig"
+              sequence="20"/>
+</odoo>

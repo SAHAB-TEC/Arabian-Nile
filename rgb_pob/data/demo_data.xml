@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_pob_well_k144" model="pob.well">
+        <field name="name">K144</field>
+        <field name="code">K144</field>
+    </record>
+
+    <record id="demo_pob_rig_w564" model="pob.rig">
+        <field name="name">w564</field>
+        <field name="code">W564</field>
+        <field name="well_id" ref="demo_pob_well_k144"/>
+    </record>
+</odoo>

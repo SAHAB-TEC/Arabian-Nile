@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_rgb_attendance_root"
+              name="ENG Attendance"
+              groups="rgb_engineer_attendance.group_rgb_attendance_user"
+              sequence="45" web_icon="rgb_engineer_attendance:static/description/icon.png"/>
+
+    <menuitem id="menu_rgb_attendance_sheets"
+              name="Attendance Table"
+              parent="menu_rgb_attendance_root"
+              action="action_rgb_attendance_sheet"
+              sequence="10"/>
+
+    <menuitem id="menu_rgb_attendance_engineers"
+              name="Engineers"
+              parent="menu_rgb_attendance_root"
+              action="action_rgb_engineers"
+              sequence="15"
+              groups="rgb_engineer_attendance.group_rgb_attendance_manager"/>
+
+    <menuitem id="menu_rgb_attendance_rigs"
+              name="Rigs"
+              parent="menu_rgb_attendance_root"
+              action="rgb_crm_project_custom.action_rgb_rig"
+              sequence="20"
+              groups="rgb_engineer_attendance.group_rgb_attendance_manager"/>
+</odoo>

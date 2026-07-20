@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_form_pob" model="ir.ui.view">
+        <field name="name">hr.employee.form.pob</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='hr_settings']" position="inside">
+                <group string="POB / Oil Site Travel" name="pob_travel">
+                    <field name="pob_travel_eligible"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_employee_tree_pob" model="ir.ui.view">
+        <field name="name">hr.employee.list.pob</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='work_email']" position="after">
+                <field name="pob_travel_eligible" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

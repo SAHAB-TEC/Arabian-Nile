@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rgb_attendance_export_wizard_form" model="ir.ui.view">
+        <field name="name">rgb.attendance.export.wizard.form</field>
+        <field name="model">rgb.attendance.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export">
+                <group>
+                    <field name="file_name" invisible="1"/>
+                    <field name="file_data" filename="file_name" readonly="1"/>
+                </group>
+                <footer>
+                    <button string="Close" special="cancel" class="btn-primary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

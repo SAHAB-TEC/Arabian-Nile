@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_rgb_attendance_sheet" model="ir.sequence">
+        <field name="name">Attendance Sheet</field>
+        <field name="code">rgb.attendance.sheet</field>
+        <field name="prefix">ATT/%(year)s/%(month)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>
