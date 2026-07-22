@@ -9,7 +9,7 @@ from odoo.tools.float_utils import float_round
 from odoo.tools.misc import format_date, xlsxwriter
 
 TAX_RATE_1 = 0.01
-TAX_RATE_005 = 0.005  # 5/1000 of the 1% tax amount (label: 0.005%)
+TAX_RATE_005 = 0.00005  # 0.005% of the 1% tax amount (not of base LYD)
 
 
 class AitTaxStatementReportWizard(models.TransientModel):
