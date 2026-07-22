@@ -154,6 +154,37 @@ msgid "Advance Payment (%)"
 msgstr "الدفعة المقدمة (%)"
 
 #. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__advance_payment_amount
+msgid "Advance Payment Amount"
+msgstr "قيمة الدفعة المقدمة"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__advance_payment_due_date
+msgid "Advance Payment Due Date"
+msgstr "تاريخ استحقاق الدفعة المقدمة"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Advance Payment"
+msgstr "الدفعة المقدمة"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Advance payment due on %(date)s — action required"
+msgstr "استحقاق الدفعة المقدمة في %(date)s — مطلوب اتخاذ إجراء"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__reminder_alert_type__advance_payment
+msgid "Advance Payment Due"
+msgstr "استحقاق الدفعة المقدمة"
+
+#. module: rgb_contract_management
+#: model:ir.cron,name:rgb_contract_management.ir_cron_advance_payment_reminder
+msgid "Contract: Advance Payment Reminder (10 days)"
+msgstr "العقد: تذكير الدفعة المقدمة (10 أيام)"
+
+#. module: rgb_contract_management
 #: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__agreed_execution_date
 msgid "Agreed Execution Date"
 msgstr "التاريخ المتفق عليه"
@@ -495,13 +526,13 @@ msgstr "توريد وتركيب"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__contract_type__purchase_contract
-msgid "Purchase / Contractor Contract"
-msgstr "عقد مشتريات / مقاول"
+msgid "Expenses Contract"
+msgstr "عقد مصروفات"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__contract_type__sale_contract
-msgid "Sale / Customer Contract"
-msgstr "عقد مبيعات / عميل"
+msgid "Income Contract"
+msgstr "عقد إيرادات"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__state__approved
@@ -516,8 +547,66 @@ msgstr "ملغى"
 #. module: rgb_contract_management
 #: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__state__done
 #: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
-msgid "Done"
-msgstr "منتهي"
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_search
+msgid "Done Unlocked"
+msgstr "منتهي غير مقفل"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__state__done_locked
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_search
+msgid "Done Locked"
+msgstr "منتهي مقفل"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Unlock Done"
+msgstr "فتح (غير مقفل)"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_confirm
+msgid "Stage: Confirm"
+msgstr "تأكيد"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_approve
+msgid "Stage: Approve"
+msgstr "موافقة"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_start
+msgid "Stage: Start"
+msgstr "بدء التنفيذ"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_done
+msgid "Stage: Done Unlocked"
+msgstr "منتهي غير مقفل"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_lock
+msgid "Stage: Done Locked"
+msgstr "منتهي مقفل"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_unlock
+msgid "Stage: Unlock Done"
+msgstr "فتح المنتهي المقفل"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_cancel
+msgid "Stage: Cancel"
+msgstr "إلغاء"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_reset
+msgid "Stage: Reset to Draft"
+msgstr "إعادة لمسودة"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_stage_expire
+msgid "Stage: Mark Expired"
+msgstr "منتهي الصلاحية"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__state__draft
@@ -1162,19 +1251,25 @@ msgstr "عند التحديد، يظهر هذا الشريك في قوائم ا�
 #. module: rgb_contract_management
 #: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__contract_code
 #: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__contract_code
-msgid "Contract Code"
-msgstr "كود العقد"
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Contract No"
+msgstr "رقم العقد"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.report_invoice_document_contract
+msgid "Terms and Conditions"
+msgstr "الشروط والأحكام"
 
 #. module: rgb_contract_management
 #: model:ir.model.fields,help:rgb_contract_management.field_rgb_contract__contract_code
-msgid "Manual unique contract code shown on linked invoice prints."
-msgstr "كود العقد اليدوي الفريد يظهر في طباعة الفواتير المرتبطة."
+msgid "Unique contract number shown on linked invoice prints."
+msgstr "رقم عقد فريد يظهر في طباعة الفواتير المرتبطة."
 
 #. module: rgb_contract_management
 #. odoo-python
 #: code:addons/rgb_contract_management/models/contract.py:0
-msgid "Contract code \"%(code)s\" is already used on contract %(contract)s."
-msgstr "كود العقد \"%(code)s\" مستخدم مسبقاً في العقد %(contract)s."
+msgid "Contract No \"%(code)s\" is already used on contract %(contract)s."
+msgstr "رقم العقد \"%(code)s\" مستخدم مسبقاً في العقد %(contract)s."
 
 #. module: rgb_contract_management
 #: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__dollar_percentage
@@ -1206,6 +1301,65 @@ msgid "Currency Split"
 msgstr "تقسيم العملات"
 
 #. module: rgb_contract_management
+#: model:ir.model,name:rgb_contract_management.model_rgb_contract_currency_split
+msgid "Contract Payment Currency Split"
+msgstr "توزيع الدفع بالعملات للعقد"
+
+#. module: rgb_contract_management
+#: model:ir.model,name:rgb_contract_management.model_rgb_account_move_currency_split
+msgid "Invoice Payment Currency Split"
+msgstr "توزيع الدفع بالعملات للفاتورة"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__currency_split_ids
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__currency_split_ids
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_move_form_contract
+msgid "Payment Currency Split"
+msgstr "توزيع الدفع بالعملات"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__currency_split_percentage_total
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__currency_split_percentage_total
+msgid "Split Total (%)"
+msgstr "مجموع النسب (%)"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_currency_split__percentage
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_account_move_currency_split__percentage
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_payment_condition__percentage
+msgid "Percentage (%)"
+msgstr "النسبة (%)"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_currency_split__amount
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_account_move_currency_split__amount
+msgid "Amount"
+msgstr "المبلغ"
+
+#. module: rgb_contract_management
+#: code:addons/rgb_contract_management/models/contract.py:0
+#: code:addons/rgb_contract_management/models/account_move.py:0
+msgid "Payment currency split must total 100%% (current total: %(total).2f%%)."
+msgstr "يجب أن يكون مجموع توزيع الدفع 100%% (المجموع الحالي: %(total).2f%%)."
+
+#. module: rgb_contract_management
+#: code:addons/rgb_contract_management/models/contract.py:0
+#: code:addons/rgb_contract_management/models/account_move.py:0
+msgid "Each currency can appear only once in the payment split."
+msgstr "لا يمكن تكرار نفس العملة أكثر من مرة في توزيع الدفع."
+
+#. module: rgb_contract_management
+#: code:addons/rgb_contract_management/models/contract_currency_split.py:0
+msgid "Currency %(currency)s is already used in the payment split for this contract."
+msgstr "العملة %(currency)s مستخدمة مسبقاً في توزيع الدفع لهذا العقد."
+
+#. module: rgb_contract_management
+#: code:addons/rgb_contract_management/models/account_move_currency_split.py:0
+msgid "Currency %(currency)s is already used in the payment split for this invoice."
+msgstr "العملة %(currency)s مستخدمة مسبقاً في توزيع الدفع لهذه الفاتورة."
+
+#. module: rgb_contract_management
 #: model_terms:ir.ui.view,arch_db:rgb_contract_management.address_layout_rgb_invoice
 msgid "Customer Details:"
 msgstr "بيانات العميل :"
@@ -1224,4 +1378,382 @@ msgstr "بيانات العميل :"
 #: model_terms:ir.ui.view,arch_db:rgb_contract_management.report_invoice_document_contract
 msgid "Vendor Details:"
 msgstr "بيانات المورد :"
+
+#. module: rgb_contract_management
+#: model:ir.model,name:rgb_contract_management.model_rgb_contract_line
+msgid "Contract Invoice Line"
+msgstr "بند فاتورة العقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__contract_line_ids
+msgid "Invoice Lines"
+msgstr "بنود الفاتورة"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__invoice_currency_id
+msgid "Invoice Currency"
+msgstr "عملة الفاتورة"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__invoice_exchange_rate
+msgid "Invoice Exchange Rate"
+msgstr "سعر صرف الفاتورة"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_currency_split__exchange_rate
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_account_move_currency_split__exchange_rate
+msgid "Exchange Rate"
+msgstr "سعر الصرف"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__contract_manual_exchange_rate
+msgid "Contract Exchange Rate"
+msgstr "سعر صرف العقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,help:rgb_contract_management.field_rgb_contract__invoice_currency_id
+msgid "Currency used for the staged invoice lines and applied when creating the next invoice."
+msgstr "العملة المستخدمة لبنود الفاتورة المؤقتة وتُطبَّق عند إنشاء الفاتورة التالية."
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_line__contract_value_percent
+msgid "Contract Value %"
+msgstr "نسبة من قيمة العقد %"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,help:rgb_contract_management.field_rgb_contract_line__contract_value_percent
+msgid "Only on the first line: price = this %% of contract value (LYD), converted to the invoice lines currency using the contract exchange rate."
+msgstr "في أول بند فقط: السعر = هذه النسبة من قيمة العقد بالدينار، ثم تُحوَّل إلى عملة بنود الفاتورة حسب سعر صرف العقد."
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__contract_lines_total
+msgid "Lines Total"
+msgstr "إجمالي البنود"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Invoice Lines"
+msgstr "بنود الفاتورة"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_line__name
+msgid "Description"
+msgstr "الوصف"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_line__price_subtotal
+msgid "Subtotal"
+msgstr "المجموع الفرعي"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_product_template__is_contract_advance_payment
+msgid "Contract Advance Payment"
+msgstr "دفعة مقدمة للعقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_product_template__contract_advance_payment_percent
+msgid "Advance Payment (%)"
+msgstr "نسبة الدفعة المقدمة (%)"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_product_template__is_contract_retention_guarantee
+msgid "Contract Retention Guarantee"
+msgstr "ضمان احتفاظ للعقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_product_template__contract_retention_percent
+msgid "Retention (%)"
+msgstr "نسبة ضمان الاحتفاظ (%)"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.product_template_form_contract_deductions
+msgid "Contract Deductions"
+msgstr "خصومات العقد"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Add Advance Payment"
+msgstr "إضافة الدفعة المقدمة"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Add Retention Guarantee"
+msgstr "إضافة ضمان الاحتفاظ"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_product_template__is_contract_performance_guarantee
+msgid "Contract Performance Guarantee"
+msgstr "ضمان حسن الأداء للعقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_product_template__contract_performance_guarantee_percent
+msgid "Performance Guarantee (%)"
+msgstr "نسبة ضمان حسن الأداء (%)"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_line__performance_guarantee_line_id
+msgid "Performance Guarantee Line"
+msgstr "سطر ضمان حسن الأداء"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract_line__line_role__performance_guarantee
+msgid "Performance Guarantee"
+msgstr "ضمان حسن الأداء"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Add Performance Guarantee"
+msgstr "إضافة ضمان حسن الأداء"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract_line.py:0
+msgid "No performance guarantee product is configured. Mark exactly one product as \"Contract Performance Guarantee\"."
+msgstr "لم يُعرّف منتج ضمان حسن الأداء. حدّد منتجاً واحداً فقط كـ \"ضمان حسن الأداء للعقد\"."
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract_line.py:0
+msgid "Performance guarantee was already added for line \"%(line)s\"."
+msgstr "تمت إضافة ضمان حسن الأداء مسبقاً للسطر \"%(line)s\"."
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract_line.py:0
+msgid "Performance guarantee cannot be added on deduction lines."
+msgstr "لا يمكن إضافة ضمان حسن الأداء على أسطر الخصم."
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/product_template.py:0
+msgid "Only one product can be marked as contract performance guarantee. It is already set on \"%(product)s\"."
+msgstr "يمكن تحديد منتج واحد فقط كضمان حسن الأداء للعقد. مُحدَّد مسبقاً على \"%(product)s\"."
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/product_template.py:0
+msgid "Performance guarantee percentage must be greater than zero on \"%(product)s\"."
+msgstr "يجب أن تكون نسبة ضمان حسن الأداء أكبر من صفر على \"%(product)s\"."
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_expiry_notification
+msgid "Contract Expiry Notification"
+msgstr "إشعار انتهاء العقد"
+
+#. module: rgb_contract_management
+#: model:res.groups,comment:rgb_contract_management.group_contract_expiry_notification
+msgid "Users in this group receive contract expiry reminders 10 days before the end date."
+msgstr "يتلقى مستخدمو هذه المجموعة تذكيراً بانتهاء العقد قبل 10 أيام من تاريخ الانتهاء."
+
+#. module: rgb_contract_management
+#: model:ir.cron,name:rgb_contract_management.ir_cron_contract_expiry_reminder
+msgid "Contract: Expiry Reminder (10 days)"
+msgstr "العقد: تذكير بالانتهاء (10 أيام)"
+
+#. module: rgb_contract_management
+#: model:mail.template,name:rgb_contract_management.mail_template_contract_expiry
+msgid "Contract: Expiry Reminder (10 days)"
+msgstr "العقد: تذكير بالانتهاء (10 أيام)"
+
+#. module: rgb_contract_management
+#: model:mail.template,subject:rgb_contract_management.mail_template_contract_expiry
+msgid "Contract ending in 10 days: {{ object.name }}"
+msgstr "العقد ينتهي خلال 10 أيام: {{ object.name }}"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Contract expires in 10 days: %s"
+msgstr "ينتهي العقد خلال 10 أيام: %s"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Contract expires in %(days)s days: %(name)s"
+msgstr "ينتهي العقد خلال %(days)s يوم/أيام: %(name)s"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Contract expiry reminder: this contract ends on %(date)s (10 days remaining)."
+msgstr "تذكير بانتهاء العقد: ينتهي هذا العقد في %(date)s (متبقٍ 10 أيام)."
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Contract expiry reminder: this contract ends on %(date)s (%(days)s day(s) remaining)."
+msgstr "تذكير بانتهاء العقد: ينتهي هذا العقد في %(date)s (متبقٍ %(days)s يوم/أيام)."
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Contract expires on %(date)s — action required"
+msgstr "ينتهي العقد في %(date)s — مطلوب اتخاذ إجراء"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Performance guarantee expires on %(date)s — action required"
+msgstr "ينتهي ضمان حسن الأداء في %(date)s — مطلوب اتخاذ إجراء"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Performance guarantee expires on %(date)s — early reminder"
+msgstr "ينتهي ضمان حسن الأداء في %(date)s — تذكير مبكر"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__reminder_alert
+msgid "Reminder Alert"
+msgstr "تنبيه تذكير"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__reminder_alert_type
+msgid "Reminder Alert Type"
+msgstr "نوع تنبيه التذكير"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__reminder_alert_type__contract_expiry
+msgid "Contract Expiry Soon"
+msgstr "اقتراب انتهاء العقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__reminder_alert_type__guarantee_10
+msgid "Performance Guarantee (10 days)"
+msgstr "ضمان حسن الأداء (10 أيام)"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields.selection,name:rgb_contract_management.selection__rgb_contract__reminder_alert_type__guarantee_60
+msgid "Performance Guarantee (60 days)"
+msgstr "ضمان حسن الأداء (60 يوماً)"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_search
+msgid "Expiry Reminders"
+msgstr "تذكيرات الانتهاء"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Expiry Alert"
+msgstr "تنبيه انتهاء"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Show Reminder Alerts"
+msgstr "إظهار أشرطة التذكير"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
+msgid "Hide"
+msgstr "إخفاء"
+
+#. module: rgb_contract_management
+#: model_terms:mail.template,body_html:rgb_contract_management.mail_template_contract_expiry
+msgid "This is an automatic reminder sent 10 days before the contract end date."
+msgstr "هذا تذكير تلقائي يُرسل قبل 10 أيام من تاريخ انتهاء العقد."
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Invoice lines were cleared after creating an invoice. Add new lines to prepare the next invoice."
+msgstr "تم تفريغ بنود الفاتورة على العقد بعد إنشاء الفاتورة. أضف بنوداً جديدة لتحضير الفاتورة التالية."
+
+#. module: rgb_contract_management
+#: model:ir.cron,name:rgb_contract_management.ir_cron_performance_guarantee_group_reminder
+msgid "Contract: Performance Guarantee Group Reminder (10 days)"
+msgstr "العقد: تذكير ضمان حسن الأداء للمجموعة (10 أيام)"
+
+#. module: rgb_contract_management
+#: model:mail.template,name:rgb_contract_management.mail_template_performance_guarantee_group_expiry
+msgid "Contract: Performance Guarantee Group Reminder (10 days)"
+msgstr "العقد: تذكير ضمان حسن الأداء للمجموعة (10 أيام)"
+
+#. module: rgb_contract_management
+#: model:mail.template,subject:rgb_contract_management.mail_template_performance_guarantee_group_expiry
+msgid "Performance guarantee ending in 10 days: {{ object.name }}"
+msgstr "ضمان حسن الأداء ينتهي خلال 10 أيام: {{ object.name }}"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Performance guarantee expires in 10 days: %s"
+msgstr "ينتهي ضمان حسن الأداء خلال 10 أيام: %s"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract.py:0
+msgid "Performance guarantee expiry reminder: guarantee for this contract expires on %(date)s (10 days remaining)."
+msgstr "تذكير بانتهاء ضمان حسن الأداء: ينتهي ضمان هذا العقد في %(date)s (متبقٍ 10 أيام)."
+
+#. module: rgb_contract_management
+#: model_terms:mail.template,body_html:rgb_contract_management.mail_template_performance_guarantee_group_expiry
+msgid "This is an automatic reminder sent 10 days before the performance guarantee expiry date."
+msgstr "هذا تذكير تلقائي يُرسل قبل 10 أيام من تاريخ انتهاء ضمان حسن الأداء."
+
+#. module: rgb_contract_management
+#: model:res.groups,comment:rgb_contract_management.group_contract_expiry_notification
+msgid "Users in this group receive contract and performance guarantee expiry reminders 10 days before the end date."
+msgstr "يتلقى مستخدمو هذه المجموعة تذكيراً بانتهاء العقد وضمان حسن الأداء قبل 10 أيام من تاريخ الانتهاء."
+
+#. module: rgb_contract_management
+#: model:ir.model,name:rgb_contract_management.model_rgb_contract_business_type
+msgid "Contract Business Type"
+msgstr "نوع نشاط العقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__contract_business_type_id
+msgid "Business Type"
+msgstr "نوع النشاط"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_business_type__code
+msgid "Code"
+msgstr "الكود"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract_business_type__description
+msgid "Description"
+msgstr "الوصف"
+
+#. module: rgb_contract_management
+#: model:res.groups,name:rgb_contract_management.group_contract_business_type_editor
+msgid "Business Type Editor"
+msgstr "محرر أنواع النشاط"
+
+#. module: rgb_contract_management
+#: model:res.groups,comment:rgb_contract_management.group_contract_business_type_editor
+msgid "Can create and manage contract business types."
+msgstr "يمكنه إنشاء وإدارة أنواع نشاط العقود."
+
+#. module: rgb_contract_management
+#: model:ir.actions.act_window,name:rgb_contract_management.action_rgb_contract_business_type
+#: model:ir.ui.menu,name:rgb_contract_management.menu_rgb_contract_business_type
+msgid "Business Types"
+msgstr "أنواع النشاط"
+
+#. module: rgb_contract_management
+#. odoo-python
+#: code:addons/rgb_contract_management/models/contract_business_type.py:0
+msgid "Business type code must be unique."
+msgstr "يجب أن يكون كود نوع النشاط فريداً."
+
+#. module: rgb_contract_management
+#: model:rgb.contract.business.type,name:rgb_contract_management.business_type_supply
+msgid "Supply Only"
+msgstr "توريد فقط"
+
+#. module: rgb_contract_management
+#: model:rgb.contract.business.type,name:rgb_contract_management.business_type_supply_install
+msgid "Supply & Installation"
+msgstr "توريد وتركيب"
+
+#. module: rgb_contract_management
+#: model:rgb.contract.business.type,name:rgb_contract_management.business_type_construction
+msgid "Construction"
+msgstr "إنشاءات"
+
+#. module: rgb_contract_management
+#: model:rgb.contract.business.type,name:rgb_contract_management.business_type_rental
+msgid "Equipment Rental / Service"
+msgstr "تأجير معدات / خدمة"
 

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_workover_rig_summary" model="ir.actions.report">
+        <field name="name">Rig Summary Report</field>
+        <field name="model">workover.daily.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rgb_workover_operations.report_workover_rig_summary</field>
+        <field name="report_file">rgb_workover_operations.report_workover_rig_summary</field>
+        <field name="print_report_name">'Rig_Summary_%s_%s_%s' % (object.rig_id.name or 'Rig', object.rig_summary_date_from or object.report_date, object.rig_summary_date_to or object.report_date)</field>
+        <field name="binding_model_id" ref="model_workover_daily_report"/>
+        <field name="binding_type">report</field>
+        <field name="groups_id" eval="[(4, ref('group_workover_rig_summary'))]"/>
+    </record>
+
+    <template id="report_workover_rig_summary">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <div class="page">
+                        <h2>Summary of Workover Operations</h2>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Company:</strong>
+                                <span t-esc="o.company_id.name"/>
+                                <br/>
+                                <strong>Operator:</strong>
+                                <span t-esc="o.operator_id.name or ''"/>
+                                <br/>
+                                <strong>Rig:</strong>
+                                <span t-esc="o.rig_id.name or ''"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>Period From:</strong>
+                                <span t-field="o.rig_summary_date_from"/>
+                                <br/>
+                                <strong>Period To:</strong>
+                                <span t-field="o.rig_summary_date_to"/>
+                            </div>
+                        </div>
+                        <table class="table table-sm table-bordered o_main_table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Well</th>
+                                    <th>Full Ops Hrs</th>
+                                    <th>Stand-By W/Crew</th>
+                                    <th>Stand-By W-O/Crew</th>
+                                    <th>Full Repair Rate</th>
+                                    <th>Zero Rate</th>
+                                    <th>Force Majeure</th>
+                                    <th>R/D, R/U &amp; R/MTime</th>
+                                    <th>Total</th>
+                                    <th>Type</th>
+                                    <th>Operations Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.rig_summary_report_ids" t-as="line">
+                                    <td><span t-field="line.report_date"/></td>
+                                    <td><span t-esc="line.well_id.name or ''"/></td>
+                                    <td class="text-end"><span t-esc="'%.2f' % (line.summary_full_ops or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'%.2f' % (line.summary_standby_wcrew or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'%.2f' % (line.summary_standby_wocrew or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'%.2f' % (line.summary_full_repair or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'%.2f' % (line.summary_zero_rate or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'%.2f' % (line.summary_force_majeure or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'%.2f' % (line.summary_rd_ru_rmtime or 0.0)"/></td>
+                                    <td class="text-end"><span t-esc="'%.2f' % (line.summary_total_hours or 0.0)"/></td>
+                                    <td><span t-esc="line.summary_type or ''"/></td>
+                                    <td><span t-esc="line.operations_summary or ''"/></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2">Total</th>
+                                    <th class="text-end"><span t-esc="'%.2f' % (o.rig_summary_full_ops or 0.0)"/></th>
+                                    <th class="text-end"><span t-esc="'%.2f' % (o.rig_summary_standby_wcrew or 0.0)"/></th>
+                                    <th class="text-end"><span t-esc="'%.2f' % (o.rig_summary_standby_wocrew or 0.0)"/></th>
+                                    <th class="text-end"><span t-esc="'%.2f' % (o.rig_summary_full_repair or 0.0)"/></th>
+                                    <th class="text-end"><span t-esc="'%.2f' % (o.rig_summary_zero_rate or 0.0)"/></th>
+                                    <th class="text-end"><span t-esc="'%.2f' % (o.rig_summary_force_majeure or 0.0)"/></th>
+                                    <th class="text-end"><span t-esc="'%.2f' % (o.rig_summary_rd_ru_rmtime or 0.0)"/></th>
+                                    <th class="text-end"><span t-esc="'%.2f' % (o.rig_summary_total or 0.0)"/></th>
+                                    <th colspan="2"/>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_pob_operations_approval" model="mail.template">
+        <field name="name">POB: Operations Approval</field>
+        <field name="model_id" ref="model_pob_request"/>
+        <field name="subject">POB Operations Approval — {{ object.name }}</field>
+        <field name="body_html" type="html">
+            <div>
+                <p>Hello,</p>
+                <p>
+                    POB permit <strong><t t-out="object.name"/></strong> for
+                    <strong><t t-out="object.employee_id.name"/></strong>
+                    requires Operations approval.
+                </p>
+                <ul>
+                    <li>Well: <t t-out="object.well_id.name"/></li>
+                    <li>Rig: <t t-out="object.rig_id.name"/></li>
+                    <li>Duration: <t t-out="object.duration_days"/> days</li>
+                    <li>Period: <t t-out="object.date_start"/> → <t t-out="object.date_end"/></li>
+                </ul>
+                <p>
+                    <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=pob.request&amp;view_type=form">
+                        Open POB in Odoo
+                    </a>
+                </p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <record id="mail_template_pob_hse_approval" model="mail.template">
+        <field name="name">POB: HSE / Rig Approval</field>
+        <field name="model_id" ref="model_pob_request"/>
+        <field name="subject">POB HSE / Rig Approval — {{ object.name }}</field>
+        <field name="body_html" type="html">
+            <div>
+                <p>Hello,</p>
+                <p>
+                    POB permit <strong><t t-out="object.name"/></strong> for
+                    <strong><t t-out="object.employee_id.name"/></strong>
+                    requires HSE / Rig approval.
+                </p>
+                <ul>
+                    <li>Well: <t t-out="object.well_id.name"/></li>
+                    <li>Rig: <t t-out="object.rig_id.name"/></li>
+                    <li>Period: <t t-out="object.date_start"/> → <t t-out="object.date_end"/></li>
+                </ul>
+                <p>
+                    <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=pob.request&amp;view_type=form">
+                        Open POB in Odoo
+                    </a>
+                </p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <record id="mail_template_pob_extension_approval" model="mail.template">
+        <field name="name">POB: Extension Approval</field>
+        <field name="model_id" ref="model_pob_request"/>
+        <field name="subject">POB Extension Approval — {{ object.name }}</field>
+        <field name="body_html" type="html">
+            <div>
+                <p>Hello,</p>
+                <p>
+                    An extension was requested for POB
+                    <strong><t t-out="object.name"/></strong>
+                    (<strong><t t-out="object.employee_id.name"/></strong>).
+                </p>
+                <p>Please review and approve or reject the extension in Odoo.</p>
+                <p>
+                    <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=pob.request&amp;view_type=form">
+                        Open POB in Odoo
+                    </a>
+                </p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <record id="mail_template_pob_expiry_alert" model="mail.template">
+        <field name="name">POB: Expiry Alert (4 days)</field>
+        <field name="model_id" ref="model_pob_request"/>
+        <field name="subject">POB Expiring Soon — {{ object.name }}</field>
+        <field name="body_html" type="html">
+            <div>
+                <p>Hello,</p>
+                <p>
+                    POB permit <strong><t t-out="object.name"/></strong> for
+                    <strong><t t-out="object.employee_id.name"/></strong>
+                    expires on <strong><t t-out="object.date_end"/></strong>
+                    (<t t-out="object.days_remaining"/> day(s) remaining).
+                </p>
+                <p>Please arrange return travel or request an extension.</p>
+                <p>
+                    <a t-attf-href="{{ object.get_base_url() }}/web#id={{ object.id }}&amp;model=pob.request&amp;view_type=form">
+                        Open POB in Odoo
+                    </a>
+                </p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+</odoo>

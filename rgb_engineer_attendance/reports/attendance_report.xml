@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_rgb_attendance_sheet" model="ir.actions.report">
+        <field name="name">Attendance PDF</field>
+        <field name="model">rgb.attendance.sheet</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rgb_engineer_attendance.report_attendance_sheet</field>
+        <field name="report_file">rgb_engineer_attendance.report_attendance_sheet</field>
+        <field name="print_report_name">'Attendance - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_rgb_attendance_sheet"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_attendance_sheet">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="rgb_engineer_attendance.report_attendance_sheet_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_attendance_sheet_document">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2>Attendance Sheet</h2>
+                <table class="table table-sm table-bordered">
+                    <tr>
+                        <th>Reference</th><td><span t-field="o.name"/></td>
+                        <th>Period</th><td><span t-field="o.period_label"/></td>
+                    </tr>
+                    <tr>
+                        <th>Engineer</th><td><span t-field="o.engineer_id"/></td>
+                        <th>Company</th><td><span t-field="o.partner_company_id"/></td>
+                    </tr>
+                    <tr>
+                        <th>Well</th><td><span t-field="o.well_id"/></td>
+                        <th>Rig</th><td><span t-field="o.rig_id"/></td>
+                    </tr>
+                    <tr>
+                        <th>Product</th><td><span t-field="o.product_id"/></td>
+                        <th>Days</th><td><span t-field="o.days_count"/></td>
+                    </tr>
+                </table>
+                <h4 class="mt-4">Days</h4>
+                <table class="table table-sm table-bordered text-center">
+                    <thead>
+                        <tr>
+                            <t t-foreach="range(1, 32)" t-as="day">
+                                <th t-if="day &lt;= o.days_in_month"><t t-out="day"/></th>
+                            </t>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <t t-set="day_flags" t-value="o._get_day_values()"/>
+                            <t t-foreach="range(1, o.days_in_month + 1)" t-as="day_index">
+                                <td>
+                                    <t t-if="day_flags[day_index - 1]">✓</t>
+                                </td>
+                            </t>
+                        </tr>
+                        <tr>
+                            <t t-foreach="range(1, o.days_in_month + 1)" t-as="day_index">
+                                <td>
+                                    <t t-out="o._get_day_display(day_index)"/>
+                                </td>
+                            </t>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

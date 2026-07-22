@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pob_well_user,pob.well.user,model_pob_well,group_pob_user,1,0,0,0
+access_pob_well_manager,pob.well.manager,model_pob_well,group_pob_manager,1,1,1,1
+access_pob_rig_user,pob.rig.user,model_pob_rig,group_pob_user,1,0,0,0
+access_pob_rig_manager,pob.rig.manager,model_pob_rig,group_pob_manager,1,1,1,1
+access_pob_request_user,pob.request.user,model_pob_request,group_pob_user,1,1,1,0
+access_pob_request_operations,pob.request.operations,model_pob_request,group_pob_operations,1,1,1,0
+access_pob_request_hse,pob.request.hse,model_pob_request,group_pob_hse,1,1,1,0
+access_pob_request_supervisor,pob.request.supervisor,model_pob_request,group_pob_supervisor,1,1,1,0
+access_pob_request_manager,pob.request.manager,model_pob_request,group_pob_manager,1,1,1,1
+access_pob_extension_user,pob.extension.user,model_pob_extension,group_pob_user,1,0,0,0
+access_pob_extension_operations,pob.extension.operations,model_pob_extension,group_pob_operations,1,1,1,0
+access_pob_extension_supervisor,pob.extension.supervisor,model_pob_extension,group_pob_supervisor,1,1,1,0
+access_pob_extension_manager,pob.extension.manager,model_pob_extension,group_pob_manager,1,1,1,1
+access_pob_extension_wizard_user,pob.extension.wizard.user,model_pob_extension_wizard,group_pob_user,1,1,1,1
+access_pob_extension_wizard_supervisor,pob.extension.wizard.supervisor,model_pob_extension_wizard,group_pob_supervisor,1,1,1,1
+access_pob_extension_wizard_manager,pob.extension.wizard.manager,model_pob_extension_wizard,group_pob_manager,1,1,1,1

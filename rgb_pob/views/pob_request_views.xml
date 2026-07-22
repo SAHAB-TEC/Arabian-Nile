@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pob_request_list" model="ir.ui.view">
+        <field name="name">pob.request.list</field>
+        <field name="model">pob.request</field>
+        <field name="arch" type="xml">
+            <list string="POB Requests"
+                  decoration-warning="alert_level == 'warning'"
+                  decoration-danger="alert_level in ('critical', 'expired')"
+                  decoration-muted="state == 'expired_closed'"
+                  decoration-info="state == 'under_extension'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="well_id" optional="show"/>
+                <field name="rig_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="duration_days" optional="hide"/>
+                <field name="days_remaining" optional="show"/>
+                <field name="alert_level" optional="hide"/>
+                <field name="state" widget="badge"
+                          decoration-info="state == 'draft'"
+                          decoration-warning="state in ('pending_operations', 'pending_hse_rig', 'under_extension')"
+                          decoration-success="state == 'active_onboard'"
+                          decoration-danger="state == 'expired_closed'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pob_request_form" model="ir.ui.view">
+        <field name="name">pob.request.form</field>
+        <field name="model">pob.request</field>
+        <field name="arch" type="xml">
+            <form string="POB Permit">
+                <header>
+                    <button name="action_submit" type="object" string="Submit"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_operations" type="object" string="Approve Operations"
+                            class="btn-primary" invisible="state != 'pending_operations'"
+                            groups="rgb_pob.group_pob_operations,rgb_pob.group_pob_manager"/>
+                    <button name="action_approve_hse" type="object" string="Approve HSE / Rig"
+                            class="btn-primary" invisible="state != 'pending_hse_rig'"
+                            groups="rgb_pob.group_pob_hse,rgb_pob.group_pob_manager"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            invisible="state not in ('pending_operations', 'pending_hse_rig')"
+                            groups="rgb_pob.group_pob_operations,rgb_pob.group_pob_hse,rgb_pob.group_pob_manager"/>
+                    <button name="action_open_extension_wizard" type="object" string="Request Extension"
+                            class="btn-secondary" invisible="state != 'active_onboard'"
+                            groups="rgb_pob.group_pob_supervisor,rgb_pob.group_pob_manager"/>
+                    <button name="action_approve_pending_extension" type="object" string="Approve Extension"
+                            class="btn-primary" invisible="state != 'under_extension'"
+                            groups="rgb_pob.group_pob_operations,rgb_pob.group_pob_manager"/>
+                    <button name="action_reject_pending_extension" type="object" string="Reject Extension"
+                            invisible="state != 'under_extension'"
+                            groups="rgb_pob.group_pob_operations,rgb_pob.group_pob_manager"/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft"
+                            invisible="state in ('draft', 'expired_closed', 'under_extension')"
+                            groups="rgb_pob.group_pob_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,pending_operations,pending_hse_rig,active_onboard,expired_closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_extensions" type="object" class="oe_stat_button" icon="fa-calendar-plus-o">
+                            <field name="extension_count" widget="statinfo" string="Extensions"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Expired" bg_color="text-bg-danger" invisible="state != 'expired_closed'"/>
+                    <widget name="web_ribbon" title="Extension" bg_color="text-bg-warning" invisible="state != 'under_extension'"/>
+                    <widget name="web_ribbon" title="Expiring Soon" bg_color="text-bg-warning"
+                            invisible="alert_level not in ('warning', 'critical') or state not in ('active_onboard', 'under_extension')"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Personnel">
+                            <field name="employee_id" readonly="is_locked"/>
+                            <field name="department_id"/>
+                            <field name="job_id"/>
+                        </group>
+                        <group string="Location">
+                            <field name="well_id" readonly="is_locked"/>
+                            <field name="rig_id" readonly="is_locked"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="is_locked"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Duration">
+                            <field name="duration_days" readonly="is_locked"/>
+                            <field name="date_start" readonly="is_locked"/>
+                            <field name="date_end" readonly="1"/>
+                            <field name="approved_extension_days" readonly="1"/>
+                        </group>
+                        <group string="Alerts">
+                            <field name="alert_date" readonly="1"/>
+                            <field name="days_remaining" readonly="1"/>
+                            <field name="alert_level" readonly="1"/>
+                            <field name="alert_sent" readonly="1" groups="rgb_pob.group_pob_manager"/>
+                            <field name="is_locked" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Rejection" invisible="not rejection_reason">
+                        <field name="rejection_reason" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Extensions" name="extensions">
+                            <field name="extension_ids" readonly="1">
+                                <list>
+                                    <field name="request_date"/>
+                                    <field name="extension_days"/>
+                                    <field name="reason"/>
+                                    <field name="requested_by_id"/>
+                                    <field name="state" widget="badge"
+                                              decoration-warning="state == 'pending'"
+                                              decoration-success="state == 'approved'"
+                                              decoration-danger="state == 'rejected'"/>
+                                    <field name="approved_by_id" optional="show"/>
+                                    <field name="rejected_by_id" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_pob_request_search" model="ir.ui.view">
+        <field name="name">pob.request.search</field>
+        <field name="model">pob.request</field>
+        <field name="arch" type="xml">
+            <search string="Search POB">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="well_id"/>
+                <field name="rig_id"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="pending" string="Pending Approval"
+                        domain="[('state', 'in', ('pending_operations', 'pending_hse_rig'))]"/>
+                <filter name="active" string="Active / Onboard" domain="[('state', '=', 'active_onboard')]"/>
+                <filter name="under_extension" string="Under Extension" domain="[('state', '=', 'under_extension')]"/>
+                <filter name="expired" string="Expired / Closed" domain="[('state', '=', 'expired_closed')]"/>
+                <separator/>
+                <filter name="expiring_soon" string="Expiring Soon (≤4 days)"
+                        domain="[('alert_level', 'in', ('warning', 'critical')), ('state', 'in', ('active_onboard', 'under_extension'))]"/>
+                <group>
+                    <filter name="groupby_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="groupby_rig" string="Rig" context="{'group_by': 'rig_id'}"/>
+                    <filter name="groupby_well" string="Well" context="{'group_by': 'well_id'}"/>
+                    <filter name="groupby_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_pob_extension_list" model="ir.ui.view">
+        <field name="name">pob.extension.list</field>
+        <field name="model">pob.extension</field>
+        <field name="arch" type="xml">
+            <list string="POB Extensions">
+                <field name="request_id"/>
+                <field name="request_date"/>
+                <field name="extension_days"/>
+                <field name="reason"/>
+                <field name="requested_by_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pob_extension_form" model="ir.ui.view">
+        <field name="name">pob.extension.form</field>
+        <field name="model">pob.extension</field>
+        <field name="arch" type="xml">
+            <form string="POB Extension">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary"
+                            invisible="state != 'pending'"
+                            groups="rgb_pob.group_pob_operations,rgb_pob.group_pob_manager"/>
+                    <button name="action_reject" type="object" string="Reject"
+                            invisible="state != 'pending'"
+                            groups="rgb_pob.group_pob_operations,rgb_pob.group_pob_manager"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="request_id"/>
+                            <field name="extension_days"/>
+                            <field name="reason"/>
+                        </group>
+                        <group>
+                            <field name="requested_by_id"/>
+                            <field name="request_date"/>
+                            <field name="approved_by_id"/>
+                            <field name="approval_date"/>
+                            <field name="rejected_by_id"/>
+                            <field name="rejection_date"/>
+                            <field name="rejection_reason"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pob_request" model="ir.actions.act_window">
+        <field name="name">POB Requests</field>
+        <field name="res_model">pob.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pob_request_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a Personnel on Board travel permit</p>
+        </field>
+    </record>
+
+    <record id="action_pob_request_active" model="ir.actions.act_window">
+        <field name="name">Active Onboard</field>
+        <field name="res_model">pob.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', 'in', ('active_onboard', 'under_extension'))]</field>
+        <field name="context">{'search_default_active': 1}</field>
+    </record>
+
+    <record id="action_pob_extension" model="ir.actions.act_window">
+        <field name="name">Extensions</field>
+        <field name="res_model">pob.extension</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pob_well_list" model="ir.ui.view">
+        <field name="name">pob.well.list</field>
+        <field name="model">pob.well</field>
+        <field name="arch" type="xml">
+            <list string="Wells">
+                <field name="name"/>
+                <field name="code" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pob_well_form" model="ir.ui.view">
+        <field name="name">pob.well.form</field>
+        <field name="model">pob.well</field>
+        <field name="arch" type="xml">
+            <form string="Well">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Rigs" name="rigs">
+                            <field name="rig_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="partner_id" optional="show"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_pob_well_search" model="ir.ui.view">
+        <field name="name">pob.well.search</field>
+        <field name="model">pob.well</field>
+        <field name="arch" type="xml">
+            <search string="Search Wells">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="partner_id"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="groupby_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_pob_well" model="ir.actions.act_window">
+        <field name="name">Wells</field>
+        <field name="res_model">pob.well</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pob_well_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a well / oil site</p>
+        </field>
+    </record>
+</odoo>

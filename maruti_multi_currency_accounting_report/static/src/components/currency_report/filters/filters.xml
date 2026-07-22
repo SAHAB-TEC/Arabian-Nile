@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+        <!-- currencies filter for all other report -->
+        <t t-name="maruti_multi_currency_accounting_report.currencyReportFiltersCustomizable" t-inherit="account_reports.AccountReportFiltersCustomizable"  t-inherit-mode="extension">
+            <xpath expr="." position="inside">
+                <t t-if="'currencies' in controller.options">
+                    <div id="filter_currencies">
+                        <t t-call="maruti_multi_currency_accounting_report.AccountReportFiltercurrencies_data"/>
+                    </div>
+                </t>
+            </xpath>
+        </t>
+        <!-- currencies filter for Partner Ledger Report -->
+        <t t-name="maruti_multi_currency_accounting_report.currencyReportFiltersCustomizablecurrencies" t-inherit="account_reports.PartnerLedgerFilters" t-inherit-mode="extension">
+            <xpath expr="." position="inside">
+                <t t-if="'currencies' in controller.options">
+                    <div id="filter_currencies">
+                        <t t-call="maruti_multi_currency_accounting_report.AccountReportFiltercurrencies_data"/>
+                    </div>
+                    
+                </t>
+            </xpath>    
+        </t>
+        <!-- currencies filter for Aged receivable and aged payable Report -->
+        <t t-name="maruti_multi_currency_accounting_report.currencyReportFiltersCustomizablecurrencies" t-inherit="account_reports.AgedPartnerBalanceFilters" t-inherit-mode="extension">
+            <xpath expr="." position="inside">
+                <t t-if="'currencies' in controller.options">
+                    <div id="filter_currencies">
+                        <t t-call="maruti_multi_currency_accounting_report.AccountReportFiltercurrencies_data"/>
+                    </div> 
+                </t>
+            </xpath>    
+        </t>
+</templates>

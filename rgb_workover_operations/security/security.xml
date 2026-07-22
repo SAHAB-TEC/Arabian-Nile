@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_workover" model="ir.module.category">
+        <field name="name">Workover Operations</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="group_workover_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_workover"/>
+    </record>
+
+    <record id="group_workover_rig_summary" model="res.groups">
+        <field name="name">Rig Summary</field>
+        <field name="category_id" ref="module_category_workover"/>
+        <field name="implied_ids" eval="[(4, ref('group_workover_user'))]"/>
+        <field name="comment">Access the Rig Summary Report tab on daily reports.</field>
+    </record>
+
+    <record id="group_workover_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_workover"/>
+        <field name="implied_ids" eval="[(4, ref('group_workover_user')), (4, ref('group_workover_rig_summary'))]"/>
+    </record>
+</odoo>

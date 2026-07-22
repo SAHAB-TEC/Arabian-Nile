@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_workover_rig_list" model="ir.ui.view">
+        <field name="name">workover.rig.list</field>
+        <field name="model">workover.rig</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_workover_rig_form" model="ir.ui.view">
+        <field name="name">workover.rig.form</field>
+        <field name="model">workover.rig</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="active"/>
+                    </group>
+                    <notebook>
+                        <page string="Wells">
+                            <field name="well_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="location"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_workover_rig" model="ir.actions.act_window">
+        <field name="name">Rigs</field>
+        <field name="res_model">workover.rig</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_workover_well_list" model="ir.ui.view">
+        <field name="name">workover.well.list</field>
+        <field name="model">workover.well</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="rig_id"/>
+                <field name="location"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_workover_well_form" model="ir.ui.view">
+        <field name="name">workover.well.form</field>
+        <field name="model">workover.well</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="rig_id"/>
+                        <field name="location"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_workover_well" model="ir.actions.act_window">
+        <field name="name">Wells</field>
+        <field name="res_model">workover.well</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_workover_operator_list" model="ir.ui.view">
+        <field name="name">workover.operator.list</field>
+        <field name="model">workover.operator</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_workover_operator_form" model="ir.ui.view">
+        <field name="name">workover.operator.form</field>
+        <field name="model">workover.operator</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_workover_operator" model="ir.actions.act_window">
+        <field name="name">Operators</field>
+        <field name="res_model">workover.operator</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_workover_time_category_list" model="ir.ui.view">
+        <field name="name">workover.time.category.list</field>
+        <field name="model">workover.time.category</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="summary_column"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_workover_time_category_form" model="ir.ui.view">
+        <field name="name">workover.time.category.form</field>
+        <field name="model">workover.time.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="sequence"/>
+                        <field name="summary_column"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_workover_time_category" model="ir.actions.act_window">
+        <field name="name">Time Categories</field>
+        <field name="res_model">workover.time.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,494 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* rgb_workover_operations
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-06 06:00+0000\n"
+"PO-Revision-Date: 2026-07-06 06:00+0000\n"
+"Last-Translator: RGB\n"
+"Language-Team: Arabic\n"
+"Language: ar_001\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+
+#. module: rgb_workover_operations
+#: model:ir.module.module,summary:rgb_workover_operations.module_rgb_workover_operations
+msgid "Daily workover operation reports and monthly summary Excel export"
+msgstr "تقارير عمليات الصيانة اليومية وتصدير ملخص شهري إلى Excel"
+
+#. module: rgb_workover_operations
+#: model:ir.module.module,shortdesc:rgb_workover_operations.module_rgb_workover_operations
+msgid "RGB Workover Operations"
+msgstr "عمليات الصيانة - النيل العربي"
+
+#. module: rgb_workover_operations
+#: model:ir.module.category,name:rgb_workover_operations.module_category_workover
+msgid "Workover Operations"
+msgstr "عمليات الصيانة"
+
+#. module: rgb_workover_operations
+#: model:res.groups,name:rgb_workover_operations.group_workover_user
+msgid "User"
+msgstr "مستخدم"
+
+#. module: rgb_workover_operations
+#: model:res.groups,name:rgb_workover_operations.group_workover_manager
+msgid "Manager"
+msgstr "مدير"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_root
+msgid "Operations"
+msgstr "العمليات"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_daily_report
+#: model:ir.actions.act_window,name:rgb_workover_operations.action_workover_daily_report
+msgid "Daily Reports"
+msgstr "التقارير اليومية"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_reports
+msgid "Reports"
+msgstr "التقارير"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_export_daily
+#: model:ir.actions.act_window,name:rgb_workover_operations.action_workover_daily_export_wizard
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_export_wizard_form
+msgid "Export Daily Reports"
+msgstr "تصدير التقارير اليومية"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_export_summary
+#: model:ir.actions.act_window,name:rgb_workover_operations.action_workover_summary_export_wizard
+msgid "Export Summary Excel"
+msgstr "تصدير ملخص Excel"
+
+#. module: rgb_workover_operations
+#: model:ir.actions.act_window,name:rgb_workover_operations.action_workover_summary_export_wizard
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_summary_export_wizard_form
+msgid "Export Summary Report"
+msgstr "تصدير تقرير الملخص"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_config
+msgid "Configuration"
+msgstr "الإعدادات"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_rig
+#: model:ir.actions.act_window,name:rgb_workover_operations.action_workover_rig
+msgid "Rigs"
+msgstr "الحفارات"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_well
+#: model:ir.actions.act_window,name:rgb_workover_operations.action_workover_well
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_rig_form
+msgid "Wells"
+msgstr "الآبار"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_operator
+#: model:ir.actions.act_window,name:rgb_workover_operations.action_workover_operator
+msgid "Operators"
+msgstr "المشغّلون"
+
+#. module: rgb_workover_operations
+#: model:ir.ui.menu,name:rgb_workover_operations.menu_workover_time_category
+#: model:ir.actions.act_window,name:rgb_workover_operations.action_workover_time_category
+msgid "Time Categories"
+msgstr "فئات الوقت"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Confirm"
+msgstr "تأكيد"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Reset to Draft"
+msgstr "إرجاع إلى مسودة"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Present Operations"
+msgstr "العمليات الحالية"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Time Breakdown"
+msgstr "توزيع الوقت"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Technical Data"
+msgstr "البيانات الفنية"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Bit Data"
+msgstr "بيانات المثقاب"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Mud Data"
+msgstr "بيانات الطين"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Engineering Data"
+msgstr "البيانات الهندسية"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Pump Data"
+msgstr "بيانات المضخة"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Transport"
+msgstr "النقل"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_search
+msgid "Draft"
+msgstr "مسودة"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_search
+msgid "Confirmed"
+msgstr "مؤكد"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_search
+msgid "Group By"
+msgstr "تجميع حسب"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_search
+msgid "Rig"
+msgstr "الحفارة"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_search
+msgid "Well"
+msgstr "البئر"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_search
+msgid "Date"
+msgstr "التاريخ"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_export_wizard_form
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_summary_export_wizard_form
+msgid "Export Excel"
+msgstr "تصدير Excel"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_export_wizard_form
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_summary_export_wizard_form
+msgid "Cancel"
+msgstr "إلغاء"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_daily_report
+msgid "Workover Daily Operation Report"
+msgstr "تقرير العمليات اليومي"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_present_operation_line
+msgid "Present Operation Line"
+msgstr "سطر العملية الحالية"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_time_breakdown_line
+msgid "Time Breakdown Line"
+msgstr "سطر توزيع الوقت"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_rig
+msgid "Workover Rig"
+msgstr "حفارة الصيانة"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_well
+msgid "Workover Well"
+msgstr "بئر الصيانة"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_operator
+msgid "Workover Operator"
+msgstr "مشغّل الصيانة"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_time_category
+msgid "Workover Time Breakdown Category"
+msgstr "فئة توزيع وقت الصيانة"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_daily_report_export_wizard
+msgid "Export Daily Operation Reports"
+msgstr "تصدير تقارير العمليات اليومية"
+
+#. module: rgb_workover_operations
+#: model:ir.model,name:rgb_workover_operations.model_workover_summary_report_export_wizard
+msgid "Export Workover Summary Report"
+msgstr "تصدير تقرير ملخص الصيانة"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__name
+msgid "Reference"
+msgstr "المرجع"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__state
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_daily_report__state__draft
+msgid "Draft"
+msgstr "مسودة"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_daily_report__state__confirmed
+msgid "Confirmed"
+msgstr "مؤكد"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__operator_id
+msgid "Operator"
+msgstr "المشغّل"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__report_number
+msgid "Report #"
+msgstr "رقم التقرير"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__spud_date
+msgid "Spud Date"
+msgstr "تاريخ البدء"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__release_date
+msgid "Release Date"
+msgstr "تاريخ الإنهاء"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__present_operation_title
+msgid "Present Operation Title"
+msgstr "عنوان العملية الحالية"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__summary_type
+msgid "Summary Type"
+msgstr "نوع الملخص"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__operations_summary
+msgid "Operations Summary"
+msgstr "ملخص العمليات"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__present_operation_ids
+msgid "Present Operations"
+msgstr "العمليات الحالية"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__time_breakdown_ids
+msgid "Time Breakdown"
+msgstr "توزيع الوقت"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__time_breakdown_total
+msgid "Time Breakdown Total"
+msgstr "إجمالي توزيع الوقت"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_present_operation_line__time_from
+msgid "From"
+msgstr "من"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_present_operation_line__time_to
+msgid "To"
+msgstr "إلى"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid ""
+"Time breakdown is calculated automatically from Present Operations (duration "
+"per line, grouped by type)."
+msgstr ""
+"يُحسب توزيع الوقت تلقائياً من العمليات الحالية (مدة كل سطر، مجمّعة حسب "
+"النوع)."
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_present_operation_line__type_category_id
+msgid "Type"
+msgstr "النوع"
+
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_present_operation_line__description
+msgid "Description"
+msgstr "الوصف"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_time_breakdown_line__category_id
+msgid "Category"
+msgstr "الفئة"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_time_breakdown_line__hours
+msgid "Hours"
+msgstr "الساعات"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_rig__code
+msgid "Rig Code"
+msgstr "رمز الحفارة"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_time_category__summary_column
+msgid "Summary Column"
+msgstr "عمود الملخص"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__full_ops
+msgid "Full Ops Hrs"
+msgstr "Full Ops Hrs"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__standby_wcrew
+msgid "Stand-By W/Crew"
+msgstr "Stand-By W/Crew"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__standby_wocrew
+msgid "Stand-By W-O/Crew"
+msgstr "Stand-By W-O/Crew"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__full_repair
+msgid "Full Repair Rate"
+msgstr "Full Repair Rate"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__zero_rate
+msgid "Zero Rate"
+msgstr "Zero Rate"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__force_majeure
+msgid "Force Majeure"
+msgstr "Force Majeure"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__rd_ru_rmtime
+msgid "R/D, R/U & R/MTime"
+msgstr "R/D, R/U & R/MTime"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_time_category__summary_column__none
+msgid "Not in Summary"
+msgstr "Not in Summary"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report_export_wizard__date_from
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_summary_report_export_wizard__date_from
+msgid "From"
+msgstr "من"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report_export_wizard__date_to
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_summary_report_export_wizard__date_to
+msgid "To"
+msgstr "إلى"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_daily_report_export_wizard__state__confirmed
+msgid "Confirmed Only"
+msgstr "المؤكدة فقط"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields.selection,name:rgb_workover_operations.selection__workover_daily_report_export_wizard__state__all
+msgid "All States"
+msgstr "كل الحالات"
+
+#. module: rgb_workover_operations
+#. odoo-python
+#: code:addons/rgb_workover_operations/models/workover_daily_report.py:0
+msgid "New"
+msgstr "جديد"
+
+#. module: rgb_workover_operations
+#. odoo-python
+#: code:addons/rgb_workover_operations/models/workover_daily_report.py:0
+msgid ""
+"Time breakdown must total 12 hours before confirmation (current total: "
+"%(total).2f)."
+msgstr ""
+"يجب أن يكون إجمالي توزيع الوقت 12 ساعة قبل التأكيد (الإجمالي الحالي: "
+"%(total).2f)."
+
+#. module: rgb_workover_operations
+#. odoo-python
+#: code:addons/rgb_workover_operations/models/workover_present_operation.py:0
+msgid "Hours cannot be negative."
+msgstr "لا يمكن أن تكون الساعات سالبة."
+
+#. module: rgb_workover_operations
+#. odoo-python
+#: code:addons/rgb_workover_operations/wizard/daily_report_export_wizard.py:0
+#: code:addons/rgb_workover_operations/wizard/summary_report_export_wizard.py:0
+msgid "The start date must be before or equal to the end date."
+msgstr "يجب أن يكون تاريخ البداية قبل أو يساوي تاريخ النهاية."
+
+#. module: rgb_workover_operations
+#. odoo-python
+#: code:addons/rgb_workover_operations/wizard/daily_report_export_wizard.py:0
+msgid "No daily reports found for the selected filters."
+msgstr "لم يتم العثور على تقارير يومية للفلاتر المحددة."
+
+#. module: rgb_workover_operations
+#. odoo-python
+#: code:addons/rgb_workover_operations/wizard/summary_report_export_wizard.py:0
+msgid "No confirmed daily reports found for the selected filters."
+msgstr "لم يتم العثور على تقارير يومية مؤكدة للفلاتر المحددة."
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Rig Summary Report"
+msgstr "ملخص الحفارة"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__rig_summary_date_from
+msgid "Summary From"
+msgstr "من"
+
+#. module: rgb_workover_operations
+#: model:ir.model.fields,field_description:rgb_workover_operations.field_workover_daily_report__rig_summary_date_to
+msgid "Summary To"
+msgstr "إلى"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Period"
+msgstr "الفترة"
+
+#. module: rgb_workover_operations
+#: model:res.groups,name:rgb_workover_operations.group_workover_rig_summary
+msgid "Rig Summary"
+msgstr "ملخص الحفارة"
+
+#. module: rgb_workover_operations
+#: model_terms:ir.ui.view,arch_db:rgb_workover_operations.view_workover_daily_report_form
+msgid "Print Rig Summary"
+msgstr "طباعة ملخص الحفارة"
+

@@ -96,12 +96,37 @@ class AccountMove(models.Model):
             contract = move.contract_id
             if not contract:
                 continue
-            if contract.contract_business_type and not move.ait_invoice_type:
-                move.ait_invoice_type = dict(
-                    contract._fields["contract_business_type"].selection
-                ).get(contract.contract_business_type, "")
+            if contract.contract_business_type_id and not move.ait_invoice_type:
+                move.ait_invoice_type = contract.contract_business_type_id.name
             if contract.date_start and not move.ait_work_date:
                 move.ait_work_date = contract.date_start
+
+    def ait_get_currency_splits_for_report(self, lyd_filter=None):
+        """Return payment currency split lines filtered for PDF templates."""
+        self.ensure_one()
+        splits = self.currency_split_ids
+        lyd = self.env.ref("base.LYD", raise_if_not_found=False)
+        if not lyd_filter or not lyd:
+            return splits
+        if lyd_filter == "exclude":
+            return splits.filtered(lambda s: s.currency_id != lyd)
+        if lyd_filter == "only":
+            return splits.filtered(lambda s: s.currency_id == lyd)
+        return splits
+
+    def ait_show_legacy_usd_on_report(self, lyd_filter=None):
+        if self.currency_split_ids:
+            return False
+        if lyd_filter == "only":
+            return False
+        return bool(self.dollar_percentage or self.usd_amount)
+
+    def ait_show_legacy_lyd_on_report(self, lyd_filter=None):
+        if self.currency_split_ids:
+            return False
+        if lyd_filter == "exclude":
+            return False
+        return bool(self.libya_dinar_percentage or self.lyd_amount)
 
 
 class AccountMoveLine(models.Model):

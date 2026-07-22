@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_workover_daily_export_wizard_form" model="ir.ui.view">
+        <field name="name">workover.daily.report.export.wizard.form</field>
+        <field name="model">workover.daily.report.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Daily Reports">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="state"/>
+                    </group>
+                    <group>
+                        <field name="rig_id"/>
+                        <field name="well_id"/>
+                        <field name="operator_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_export_xlsx" type="object" string="Export Excel" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_workover_daily_export_wizard" model="ir.actions.act_window">
+        <field name="name">Export Daily Reports</field>
+        <field name="res_model">workover.daily.report.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_workover_summary_export_wizard_form" model="ir.ui.view">
+        <field name="name">workover.summary.report.export.wizard.form</field>
+        <field name="model">workover.summary.report.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Summary Report">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="rig_id"/>
+                        <field name="well_id"/>
+                        <field name="operator_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_export_xlsx" type="object" string="Export Excel" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_workover_summary_export_wizard" model="ir.actions.act_window">
+        <field name="name">Export Summary Report</field>
+        <field name="res_model">workover.summary.report.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

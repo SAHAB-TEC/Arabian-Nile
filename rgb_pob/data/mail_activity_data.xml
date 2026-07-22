@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_activity_pob_approval" model="mail.activity.type">
+        <field name="name">POB Approval</field>
+        <field name="icon">fa-check-square-o</field>
+        <field name="res_model">pob.request</field>
+        <field name="summary">Review POB Permit</field>
+        <field name="delay_count">0</field>
+    </record>
+
+    <record id="mail_activity_pob_extension" model="mail.activity.type">
+        <field name="name">POB Extension Approval</field>
+        <field name="icon">fa-calendar-plus-o</field>
+        <field name="res_model">pob.request</field>
+        <field name="summary">Review POB Extension</field>
+        <field name="delay_count">0</field>
+    </record>
+
+    <record id="mail_activity_pob_alert" model="mail.activity.type">
+        <field name="name">POB Expiry Alert</field>
+        <field name="icon">fa-exclamation-triangle</field>
+        <field name="res_model">pob.request</field>
+        <field name="summary">POB Expiring Soon</field>
+        <field name="delay_count">0</field>
+    </record>
+</odoo>

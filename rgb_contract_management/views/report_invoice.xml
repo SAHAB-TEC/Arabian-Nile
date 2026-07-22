@@ -11,32 +11,47 @@
     </template>
 
     <template id="report_invoice_document_contract" inherit_id="account.report_invoice_document">
+
+        <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
+            <tr t-if="o.contract_id and o.currency_split_ids"
+                class="is-subtotal text-end">
+                <td colspan="99">
+                    <t t-foreach="o.currency_split_ids" t-as="split">
+                        <span style="margin-right: 16px;">
+                            <strong t-field="split.currency_id"/>
+                            <strong> %</strong>
+                            <span t-field="split.percentage"/>
+                            —
+                            <strong>Amount</strong>
+                            <span t-field="split.amount"
+                                  t-options="{'widget': 'monetary', 'display_currency': split.currency_id}"/>
+                        </span>
+                    </t>
+                </td>
+            </tr>
+        </xpath>
+
+        <!-- Hide partner Customer Code on invoice print -->
+        <xpath expr="//div[@name='customer_code']" position="replace"/>
+
+        <!-- Allow informations block when only contract code is set -->
+        <xpath expr="//div[@id='informations']" position="attributes">
+            <attribute name="t-if">o.invoice_date or (o.invoice_date_due and o.move_type == 'out_invoice' and o.state == 'posted') or o.delivery_date or o.invoice_origin or o.ref or o.invoice_incoterm_id or o.contract_code</attribute>
+        </xpath>
+
+        <!-- Show contract code in invoice header informations -->
         <xpath expr="//div[@id='informations']" position="inside">
-            <div t-if="o.contract_code" class="col" name="contract_code">
-                <strong>Contract No</strong>
+            <div class="col" t-if="o.contract_code" name="contract_code">
+                <strong>Contract Code</strong>
                 <div t-field="o.contract_code"/>
             </div>
         </xpath>
-        <xpath expr="//tbody[hasclass('invoice_tbody')]" position="inside">
-            <tr t-if="o.contract_id and (o.dollar_percentage or o.libya_dinar_percentage)"
-                class="is-subtotal text-end">
-                <td colspan="99">
-                    <span t-if="o.dollar_percentage" style="margin-right: 16px;">
-                        <strong>USD %</strong>
-                        <span t-field="o.dollar_percentage"/>
-                        —
-                        <strong>USD Amount</strong>
-                        <span t-field="o.usd_amount"/>
-                    </span>
-                    <span t-if="o.libya_dinar_percentage">
-                        <strong>LYD %</strong>
-                        <span t-field="o.libya_dinar_percentage"/>
-                        —
-                        <strong>LYD Amount</strong>
-                        <span t-field="o.lyd_amount" currency="LYD"/>
-                    </span>
-                </td>
-            </tr>
+
+        <!-- Terms and Conditions: visible label above narration -->
+        <xpath expr="//div[@name='comment']" position="before">
+            <div class="mb-1" t-if="not is_html_empty(o.narration)" name="terms_title">
+                <strong>Terms and Conditions</strong>
+            </div>
         </xpath>
     </template>
 </odoo>
