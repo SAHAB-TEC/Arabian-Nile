@@ -17,6 +17,7 @@
                         <field name="filter_by" widget="radio"/>
                         <field name="employee_ids" widget="many2many_tags" invisible="filter_by != 'employees'" required="filter_by == 'employees'"/>
                         <field name="department_ids" widget="many2many_tags" invisible="filter_by != 'departments'" required="filter_by == 'departments'"/>
+                        <field name="bank_id"/>
                     </group>
                 </group>
                 <footer>

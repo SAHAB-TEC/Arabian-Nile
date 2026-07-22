@@ -28,7 +28,8 @@ class ReportPayrollBank(models.AbstractModel):
             'total_net_salary': sum(lines.mapped('net_salary')),
             'filter_label': filter_label,
             'company': wizard.company_id,
-        }
+            'bank_name': wizard.bank_id.name if wizard.bank_id else '',
+     }
 
 
 class ReportPayrollBankLines(models.AbstractModel):
