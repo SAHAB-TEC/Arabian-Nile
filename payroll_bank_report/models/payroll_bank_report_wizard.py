@@ -48,6 +48,10 @@ class PayrollBankReportWizard(models.TransientModel):
         'department_id',
         string='Departments',
     )
+    bank_id = fields.Many2one(
+    'res.bank',
+    string='Bank',
+    )
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -131,15 +135,34 @@ class PayrollBankReportWizard(models.TransientModel):
         old_lines = self.env['payroll.bank.report.line'].search([('wizard_id', '=', self.id)])
         old_lines.unlink()
 
-        payslips = self.env['hr.payslip'].search(self._get_payslip_domain(), order='employee_id, date_from')
+        payslips = self.env['hr.payslip'].search(
+            self._get_payslip_domain(),
+            order='employee_id, date_from'
+        )
+
         grouped = {}
+
         for slip in payslips:
             employee = slip.employee_id
             if not employee:
                 continue
+
+            bank_account = self._get_employee_bank_account(employee)
+
+            # Filter by selected bank
+            if self.bank_id:
+                if not bank_account or not bank_account.bank_id:
+                    continue
+                if bank_account.bank_id.id != self.bank_id.id:
+                    continue
+
             if employee.id not in grouped:
-                bank_account = self._get_employee_bank_account(employee)
-                currency = slip.currency_id or slip.company_id.currency_id or self.company_id.currency_id
+                currency = (
+                    slip.currency_id
+                    or slip.company_id.currency_id
+                    or self.company_id.currency_id
+                )
+
                 grouped[employee.id] = {
                     'wizard_id': self.id,
                     'company_id': self.company_id.id,
@@ -154,6 +177,7 @@ class PayrollBankReportWizard(models.TransientModel):
                     'bank_id': bank_account.bank_id.id if bank_account and bank_account.bank_id else False,
                     'payslip_count': 0,
                 }
+
             grouped[employee.id]['net_salary'] += self._get_net_salary(slip)
             grouped[employee.id]['payslip_count'] += 1
 
