@@ -31,43 +31,26 @@
             </tr>
         </xpath>
 
-        <!-- Vendor invoice: deliverer / receiver signatures at report footer -->
-        <xpath expr="//div[@id='payment_term']" position="after">
-            <div t-if="o.is_purchase_document(include_receipts=True)"
-                 class="mt-5 avoid-page-break-inside"
-                 name="vendor_invoice_signatures">
-                <div class="row mt-4">
-                    <div class="col-6 pe-4">
-                        <div class="text-center fw-bold mb-3">المسلم / Deliverer</div>
-                        <div class="mb-3">
-                            <span>الاسم / Name:</span>
-                            <span style="display:inline-block; min-width:70%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
-                        </div>
-                        <div class="mb-3">
-                            <span>التوقيع / Signature:</span>
-                            <span style="display:inline-block; min-width:60%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
-                        </div>
-                        <div>
-                            <span>التاريخ / Date:</span>
-                            <span style="display:inline-block; min-width:65%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
-                        </div>
-                    </div>
-                    <div class="col-6 ps-4">
-                        <div class="text-center fw-bold mb-3">المستلم / Receiver</div>
-                        <div class="mb-3">
-                            <span>الاسم / Name:</span>
-                            <span style="display:inline-block; min-width:70%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
-                        </div>
-                        <div class="mb-3">
-                            <span>التوقيع / Signature:</span>
-                            <span style="display:inline-block; min-width:60%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
-                        </div>
-                        <div>
-                            <span>التاريخ / Date:</span>
-                            <span style="display:inline-block; min-width:65%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
-                        </div>
-                    </div>
-                </div>
+        <!-- Hide partner Customer Code on invoice print -->
+        <xpath expr="//div[@name='customer_code']" position="replace"/>
+
+        <!-- Allow informations block when only contract code is set -->
+        <xpath expr="//div[@id='informations']" position="attributes">
+            <attribute name="t-if">o.invoice_date or (o.invoice_date_due and o.move_type == 'out_invoice' and o.state == 'posted') or o.delivery_date or o.invoice_origin or o.ref or o.invoice_incoterm_id or o.contract_code</attribute>
+        </xpath>
+
+        <!-- Show contract code in invoice header informations -->
+        <xpath expr="//div[@id='informations']" position="inside">
+            <div class="col" t-if="o.contract_code" name="contract_code">
+                <strong>Contract Code</strong>
+                <div t-field="o.contract_code"/>
+            </div>
+        </xpath>
+
+        <!-- Terms and Conditions: visible label above narration -->
+        <xpath expr="//div[@name='comment']" position="before">
+            <div class="mb-1" t-if="not is_html_empty(o.narration)" name="terms_title">
+                <strong>Terms and Conditions</strong>
             </div>
         </xpath>
     </template>

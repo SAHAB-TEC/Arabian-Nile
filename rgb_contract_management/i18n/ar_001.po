@@ -1256,6 +1256,11 @@ msgid "Contract No"
 msgstr "رقم العقد"
 
 #. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.report_invoice_document_contract
+msgid "Terms and Conditions"
+msgstr "الشروط والأحكام"
+
+#. module: rgb_contract_management
 #: model:ir.model.fields,help:rgb_contract_management.field_rgb_contract__contract_code
 msgid "Unique contract number shown on linked invoice prints."
 msgstr "رقم عقد فريد يظهر في طباعة الفواتير المرتبطة."

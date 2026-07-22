@@ -9,7 +9,7 @@ from odoo.tools.float_utils import float_round
 from odoo.tools.misc import format_date, xlsxwriter
 
 TAX_RATE_1 = 0.01
-TAX_RATE_05 = 0.0005  # 0.05%
+TAX_RATE_005 = 0.005  # 5/1000 = 0.005 (label: 0.005%)
 
 
 class AitTaxStatementReportWizard(models.TransientModel):
@@ -154,8 +154,8 @@ class AitTaxStatementReportWizard(models.TransientModel):
                 lyd_amount = 0.0
 
             tax_1 = float_round(lyd_amount * TAX_RATE_1, precision_digits=3)
-            tax_05 = float_round(lyd_amount * TAX_RATE_05, precision_digits=3)
-            tax_total = float_round(tax_1 + tax_05, precision_digits=3)
+            tax_005 = float_round(lyd_amount * TAX_RATE_005, precision_digits=3)
+            tax_total = float_round(tax_1 + tax_005, precision_digits=3)
 
             rows.append({
                 'name': move.name or '',
@@ -164,7 +164,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
                 'usd_amount': usd_amount,
                 'lyd_amount': lyd_amount,
                 'tax_1': tax_1,
-                'tax_05': tax_05,
+                'tax_005': tax_005,
                 'tax_total': tax_total,
             })
         return rows
@@ -280,7 +280,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
             _('Amount in USD'),
             rate_header,
             '1%',
-            '0.05%',
+            '0.005%',
             _('Total'),
         ]
         for col, header in enumerate(headers):
@@ -292,7 +292,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
         data_start = row
         totals = {
             'foreign': 0.0, 'usd': 0.0, 'lyd': 0.0,
-            'tax_1': 0.0, 'tax_05': 0.0, 'tax_total': 0.0,
+            'tax_1': 0.0, 'tax_005': 0.0, 'tax_total': 0.0,
         }
         for line in rows:
             sheet.set_row(row, 18)
@@ -301,14 +301,14 @@ class AitTaxStatementReportWizard(models.TransientModel):
             sheet.write(row, 3, line['foreign_amount'], formats['money'])
             sheet.write(row, 4, line['lyd_amount'], formats['money_lyd'])
             sheet.write(row, 5, line['tax_1'], formats['money_lyd'])
-            sheet.write(row, 6, line['tax_05'], formats['money_lyd'])
+            sheet.write(row, 6, line['tax_005'], formats['money_lyd'])
             sheet.write(row, 7, line['tax_total'], formats['tax_total'])
 
             totals['foreign'] += line['foreign_amount']
             totals['usd'] += line['usd_amount']
             totals['lyd'] += line['lyd_amount']
             totals['tax_1'] += line['tax_1']
-            totals['tax_05'] += line['tax_05']
+            totals['tax_005'] += line['tax_005']
             totals['tax_total'] += line['tax_total']
             row += 1
 
@@ -326,7 +326,7 @@ class AitTaxStatementReportWizard(models.TransientModel):
         sheet.write(row, 3, totals['foreign'], formats['total_money'])
         sheet.write(row, 4, totals['lyd'], formats['total_lyd'])
         sheet.write(row, 5, totals['tax_1'], formats['total_lyd'])
-        sheet.write(row, 6, totals['tax_05'], formats['total_lyd'])
+        sheet.write(row, 6, totals['tax_005'], formats['total_lyd'])
         sheet.write(row, 7, float_round(totals['tax_total'], precision_digits=3), formats['total_tax'])
 
         return row + 2, header_row

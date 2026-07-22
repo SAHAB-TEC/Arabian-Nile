@@ -186,11 +186,6 @@
 
     <template id="report_invoice_document_all" inherit_id="account.report_invoice_document">
 
-        <!-- hide terms and conditions -->
-        <xpath expr="//div[@id='payment_term']" position="attributes">
-            <attribute name="style">display: none;</attribute>
-        </xpath>
-
         <!-- Line number column -->
         <xpath expr="//th[@name='th_description']" position="before">
             <th style="border: 1px solid #000; text-align: center; width: 4%;">No</th>

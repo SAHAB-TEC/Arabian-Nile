@@ -17,7 +17,6 @@
             <t t-call="web.external_layout">
                 <div class="page" style="direction: rtl;">
                     <div class="text-center mb-4">
-                        <h2 style="margin-bottom: 4px;">فواتير جاهزة للدفع</h2>
                         <h4 style="margin-top: 0; font-weight: normal;">Invoices Ready for Payment</h4>
                         <p t-esc="company.name"/>
                     </div>
@@ -79,6 +78,42 @@
                             <span t-esc="company.name"/>
                             - الإدارة المالية
                         </p>
+                    </div>
+
+                    <div class="mt-5 avoid-page-break-inside clearfix"
+                         style="clear: both; width: 100%; display: block;">
+                        <div class="row mt-4 w-100">
+                            <div class="col-6 pe-4">
+                                <div class="text-center fw-bold mb-3">المسلم / Deliverer</div>
+                                <div class="mb-3">
+                                    <span>الاسم / Name:</span>
+                                    <span style="display:inline-block; min-width:70%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                                </div>
+                                <div class="mb-3">
+                                    <span>التوقيع / Signature:</span>
+                                    <span style="display:inline-block; min-width:60%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                                </div>
+                                <div>
+                                    <span>التاريخ / Date:</span>
+                                    <span style="display:inline-block; min-width:65%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                                </div>
+                            </div>
+                            <div class="col-6 ps-4">
+                                <div class="text-center fw-bold mb-3">المستلم / Receiver</div>
+                                <div class="mb-3">
+                                    <span>الاسم / Name:</span>
+                                    <span style="display:inline-block; min-width:70%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                                </div>
+                                <div class="mb-3">
+                                    <span>التوقيع / Signature:</span>
+                                    <span style="display:inline-block; min-width:60%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                                </div>
+                                <div>
+                                    <span>التاريخ / Date:</span>
+                                    <span style="display:inline-block; min-width:65%; border-bottom:1px solid #000; margin-inline-start:6px;">&#160;</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </t>
