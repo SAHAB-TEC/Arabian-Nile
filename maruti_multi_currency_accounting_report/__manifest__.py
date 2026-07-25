@@ -3,7 +3,7 @@
 {
     "name": "Account Report in multiple currencies (V18 Enterprise Edition)",
     "summary": "This module allows you to effortlessly check accounting reports in multiple currencies, enhancing financial visibility and simplifying global transactions.",
-    "version": "18.0.0.1.0",
+    "version": "18.0.0.1.1",
     "category": "Accounting",
     "author": "Maruti Softserv",
     "website": "https://marutisoftserv.com/",

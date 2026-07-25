@@ -27,6 +27,13 @@
               action="action_workover_summary_export_wizard"
               sequence="2"/>
 
+    <menuitem id="menu_workover_rig_summary"
+              name="Rig Summary Report"
+              parent="menu_workover_reports"
+              action="action_workover_rig_summary_wizard"
+              sequence="3"
+              groups="rgb_workover_operations.group_workover_rig_summary"/>
+
     <menuitem id="menu_workover_config"
               name="Configuration"
               parent="menu_workover_root"
