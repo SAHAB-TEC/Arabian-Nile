@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rgb_invoice_approval_reject_wizard_form" model="ir.ui.view">
+        <field name="name">rgb.invoice.approval.reject.wizard.form</field>
+        <field name="model">rgb.invoice.approval.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reject Invoice">
+                <group>
+                    <field name="move_id"/>
+                    <field name="note" placeholder="Rejection reason..."/>
+                </group>
+                <footer>
+                    <button name="action_confirm_reject" string="Reject" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

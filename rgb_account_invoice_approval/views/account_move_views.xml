@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_move_form_inherit_invoice_approval" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.invoice.approval</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_post' and contains(@invisible, 'display_inactive_currency_warning')]" position="before">
+                <field name="submit_button_label" invisible="1"/>
+                <button name="action_submit_for_approval"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="not approval_required or approval_state not in ('to_submit', 'rejected') or state != 'draft'"
+                        groups="account.group_account_invoice">
+                    <field name="submit_button_label" nolabel="1" readonly="1" class="o_readonly_modifier"/>
+                </button>
+                <button name="action_approve_invoice"
+                        string="Approve Invoice"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="not can_current_user_approve"
+                        groups="account.group_account_invoice,rgb_account_invoice_approval.group_invoice_approver"/>
+                <button name="action_open_reject_wizard"
+                        string="Reject"
+                        type="object"
+                        invisible="not can_current_user_approve"
+                        groups="account.group_account_invoice,rgb_account_invoice_approval.group_invoice_approver"/>
+                <button name="action_recall_approval"
+                        string="Recall to Finance"
+                        type="object"
+                        invisible="approval_state not in ('waiting_department', 'waiting_final', 'approved', 'rejected') or state != 'draft'"
+                        groups="account.group_account_invoice,rgb_account_invoice_approval.group_invoice_approval_manager"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_post' and contains(@invisible, 'display_inactive_currency_warning')]" position="attributes">
+                <attribute name="invisible">hide_post_button or move_type == 'entry' or display_inactive_currency_warning or (approval_required and approval_state != 'approved')</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='action_post' and contains(@invisible, &quot;move_type != 'entry'&quot;)]" position="attributes">
+                <attribute name="invisible">hide_post_button or move_type != 'entry' or (approval_required and approval_state != 'approved')</attribute>
+            </xpath>
+            <xpath expr="//header/field[@name='state']" position="before">
+                <field name="approval_state" widget="statusbar"
+                       statusbar_visible="to_submit,waiting_department,waiting_final,approved"
+                       invisible="not approval_required and not approval_line_ids"/>
+            </xpath>
+            <xpath expr="//sheet/div[@name='button_box']" position="before">
+                <field name="approval_required" invisible="1"/>
+                <field name="can_current_user_approve" invisible="1"/>
+                <field name="is_financial_locked" invisible="1"/>
+                <widget name="web_ribbon" title="Department Review"
+                        bg_color="text-bg-warning"
+                        invisible="approval_state != 'waiting_department'"/>
+                <widget name="web_ribbon" title="Final Review"
+                        bg_color="text-bg-info"
+                        invisible="approval_state != 'waiting_final'"/>
+                <widget name="web_ribbon" title="Approved"
+                        bg_color="text-bg-success"
+                        invisible="approval_state != 'approved' or state != 'draft'"/>
+                <widget name="web_ribbon" title="Rejected"
+                        bg_color="text-bg-danger"
+                        invisible="approval_state != 'rejected'"/>
+            </xpath>
+            <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="competent_department_id"
+                       required="approval_required and state == 'draft'"
+                       readonly="is_financial_locked or state != 'draft'"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="department_approver_user_id" readonly="1"
+                       invisible="not department_approver_user_id"/>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']" position="attributes">
+                <attribute name="readonly">is_financial_locked or state != 'draft' or move_type == 'entry'</attribute>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Approval Path" name="approval_path"
+                      invisible="not approval_required and not approval_line_ids">
+                    <group>
+                        <group>
+                            <field name="approval_state" readonly="1"/>
+                            <field name="current_approval_stage" readonly="1"/>
+                            <field name="current_approval_group_id" readonly="1"/>
+                            <field name="department_approver_user_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="approval_progress" readonly="1"/>
+                            <field name="is_financial_locked" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="approval_line_ids" readonly="1">
+                        <list>
+                            <field name="sequence"/>
+                            <field name="stage_name"/>
+                            <field name="stage_role"/>
+                            <field name="group_id"/>
+                            <field name="state"/>
+                            <field name="approved_by"/>
+                            <field name="approved_date"/>
+                            <field name="note"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_invoice_filter_inherit_approval" model="ir.ui.view">
+        <field name="name">account.invoice.select.inherit.approval</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='draft']" position="after">
+                <separator/>
+                <filter name="approval_to_submit" string="Finance Draft"
+                        domain="[('approval_state', '=', 'to_submit')]"/>
+                <filter name="approval_department" string="Department Review"
+                        domain="[('approval_state', '=', 'waiting_department')]"/>
+                <filter name="approval_final" string="Final Review"
+                        domain="[('approval_state', '=', 'waiting_final')]"/>
+                <filter name="approval_approved" string="Approved (Pending Post)"
+                        domain="[('approval_state', '=', 'approved'), ('state', '=', 'draft')]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter name="group_competent_department" string="Competent Department"
+                        context="{'group_by': 'competent_department_id'}"/>
+                <filter name="group_approval_state" string="Approval Status"
+                        context="{'group_by': 'approval_state'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_invoice_tree_inherit_approval" model="ir.ui.view">
+        <field name="name">account.invoice.tree.inherit.approval</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[@name='status_in_payment']" position="before">
+                <field name="competent_department_id" optional="show"/>
+                <field name="approval_state" optional="show"
+                       widget="badge"
+                       decoration-info="approval_state == 'to_submit'"
+                       decoration-warning="approval_state == 'waiting_department'"
+                       decoration-primary="approval_state == 'waiting_final'"
+                       decoration-success="approval_state == 'approved'"
+                       decoration-danger="approval_state == 'rejected'"/>
+                <field name="department_approver_user_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

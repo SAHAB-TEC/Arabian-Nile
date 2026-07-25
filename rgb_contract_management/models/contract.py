@@ -30,6 +30,13 @@ class RgbContract(models.Model):
         index=True,
         help='Unique contract number shown on linked invoice prints.',
     )
+    indicative_number = fields.Char(
+        string='Indicative Number',
+        tracking=True,
+        copy=False,
+        index=True,
+        help='Indicative / reference number shown on the contract and linked invoices.',
+    )
     contract_name = fields.Char(
         string='Contract Name',
         tracking=True,
@@ -139,6 +146,10 @@ class RgbContract(models.Model):
     allow_over_contract_value = fields.Boolean(
         string='Allow Invoicing Over Contract Value',
         help='If unchecked, total posted invoices cannot exceed the contract value.',
+    )
+    without_advance_payment = fields.Boolean(
+        string='Contract Without Advance Payment',
+        help='If checked, the Add Advance Payment action is hidden on invoice lines.',
     )
     contract_amendment_percent = fields.Float(
         string='Amendment Limit (%)',

@@ -23,6 +23,24 @@ class AccountMove(models.Model):
         store=True,
         readonly=True,
     )
+    indicative_number = fields.Char(
+        string='Indicative Number',
+        related='contract_id.indicative_number',
+        store=True,
+        readonly=True,
+        index=True,
+    )
+    payment_readiness_state = fields.Selection(
+        selection=[
+            ('in_progress', 'In Progress'),
+            ('ready_for_payment', 'Ready for Payment'),
+        ],
+        string='Payment Readiness',
+        compute='_compute_payment_readiness_state',
+        store=True,
+        index=True,
+        copy=False,
+    )
     dollar_percentage = fields.Float(
         string='USD %',
         help='Deprecated: migrated to Payment Currency Split.',
@@ -56,6 +74,14 @@ class AccountMove(models.Model):
         copy=False,
         help='Manual LYD-per-invoice-currency rate taken from the contract.',
     )
+
+    @api.depends('state')
+    def _compute_payment_readiness_state(self):
+        for move in self:
+            if move.state == 'posted':
+                move.payment_readiness_state = 'ready_for_payment'
+            else:
+                move.payment_readiness_state = 'in_progress'
 
     def _get_amount_total_lyd_manual(self):
         """Invoice total in LYD using contract manual rate when available."""

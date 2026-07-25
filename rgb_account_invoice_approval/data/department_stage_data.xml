@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="stage_dept_marketing" model="rgb.invoice.approval.stage">
+        <field name="name">التسويق</field>
+        <field name="code">marketing</field>
+        <field name="stage_role">department</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">10</field>
+        <field name="group_id" ref="group_dept_marketing"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="stage_dept_projects" model="rgb.invoice.approval.stage">
+        <field name="name">المشاريع</field>
+        <field name="code">projects</field>
+        <field name="stage_role">department</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">20</field>
+        <field name="group_id" ref="group_dept_projects"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="stage_dept_supply_sales" model="rgb.invoice.approval.stage">
+        <field name="name">الإمداد والمبيعات</field>
+        <field name="code">supply_sales</field>
+        <field name="stage_role">department</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">30</field>
+        <field name="group_id" ref="group_dept_supply_sales"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="stage_dept_development" model="rgb.invoice.approval.stage">
+        <field name="name">التطوير</field>
+        <field name="code">development</field>
+        <field name="stage_role">department</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">40</field>
+        <field name="group_id" ref="group_dept_development"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="stage_dept_services" model="rgb.invoice.approval.stage">
+        <field name="name">الخدمات</field>
+        <field name="code">services</field>
+        <field name="stage_role">department</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">50</field>
+        <field name="group_id" ref="group_dept_services"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="stage_dept_operations" model="rgb.invoice.approval.stage">
+        <field name="name">العمليات</field>
+        <field name="code">operations</field>
+        <field name="stage_role">department</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">60</field>
+        <field name="group_id" ref="group_dept_operations"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="stage_dept_it" model="rgb.invoice.approval.stage">
+        <field name="name">تقنية المعلومات</field>
+        <field name="code">it</field>
+        <field name="stage_role">department</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">70</field>
+        <field name="group_id" ref="group_dept_it"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="stage_dept_hse" model="rgb.invoice.approval.stage">
+        <field name="name">الأمان والصحة والسلامة</field>
+        <field name="code">hse</field>
+        <field name="stage_role">department</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">80</field>
+        <field name="group_id" ref="group_dept_hse"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+    <record id="stage_finance_final" model="rgb.invoice.approval.stage">
+        <field name="name">مراجعة نهائية</field>
+        <field name="code">finance_final</field>
+        <field name="stage_role">finance_final</field>
+        <field name="invoice_type">both</field>
+        <field name="sequence">100</field>
+        <field name="group_id" ref="account.group_account_invoice"/>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+
+</odoo>

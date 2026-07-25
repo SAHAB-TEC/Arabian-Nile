@@ -1,0 +1,155 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* rgb_account_invoice_approval
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-25 00:00:00\n"
+"PO-Revision-Date: 2026-07-25 00:00:00\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ar_001\n"
+
+#. module: rgb_account_invoice_approval
+msgid "Invoice Approvals"
+msgstr "موافقات الفواتير"
+
+#. module: rgb_account_invoice_approval
+msgid "My Pending Approvals"
+msgstr "موافقاتي المعلقة"
+
+#. module: rgb_account_invoice_approval
+msgid "Configuration"
+msgstr "الإعدادات"
+
+#. module: rgb_account_invoice_approval
+msgid "Departments"
+msgstr "الإدارات"
+
+#. module: rgb_account_invoice_approval
+msgid "Finance Final Stages"
+msgstr "مراحل المراجعة النهائية"
+
+#. module: rgb_account_invoice_approval
+msgid "Competent Department"
+msgstr "الإدارة المختصة"
+
+#. module: rgb_account_invoice_approval
+msgid "Send for Approval"
+msgstr "إرسال للموافقة"
+
+#. module: rgb_account_invoice_approval
+msgid "Send for Approval (%(dept)s)"
+msgstr "إرسال للموافقة (%(dept)s)"
+
+#. module: rgb_account_invoice_approval
+msgid "%(dept)s Review"
+msgstr "مراجعة %(dept)s"
+
+#. module: rgb_account_invoice_approval
+msgid "Approve Invoice"
+msgstr "اعتماد الفاتورة"
+
+#. module: rgb_account_invoice_approval
+msgid "Approve"
+msgstr "موافقة"
+
+#. module: rgb_account_invoice_approval
+msgid "Reject"
+msgstr "رفض"
+
+#. module: rgb_account_invoice_approval
+msgid "Recall to Finance"
+msgstr "استرجاع للمالية"
+
+#. module: rgb_account_invoice_approval
+msgid "Approval Path"
+msgstr "مسار الموافقة"
+
+#. module: rgb_account_invoice_approval
+msgid "Approval Status"
+msgstr "حالة الموافقة"
+
+#. module: rgb_account_invoice_approval
+msgid "Not Required"
+msgstr "غير مطلوب"
+
+#. module: rgb_account_invoice_approval
+msgid "Finance Draft"
+msgstr "مسودة مالية"
+
+#. module: rgb_account_invoice_approval
+msgid "Department Review"
+msgstr "مراجعة الإدارة"
+
+#. module: rgb_account_invoice_approval
+msgid "Final Review"
+msgstr "مراجعة نهائية"
+
+#. module: rgb_account_invoice_approval
+msgid "Approved"
+msgstr "معتمد"
+
+#. module: rgb_account_invoice_approval
+msgid "Rejected"
+msgstr "مرفوض"
+
+#. module: rgb_account_invoice_approval
+msgid "Department Approver"
+msgstr "موافق الإدارة"
+
+#. module: rgb_account_invoice_approval
+msgid "Invoice Approver"
+msgstr "موافق الفواتير"
+
+#. module: rgb_account_invoice_approval
+msgid "Invoice Approval Manager"
+msgstr "مدير موافقات الفواتير"
+
+#. module: rgb_account_invoice_approval
+msgid "Invoice Departments"
+msgstr "إدارات الفواتير"
+
+#. module: rgb_account_invoice_approval
+msgid "Marketing"
+msgstr "التسويق"
+
+#. module: rgb_account_invoice_approval
+msgid "Projects"
+msgstr "المشاريع"
+
+#. module: rgb_account_invoice_approval
+msgid "Supply and Sales"
+msgstr "الإمداد والمبيعات"
+
+#. module: rgb_account_invoice_approval
+msgid "Development"
+msgstr "التطوير"
+
+#. module: rgb_account_invoice_approval
+msgid "Services"
+msgstr "الخدمات"
+
+#. module: rgb_account_invoice_approval
+msgid "Operations"
+msgstr "العمليات"
+
+#. module: rgb_account_invoice_approval
+msgid "Information Technology"
+msgstr "تقنية المعلومات"
+
+#. module: rgb_account_invoice_approval
+msgid "Health, Safety and Environment"
+msgstr "الأمان والصحة والسلامة"
+
+#. module: rgb_account_invoice_approval
+msgid "Approved (Pending Post)"
+msgstr "معتمد (بانتظار الترحيل)"
+
+#. module: rgb_account_invoice_approval
+msgid "Finance Final Review"
+msgstr "مراجعة مالية نهائية"

@@ -195,6 +195,20 @@ msgid "Allow Invoicing Over Contract Value"
 msgstr "السماح بالفوترة فوق قيمة العقد"
 
 #. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__without_advance_payment
+msgid "Contract Without Advance Payment"
+msgstr "العقد بدون دفعة مقدمة"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,help:rgb_contract_management.field_rgb_contract__without_advance_payment
+msgid "If checked, the Add Advance Payment action is hidden on invoice lines."
+msgstr "عند التفعيل يتم إخفاء زر إضافة الدفعة المقدمة من بنود الفاتورة."
+
+#. module: rgb_contract_management
+msgid "This contract is marked as without advance payment."
+msgstr "هذا العقد محدد بدون دفعة مقدمة."
+
+#. module: rgb_contract_management
 #: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__analytic_account_id
 msgid "Analytic Account"
 msgstr "الحساب التحليلي"
@@ -1254,6 +1268,35 @@ msgstr "عند التحديد، يظهر هذا الشريك في قوائم ا�
 #: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_rgb_contract_form
 msgid "Contract No"
 msgstr "رقم العقد"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_rgb_contract__indicative_number
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__indicative_number
+msgid "Indicative Number"
+msgstr "الرقم الإشاري"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields,field_description:rgb_contract_management.field_account_move__payment_readiness_state
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_account_invoice_filter_contract
+msgid "Payment Readiness"
+msgstr "جاهزية الدفع"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields.selection,name:rgb_contract_management.selection__account_move__payment_readiness_state__in_progress
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_account_invoice_filter_contract
+msgid "In Progress"
+msgstr "تحت الإجراء"
+
+#. module: rgb_contract_management
+#: model:ir.model.fields.selection,name:rgb_contract_management.selection__account_move__payment_readiness_state__ready_for_payment
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.view_account_invoice_filter_contract
+msgid "Ready for Payment"
+msgstr "جاهز للدفع"
+
+#. module: rgb_contract_management
+#: model_terms:ir.ui.view,arch_db:rgb_contract_management.report_invoice_document_contract
+msgid "Indicative Number"
+msgstr "الرقم الإشاري"
 
 #. module: rgb_contract_management
 #: model_terms:ir.ui.view,arch_db:rgb_contract_management.report_invoice_document_contract

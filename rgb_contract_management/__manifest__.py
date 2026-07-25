@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'RGB Contract Management',
-    'version': '18.0.1.0.29',
+    'version': '18.0.1.0.32',
     'category': 'Accounting/Contracts',
     'summary': 'Contract lifecycle, approvals, insurance, guarantees, and invoicing',
     'description': """
@@ -36,6 +36,7 @@ and linked accounting invoices with analytic distribution.
         'views/contract_views.xml',
         'views/account_move_views.xml',
         'views/report_invoice.xml',
+        'views/report_contract.xml',
         'views/menu.xml',
     ],
     'installable': True,

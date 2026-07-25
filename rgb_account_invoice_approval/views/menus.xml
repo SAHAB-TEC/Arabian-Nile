@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_invoice_approval_root"
+              name="Invoice Approvals"
+              sequence="45"
+              groups="rgb_account_invoice_approval.group_invoice_approver,account.group_account_invoice"/>
+
+    <menuitem id="menu_invoice_approval_pending"
+              name="My Pending Approvals"
+              parent="menu_invoice_approval_root"
+              action="action_invoice_approval_pending"
+              sequence="10"
+              groups="rgb_account_invoice_approval.group_invoice_approver,account.group_account_invoice"/>
+
+    <menuitem id="menu_invoice_approval_configuration"
+              name="Configuration"
+              parent="menu_invoice_approval_root"
+              sequence="90"
+              groups="rgb_account_invoice_approval.group_invoice_approval_manager"/>
+
+    <menuitem id="menu_invoice_approval_departments"
+              name="Departments"
+              parent="menu_invoice_approval_configuration"
+              action="action_rgb_invoice_approval_departments"
+              sequence="10"/>
+
+    <menuitem id="menu_invoice_approval_finance_stages"
+              name="Finance Final Stages"
+              parent="menu_invoice_approval_configuration"
+              action="action_rgb_invoice_approval_finance_stages"
+              sequence="20"/>
+
+</odoo>

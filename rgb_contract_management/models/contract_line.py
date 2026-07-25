@@ -209,11 +209,16 @@ class RgbContractLine(models.Model):
         'advance_payment_line_id',
         'retention_guarantee_line_id',
         'performance_guarantee_line_id',
+        'contract_id.without_advance_payment',
     )
     def _compute_button_visibility(self):
         for line in self:
             is_deduction = line._is_deduction_line()
-            line.show_advance_button = not is_deduction and not line.advance_payment_line_id
+            line.show_advance_button = (
+                not is_deduction
+                and not line.advance_payment_line_id
+                and not line.contract_id.without_advance_payment
+            )
             line.show_retention_button = not is_deduction and not line.retention_guarantee_line_id
             line.show_performance_button = not is_deduction and not line.performance_guarantee_line_id
 
@@ -338,6 +343,10 @@ class RgbContractLine(models.Model):
 
     def action_add_advance_payment(self):
         for line in self:
+            if line.contract_id.without_advance_payment:
+                raise UserError(_(
+                    'This contract is marked as without advance payment.'
+                ))
             if line.advance_payment_line_id:
                 raise UserError(_(
                     'Advance payment was already added for line "%(line)s".',
