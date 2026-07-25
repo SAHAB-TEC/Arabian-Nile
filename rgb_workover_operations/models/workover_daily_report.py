@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
+import base64
+from collections import OrderedDict
+
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 from odoo.tools.float_utils import float_round
+from odoo.tools.misc import format_date
 
 _BREAKDOWN_CATEGORY_CODES = (
     'operation', 'rig_move', 'standby_wcrew', 'down_time',
@@ -400,6 +405,57 @@ class WorkoverDailyReport(models.Model):
 
     def action_draft(self):
         self.write({'state': 'draft'})
+
+    def action_export_rig_summary_xlsx(self):
+        """Export the Rig Summary tab (on-screen period/list) to Excel."""
+        self.ensure_one()
+        from odoo.addons.rgb_workover_operations.wizard.excel_report_helper import (
+            build_summary_workbook,
+        )
+        if not self.env.user.has_group('rgb_workover_operations.group_workover_rig_summary'):
+            raise UserError(_('You are not allowed to export the Rig Summary report.'))
+        if not self.rig_id:
+            raise UserError(_('Please set the Rig before exporting the summary.'))
+        date_from, date_to = self._get_rig_summary_date_range()
+        reports = self.rig_summary_report_ids
+        if not reports:
+            raise UserError(_('No daily reports found for this Rig in the selected period.'))
+
+        well_map = OrderedDict()
+        for report in reports.sorted(lambda r: (r.well_id.id or 0, r.report_date or fields.Date.today(), r.id)):
+            well_map.setdefault(report.well_id, self.env['workover.daily.report'])
+            well_map[report.well_id] |= report
+
+        lang = self.env.user.lang or 'en_US'
+        month_label = format_date(
+            self.env, date_from or fields.Date.context_today(self),
+            date_format='MMMM-yyyy', lang_code=lang,
+        ).upper()
+        content = build_summary_workbook(
+            well_map,
+            self.operator_id.name if self.operator_id else '',
+            self.rig_id.name or '',
+            month_label,
+            self.env.company.name,
+        )
+        filename = 'rig_summary_%s_%s_%s.xlsx' % (
+            (self.rig_id.name or 'rig').replace(' ', '_'),
+            date_from or '',
+            date_to or '',
+        )
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': base64.b64encode(content),
+            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'res_model': self._name,
+            'res_id': self.id,
+        })
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/%s?download=true' % attachment.id,
+            'target': 'self',
+        }
 
     def _get_summary_hours(self):
         """Return dict of summary column keys to hours for this report."""

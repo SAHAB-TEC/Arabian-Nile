@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'RGB Workover Operations',
-    'version': '18.0.1.0.8',
+    'version': '18.0.1.0.10',
     'category': 'Operations',
     'summary': 'Daily workover operation reports and monthly summary Excel export',
     'description': """
@@ -22,6 +22,7 @@ and export to Excel (daily report workbook and monthly summary per well).
         'views/workover_config_views.xml',
         'views/workover_daily_report_views.xml',
         'views/workover_report_wizard_views.xml',
+        'views/workover_rig_summary_views.xml',
         'views/menu.xml',
     ],
     'assets': {
