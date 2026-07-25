@@ -12,6 +12,7 @@
                 <field name="reminder_alert" column_invisible="1"/>
                 <field name="name"/>
                 <field name="contract_code" optional="show"/>
+                <field name="indicative_number" optional="show"/>
                 <field name="contract_name" optional="show"/>
                 <field name="partner_id"/>
                 <field name="contract_type"/>
@@ -91,6 +92,7 @@
             <search>
                 <field name="name"/>
                 <field name="contract_code"/>
+                <field name="indicative_number"/>
                 <field name="contract_name"/>
                 <field name="partner_id"/>
                 <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
@@ -108,6 +110,8 @@
                     <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
                     <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_type" string="Contract Type" context="{'group_by': 'contract_type'}"/>
+                    <filter name="group_indicative_number" string="Indicative Number"
+                            context="{'group_by': 'indicative_number'}"/>
                 </group>
             </search>
         </field>
@@ -202,6 +206,8 @@
                         <h1><field name="name" readonly="1"/></h1>
                         <label for="contract_code" string="Contract No"/>
                         <h2><field name="contract_code" placeholder="e.g. CNT-2026-001"/></h2>
+                        <label for="indicative_number" string="Indicative Number"/>
+                        <h2><field name="indicative_number" placeholder="e.g. REF-001"/></h2>
                         <label for="contract_name" string="Contract Name"/>
                         <h2><field name="contract_name" placeholder="e.g. Contract Name"/></h2>
                     </div>
@@ -236,6 +242,7 @@
                             <field name="contract_value_currency"/>
                             <field name="exchange_rate"/>
                             <field name="allow_over_contract_value"/>
+                            <field name="without_advance_payment"/>
                             <field name="contract_amendment_percent"/>
                         </group>
                         <group>
@@ -279,7 +286,7 @@
                                     <field name="notes"/>
                                 </list>
                             </field>
-                            <group string="Advance Payment">
+                            <group string="Advance Payment" invisible="without_advance_payment">
                                 <group>
                                     <field name="advance_payment_percent"/>
                                     <field name="advance_payment_amount"/>

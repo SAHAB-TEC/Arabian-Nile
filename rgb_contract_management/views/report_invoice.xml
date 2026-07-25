@@ -34,9 +34,9 @@
         <!-- Hide partner Customer Code on invoice print -->
         <xpath expr="//div[@name='customer_code']" position="replace"/>
 
-        <!-- Allow informations block when only contract code is set -->
+        <!-- Allow informations block when contract code or indicative number is set -->
         <xpath expr="//div[@id='informations']" position="attributes">
-            <attribute name="t-if">o.invoice_date or (o.invoice_date_due and o.move_type == 'out_invoice' and o.state == 'posted') or o.delivery_date or o.invoice_origin or o.ref or o.invoice_incoterm_id or o.contract_code</attribute>
+            <attribute name="t-if">o.invoice_date or (o.invoice_date_due and o.move_type == 'out_invoice' and o.state == 'posted') or o.delivery_date or o.invoice_origin or o.ref or o.invoice_incoterm_id or o.contract_code or o.indicative_number</attribute>
         </xpath>
 
         <!-- Show contract code in invoice header informations -->
@@ -45,8 +45,11 @@
                 <strong>Contract Code</strong>
                 <div t-field="o.contract_code"/>
             </div>
+            <div class="col" t-if="o.indicative_number" name="indicative_number">
+                <strong>Indicative Number</strong>
+                <div t-field="o.indicative_number"/>
+            </div>
         </xpath>
-
         <!-- Terms and Conditions: visible label above narration -->
         <xpath expr="//div[@name='comment']" position="before">
             <div class="mb-1" t-if="not is_html_empty(o.narration)" name="terms_title">

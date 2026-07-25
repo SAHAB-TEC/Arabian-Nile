@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="module_category_invoice_approval" model="ir.module.category">
+        <field name="name">Invoice Approvals</field>
+        <field name="sequence">35</field>
+    </record>
+
+    <record id="module_category_invoice_departments" model="ir.module.category">
+        <field name="name">Invoice Departments</field>
+        <field name="sequence">36</field>
+    </record>
+
+    <record id="group_invoice_approver" model="res.groups">
+        <field name="name">Invoice Approver</field>
+        <field name="category_id" ref="module_category_invoice_approval"/>
+        <field name="comment">Can approve assigned department invoices from the Invoice Approvals app.</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_invoice_approval_manager" model="res.groups">
+        <field name="name">Invoice Approval Manager</field>
+        <field name="category_id" ref="module_category_invoice_approval"/>
+        <field name="comment">Configure departments/stages and manage all approval workflows.</field>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+
+    <record id="group_dept_marketing" model="res.groups">
+        <field name="name">Marketing</field>
+        <field name="category_id" ref="module_category_invoice_departments"/>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+    <record id="group_dept_projects" model="res.groups">
+        <field name="name">Projects</field>
+        <field name="category_id" ref="module_category_invoice_departments"/>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+    <record id="group_dept_supply_sales" model="res.groups">
+        <field name="name">Supply and Sales</field>
+        <field name="category_id" ref="module_category_invoice_departments"/>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+    <record id="group_dept_development" model="res.groups">
+        <field name="name">Development</field>
+        <field name="category_id" ref="module_category_invoice_departments"/>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+    <record id="group_dept_services" model="res.groups">
+        <field name="name">Services</field>
+        <field name="category_id" ref="module_category_invoice_departments"/>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+    <record id="group_dept_operations" model="res.groups">
+        <field name="name">Operations</field>
+        <field name="category_id" ref="module_category_invoice_departments"/>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+    <record id="group_dept_it" model="res.groups">
+        <field name="name">Information Technology</field>
+        <field name="category_id" ref="module_category_invoice_departments"/>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+    <record id="group_dept_hse" model="res.groups">
+        <field name="name">Health, Safety and Environment</field>
+        <field name="category_id" ref="module_category_invoice_departments"/>
+        <field name="implied_ids" eval="[(4, ref('group_invoice_approver'))]"/>
+    </record>
+
+    <record id="rule_account_move_department_approver" model="ir.rule">
+        <field name="name">Department Approver: own department invoices</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="domain_force">[
+            ('approval_state', '=', 'waiting_department'),
+            ('competent_department_id.group_id', 'in', user.groups_id.ids),
+        ]</field>
+        <field name="groups" eval="[(4, ref('group_invoice_approver'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_account_move_approval_manager" model="ir.rule">
+        <field name="name">Approval Manager: all workflow invoices</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="domain_force">[
+            ('approval_state', 'in', ('to_submit', 'waiting_department', 'waiting_final', 'approved', 'rejected')),
+        ]</field>
+        <field name="groups" eval="[(4, ref('group_invoice_approval_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_approval_line_approver_read" model="ir.rule">
+        <field name="name">Approval Line: approver read</field>
+        <field name="model_id" ref="model_rgb_invoice_approval_line"/>
+        <field name="domain_force">['|',
+            ('group_id', 'in', user.groups_id.ids),
+            ('user_id', '=', user.id),
+        ]</field>
+        <field name="groups" eval="[(4, ref('group_invoice_approver'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_approval_line_approver_write" model="ir.rule">
+        <field name="name">Approval Line: approver write pending</field>
+        <field name="model_id" ref="model_rgb_invoice_approval_line"/>
+        <field name="domain_force">['&amp;',
+            ('state', '=', 'pending'),
+            '|',
+                ('group_id', 'in', user.groups_id.ids),
+                ('user_id', '=', user.id),
+        ]</field>
+        <field name="groups" eval="[(4, ref('group_invoice_approver'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_approval_line_manager" model="ir.rule">
+        <field name="name">Approval Line: manager all</field>
+        <field name="model_id" ref="model_rgb_invoice_approval_line"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_invoice_approval_manager'))]"/>
+    </record>
+
+    <record id="rule_approval_stage_manager" model="ir.rule">
+        <field name="name">Approval Stage: multi-company</field>
+        <field name="model_id" ref="model_rgb_invoice_approval_stage"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_invoice_approval_manager'))]"/>
+    </record>
+
+    <record id="access_stage_account_invoice_user_rule" model="ir.rule">
+        <field name="name">Approval Stage: finance read departments</field>
+        <field name="model_id" ref="model_rgb_invoice_approval_stage"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('account.group_account_invoice'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rgb_invoice_approval_stage_list" model="ir.ui.view">
+        <field name="name">rgb.invoice.approval.stage.list</field>
+        <field name="model">rgb.invoice.approval.stage</field>
+        <field name="arch" type="xml">
+            <list string="Departments / Stages" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="stage_role"/>
+                <field name="group_id"/>
+                <field name="invoice_type"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rgb_invoice_approval_stage_form" model="ir.ui.view">
+        <field name="name">rgb.invoice.approval.stage.form</field>
+        <field name="model">rgb.invoice.approval.stage</field>
+        <field name="arch" type="xml">
+            <form string="Department / Stage">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="stage_role"/>
+                            <field name="group_id"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="invoice_type"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="user_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rgb_invoice_approval_departments" model="ir.actions.act_window">
+        <field name="name">Departments</field>
+        <field name="res_model">rgb.invoice.approval.stage</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('stage_role', '=', 'department')]</field>
+        <field name="context">{'default_stage_role': 'department', 'default_invoice_type': 'both'}</field>
+    </record>
+
+    <record id="action_rgb_invoice_approval_finance_stages" model="ir.actions.act_window">
+        <field name="name">Finance Final Stages</field>
+        <field name="res_model">rgb.invoice.approval.stage</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('stage_role', '=', 'finance_final')]</field>
+        <field name="context">{'default_stage_role': 'finance_final', 'default_invoice_type': 'both'}</field>
+    </record>
+
+</odoo>
