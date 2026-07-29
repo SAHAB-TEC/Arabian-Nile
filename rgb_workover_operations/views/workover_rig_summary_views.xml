@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_workover_rig_summary_wizard_form" model="ir.ui.view">
-        <field name="name">workover.rig.summary.wizard.form</field>
-        <field name="model">workover.rig.summary.wizard</field>
+    <record id="view_workover_rig_summary_list" model="ir.ui.view">
+        <field name="name">workover.rig.summary.list</field>
+        <field name="model">workover.rig.summary</field>
         <field name="arch" type="xml">
-            <form string="Rig Summary Report" create="0" delete="0" edit="1">
+            <list>
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="rig_id"/>
+                <field name="operator_id" optional="show"/>
+                <field name="well_id" optional="show"/>
+                <field name="total_hours"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_workover_rig_summary_form" model="ir.ui.view">
+        <field name="name">workover.rig.summary.form</field>
+        <field name="model">workover.rig.summary</field>
+        <field name="arch" type="xml">
+            <form string="Rig Summary Report">
                 <header>
                     <button name="action_print_pdf"
                             type="object"
@@ -19,7 +36,10 @@
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1>Rig Summary Report</h1>
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. ANCO-04 May 2026 Summary"/>
+                        </h1>
                     </div>
                     <group>
                         <group string="Period">
@@ -28,7 +48,7 @@
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                         <group string="Filters">
-                            <field name="rig_id" required="1" options="{'no_create': True}"/>
+                            <field name="rig_id" options="{'no_create': True}"/>
                             <field name="operator_id" options="{'no_create': True}"/>
                             <field name="well_id"
                                    domain="[('rig_id', '=', rig_id)]"
@@ -37,16 +57,16 @@
                     </group>
                     <group string="Totals">
                         <group>
-                            <field name="total_full_ops" string="Full Ops Hrs" readonly="1"/>
-                            <field name="total_standby_wcrew" string="Stand-By W/Crew" readonly="1"/>
-                            <field name="total_standby_wocrew" string="Stand-By W-O/Crew" readonly="1"/>
-                            <field name="total_full_repair" string="Full Repair Rate" readonly="1"/>
+                            <field name="total_full_ops" readonly="1"/>
+                            <field name="total_standby_wcrew" readonly="1"/>
+                            <field name="total_standby_wocrew" readonly="1"/>
+                            <field name="total_full_repair" readonly="1"/>
                         </group>
                         <group>
-                            <field name="total_zero_rate" string="Zero Rate" readonly="1"/>
-                            <field name="total_force_majeure" string="Force Majeure" readonly="1"/>
-                            <field name="total_rd_ru_rmtime" string="R/D, R/U &amp; R/MTime" readonly="1"/>
-                            <field name="total_hours" string="Total Hours" readonly="1"/>
+                            <field name="total_zero_rate" readonly="1"/>
+                            <field name="total_force_majeure" readonly="1"/>
+                            <field name="total_rd_ru_rmtime" readonly="1"/>
+                            <field name="total_hours" readonly="1"/>
                         </group>
                     </group>
                     <field name="report_ids" nolabel="1" readonly="1">
@@ -71,12 +91,46 @@
         </field>
     </record>
 
+    <record id="view_workover_rig_summary_search" model="ir.ui.view">
+        <field name="name">workover.rig.summary.search</field>
+        <field name="model">workover.rig.summary</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="rig_id"/>
+                <field name="operator_id"/>
+                <field name="well_id"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_rig" string="Rig" context="{'group_by': 'rig_id'}"/>
+                    <filter name="group_date_from" string="From Date" context="{'group_by': 'date_from'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_workover_rig_summary" model="ir.actions.act_window">
+        <field name="name">Rig Summary Reports</field>
+        <field name="res_model">workover.rig.summary</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_workover_rig_summary_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Rig Summary Report
+            </p>
+            <p>
+                Enter a name and filters once, then reopen anytime to view, print, or export.
+            </p>
+        </field>
+        <field name="groups_id" eval="[(4, ref('group_workover_rig_summary'))]"/>
+    </record>
+
+    <!-- Keep old action XML id pointing to the new action for existing menu records -->
     <record id="action_workover_rig_summary_wizard" model="ir.actions.act_window">
-        <field name="name">Rig Summary Report</field>
-        <field name="res_model">workover.rig.summary.wizard</field>
-        <field name="view_mode">form</field>
-        <field name="view_id" ref="view_workover_rig_summary_wizard_form"/>
-        <field name="target">current</field>
+        <field name="name">Rig Summary Reports</field>
+        <field name="res_model">workover.rig.summary</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_workover_rig_summary_search"/>
         <field name="groups_id" eval="[(4, ref('group_workover_rig_summary'))]"/>
     </record>
 </odoo>
