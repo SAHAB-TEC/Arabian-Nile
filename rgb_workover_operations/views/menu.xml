@@ -28,9 +28,9 @@
               sequence="2"/>
 
     <menuitem id="menu_workover_rig_summary"
-              name="Rig Summary Report"
+              name="Rig Summary Reports"
               parent="menu_workover_reports"
-              action="action_workover_rig_summary_wizard"
+              action="action_workover_rig_summary"
               sequence="3"
               groups="rgb_workover_operations.group_workover_rig_summary"/>
 

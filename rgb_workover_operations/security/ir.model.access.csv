@@ -13,4 +13,5 @@ access_workover_present_operation_user,workover.present.operation.line.user,mode
 access_workover_time_breakdown_user,workover.time.breakdown.line.user,model_workover_time_breakdown_line,group_workover_user,1,1,1,1
 access_workover_daily_export_wizard,workover.daily.export.wizard,model_workover_daily_report_export_wizard,group_workover_user,1,1,1,1
 access_workover_summary_export_wizard,workover.summary.export.wizard,model_workover_summary_report_export_wizard,group_workover_user,1,1,1,1
-access_workover_rig_summary_wizard,workover.rig.summary.wizard,model_workover_rig_summary_wizard,group_workover_rig_summary,1,1,1,1
+access_workover_rig_summary_user,workover.rig.summary.user,model_workover_rig_summary,group_workover_rig_summary,1,1,1,1
+access_workover_rig_summary_manager,workover.rig.summary.manager,model_workover_rig_summary,group_workover_manager,1,1,1,1

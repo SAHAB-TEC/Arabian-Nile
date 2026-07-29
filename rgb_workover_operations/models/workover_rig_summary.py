@@ -7,15 +7,30 @@ from odoo.exceptions import UserError
 from odoo.tools.misc import format_date
 
 
-class WorkoverRigSummaryWizard(models.TransientModel):
-    _name = 'workover.rig.summary.wizard'
-    _description = 'Rig Summary Report Screen'
+class WorkoverRigSummary(models.Model):
+    _name = 'workover.rig.summary'
+    _description = 'Rig Summary Report'
+    _order = 'date_from desc, id desc'
 
-    date_from = fields.Date(string='Summary From', required=True)
-    date_to = fields.Date(string='Summary To', required=True)
+    name = fields.Char(
+        string='Report Name',
+        required=True,
+        help='Manual name to identify this saved summary report.',
+    )
+    date_from = fields.Date(
+        string='Summary From',
+        required=True,
+        default=lambda self: fields.Date.context_today(self).replace(day=1),
+    )
+    date_to = fields.Date(
+        string='Summary To',
+        required=True,
+        default=fields.Date.context_today,
+    )
     rig_id = fields.Many2one(
         'workover.rig',
         string='Rig',
+        required=True,
     )
     operator_id = fields.Many2one(
         'workover.operator',
@@ -36,22 +51,38 @@ class WorkoverRigSummaryWizard(models.TransientModel):
         compute='_compute_report_ids',
         string='Summary Lines',
     )
-    total_full_ops = fields.Float(compute='_compute_totals')
-    total_standby_wcrew = fields.Float(compute='_compute_totals')
-    total_standby_wocrew = fields.Float(compute='_compute_totals')
-    total_full_repair = fields.Float(compute='_compute_totals')
-    total_zero_rate = fields.Float(compute='_compute_totals')
-    total_force_majeure = fields.Float(compute='_compute_totals')
-    total_rd_ru_rmtime = fields.Float(compute='_compute_totals')
-    total_hours = fields.Float(compute='_compute_totals')
-
-    @api.model
-    def default_get(self, fields_list):
-        vals = super().default_get(fields_list)
-        today = fields.Date.context_today(self)
-        vals.setdefault('date_from', today.replace(day=1))
-        vals.setdefault('date_to', today)
-        return vals
+    total_full_ops = fields.Float(
+        string='Full Ops Hrs',
+        compute='_compute_totals',
+    )
+    total_standby_wcrew = fields.Float(
+        string='Stand-By W/Crew',
+        compute='_compute_totals',
+    )
+    total_standby_wocrew = fields.Float(
+        string='Stand-By W-O/Crew',
+        compute='_compute_totals',
+    )
+    total_full_repair = fields.Float(
+        string='Full Repair Rate',
+        compute='_compute_totals',
+    )
+    total_zero_rate = fields.Float(
+        string='Zero Rate',
+        compute='_compute_totals',
+    )
+    total_force_majeure = fields.Float(
+        string='Force Majeure',
+        compute='_compute_totals',
+    )
+    total_rd_ru_rmtime = fields.Float(
+        string='R/D, R/U & R/MTime',
+        compute='_compute_totals',
+    )
+    total_hours = fields.Float(
+        string='Total Hours',
+        compute='_compute_totals',
+    )
 
     def _get_date_range(self):
         self.ensure_one()
@@ -64,23 +95,23 @@ class WorkoverRigSummaryWizard(models.TransientModel):
     @api.depends('date_from', 'date_to', 'rig_id', 'operator_id', 'well_id', 'company_id')
     def _compute_report_ids(self):
         Report = self.env['workover.daily.report']
-        for wizard in self:
-            if not wizard.rig_id or not wizard.date_from or not wizard.date_to:
-                wizard.report_ids = False
+        for summary in self:
+            if not summary.rig_id or not summary.date_from or not summary.date_to:
+                summary.report_ids = False
                 continue
-            date_from, date_to = wizard._get_date_range()
+            date_from, date_to = summary._get_date_range()
             domain = [
-                ('rig_id', '=', wizard.rig_id.id),
+                ('rig_id', '=', summary.rig_id.id),
                 ('report_date', '>=', date_from),
                 ('report_date', '<=', date_to),
                 ('state', '=', 'confirmed'),
-                ('company_id', '=', wizard.company_id.id),
+                ('company_id', '=', summary.company_id.id),
             ]
-            if wizard.operator_id:
-                domain.append(('operator_id', '=', wizard.operator_id.id))
-            if wizard.well_id:
-                domain.append(('well_id', '=', wizard.well_id.id))
-            wizard.report_ids = Report.search(
+            if summary.operator_id:
+                domain.append(('operator_id', '=', summary.operator_id.id))
+            if summary.well_id:
+                domain.append(('well_id', '=', summary.well_id.id))
+            summary.report_ids = Report.search(
                 domain, order='well_id, report_date, id',
             )
 
@@ -96,16 +127,16 @@ class WorkoverRigSummaryWizard(models.TransientModel):
         'report_ids.summary_total_hours',
     )
     def _compute_totals(self):
-        for wizard in self:
-            reports = wizard.report_ids
-            wizard.total_full_ops = sum(reports.mapped('summary_full_ops'))
-            wizard.total_standby_wcrew = sum(reports.mapped('summary_standby_wcrew'))
-            wizard.total_standby_wocrew = sum(reports.mapped('summary_standby_wocrew'))
-            wizard.total_full_repair = sum(reports.mapped('summary_full_repair'))
-            wizard.total_zero_rate = sum(reports.mapped('summary_zero_rate'))
-            wizard.total_force_majeure = sum(reports.mapped('summary_force_majeure'))
-            wizard.total_rd_ru_rmtime = sum(reports.mapped('summary_rd_ru_rmtime'))
-            wizard.total_hours = sum(reports.mapped('summary_total_hours'))
+        for summary in self:
+            reports = summary.report_ids
+            summary.total_full_ops = sum(reports.mapped('summary_full_ops'))
+            summary.total_standby_wcrew = sum(reports.mapped('summary_standby_wcrew'))
+            summary.total_standby_wocrew = sum(reports.mapped('summary_standby_wocrew'))
+            summary.total_full_repair = sum(reports.mapped('summary_full_repair'))
+            summary.total_zero_rate = sum(reports.mapped('summary_zero_rate'))
+            summary.total_force_majeure = sum(reports.mapped('summary_force_majeure'))
+            summary.total_rd_ru_rmtime = sum(reports.mapped('summary_rd_ru_rmtime'))
+            summary.total_hours = sum(reports.mapped('summary_total_hours'))
 
     def _ensure_reports(self):
         self.ensure_one()
@@ -140,11 +171,8 @@ class WorkoverRigSummaryWizard(models.TransientModel):
             month_label,
             self.company_id.name,
         )
-        filename = 'rig_summary_%s_%s_%s.xlsx' % (
-            (self.rig_id.name or 'rig').replace(' ', '_'),
-            date_from,
-            date_to,
-        )
+        safe_name = (self.name or 'rig_summary').replace(' ', '_')
+        filename = '%s_%s_%s.xlsx' % (safe_name, date_from, date_to)
         attachment = self.env['ir.attachment'].create({
             'name': filename,
             'type': 'binary',
@@ -163,5 +191,5 @@ class WorkoverRigSummaryWizard(models.TransientModel):
         self.ensure_one()
         self._ensure_reports()
         return self.env.ref(
-            'rgb_workover_operations.action_report_workover_rig_summary_wizard'
+            'rgb_workover_operations.action_report_workover_rig_summary_record'
         ).report_action(self)
