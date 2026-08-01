@@ -3,9 +3,9 @@ from . import models
 from . import wizard
 
 
-def pre_init_hook(cr):
+def pre_init_hook(env):
     from .hooks import pre_init_hook as _pre_init_hook
-    _pre_init_hook(cr)
+    _pre_init_hook(env)
 
 
 def post_init_hook(env):

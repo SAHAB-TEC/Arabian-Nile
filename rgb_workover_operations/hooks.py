@@ -2,8 +2,9 @@
 from datetime import datetime, time, timedelta
 
 
-def pre_init_hook(cr):
+def pre_init_hook(env):
     """Rename float time columns so Odoo can create Datetime columns cleanly."""
+    cr = env.cr
     cr.execute(
         """
         SELECT data_type
