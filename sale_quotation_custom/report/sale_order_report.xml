@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_saleorder_document_sale_quotation_custom"
+              inherit_id="sale.report_saleorder_document">
+
+        <!-- Hide tax column when show_taxes is disabled -->
+        <xpath expr="//th[@name='th_taxes']" position="attributes">
+            <attribute name="t-if">doc.show_taxes</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_taxes']" position="attributes">
+            <attribute name="t-if">doc.show_taxes</attribute>
+        </xpath>
+
+        <!-- Tax totals or untaxed-only total -->
+        <xpath expr="//t[@t-call='sale.document_tax_totals']" position="replace">
+            <t t-if="doc.show_taxes" t-call="sale.document_tax_totals">
+                <t t-set="tax_totals" t-value="doc.tax_totals"/>
+                <t t-set="currency" t-value="doc.currency_id"/>
+            </t>
+            <t t-else="">
+                <tr class="o_subtotal">
+                    <td><strong>Total</strong></td>
+                    <td class="text-end">
+                        <span t-field="doc.amount_untaxed"
+                              t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+
+        <!-- Commercial terms after payment terms -->
+        <xpath expr="//p[@t-if='not is_html_empty(doc.payment_term_id.note)']" position="after">
+            <div class="mt-3" name="quotation_commercial_terms">
+                <p t-if="doc.offer_validity">
+                    <strong>Offer Validity:</strong>
+                    <span t-field="doc.offer_validity"/>
+                    <t t-if="doc.offer_validity_date">
+                        <span> (until </span>
+                        <span t-field="doc.offer_validity_date"/>
+                        <span>)</span>
+                    </t>
+                </p>
+                <p t-if="doc.country_of_origin_id">
+                    <strong>Country of Origin:</strong>
+                    <span t-field="doc.country_of_origin_id"/>
+                </p>
+                <p t-if="doc.delivery_time_from or doc.delivery_time_to">
+                    <strong>Delivery Time:</strong>
+                    <t t-if="doc.delivery_time_from and doc.delivery_time_to">
+                        <span t-esc="doc.delivery_time_from"/>
+                        <span> to </span>
+                        <span t-esc="doc.delivery_time_to"/>
+                        <span> Days</span>
+                    </t>
+                    <t t-elif="doc.delivery_time_from">
+                        <span>From </span>
+                        <span t-esc="doc.delivery_time_from"/>
+                        <span> Days</span>
+                    </t>
+                    <t t-else="">
+                        <span>Up to </span>
+                        <span t-esc="doc.delivery_time_to"/>
+                        <span> Days</span>
+                    </t>
+                </p>
+            </div>
+        </xpath>
+
+        <!-- Signatory block near signature area -->
+        <xpath expr="//div[@name='signature']" position="before">
+            <div t-if="doc.signatory_name" class="mt-4" name="quotation_signatory">
+                <div class="offset-8">
+                    <strong>For and on behalf of</strong>
+                    <div t-field="doc.company_id.partner_id"/>
+                    <div class="mt-3">
+                        <strong>Authorized Signatory:</strong>
+                        <span t-field="doc.signatory_name"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

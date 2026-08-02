@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_sale_quotation_custom" model="ir.ui.view">
+        <field name="name">sale.order.form.sale.quotation.custom</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="offer_validity"
+                       readonly="state in ('sale', 'cancel')"/>
+                <field name="offer_validity_date" readonly="1"/>
+                <field name="country_of_origin_id"
+                       readonly="state in ('sale', 'cancel')"/>
+                <label for="delivery_time_from" string="Delivery Time (Days)"/>
+                <div class="o_row" name="delivery_time_range">
+                    <field name="delivery_time_from"
+                           placeholder="From"
+                           class="oe_inline"
+                           readonly="state in ('sale', 'cancel')"/>
+                    <span class="mx-2">to</span>
+                    <field name="delivery_time_to"
+                           placeholder="To"
+                           class="oe_inline"
+                           readonly="state in ('sale', 'cancel')"/>
+                    <span class="mx-2 text-muted">Days</span>
+                </div>
+                <field name="signatory_name"
+                       readonly="state in ('sale', 'cancel')"/>
+                <field name="show_taxes"
+                       readonly="state in ('sale', 'cancel')"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
