@@ -10,11 +10,11 @@ class SaleOrder(models.Model):
 
     delivery_time_from = fields.Integer(
         string='Delivery From',
-        help='Minimum delivery time in days.',
+        help='Minimum delivery time in weeks.',
     )
     delivery_time_to = fields.Integer(
         string='Delivery To',
-        help='Maximum delivery time in days.',
+        help='Maximum delivery time in weeks.',
     )
     country_of_origin_id = fields.Many2one(
         'res.country',

@@ -11,7 +11,7 @@
                 <field name="offer_validity_date" readonly="1"/>
                 <field name="country_of_origin_id"
                        readonly="state in ('sale', 'cancel')"/>
-                <label for="delivery_time_from" string="Delivery Time (Days)"/>
+                <label for="delivery_time_from" string="Delivery Time (Weeks)"/>
                 <div class="o_row" name="delivery_time_range">
                     <field name="delivery_time_from"
                            placeholder="From"
@@ -22,7 +22,7 @@
                            placeholder="To"
                            class="oe_inline"
                            readonly="state in ('sale', 'cancel')"/>
-                    <span class="mx-2 text-muted">Days</span>
+                    <span class="mx-2 text-muted">Weeks</span>
                 </div>
                 <field name="signatory_name"
                        readonly="state in ('sale', 'cancel')"/>

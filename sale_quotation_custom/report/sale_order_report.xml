@@ -50,24 +50,24 @@
                         <span t-esc="doc.delivery_time_from"/>
                         <span> to </span>
                         <span t-esc="doc.delivery_time_to"/>
-                        <span> Days</span>
+                        <span> Weeks</span>
                     </t>
                     <t t-elif="doc.delivery_time_from">
                         <span>From </span>
                         <span t-esc="doc.delivery_time_from"/>
-                        <span> Days</span>
+                        <span> Weeks</span>
                     </t>
                     <t t-else="">
                         <span>Up to </span>
                         <span t-esc="doc.delivery_time_to"/>
-                        <span> Days</span>
+                        <span> Weeks</span>
                     </t>
                 </p>
             </div>
         </xpath>
 
-        <!-- Signatory block near signature area -->
-        <xpath expr="//div[@name='signature']" position="before">
+        <!-- Signatory block AFTER customer signature (must not break t-if/t-else pairing) -->
+        <xpath expr="//div[@name='signature']" position="after">
             <div t-if="doc.signatory_name" class="mt-4" name="quotation_signatory">
                 <div class="offset-8">
                     <strong>For and on behalf of</strong>
