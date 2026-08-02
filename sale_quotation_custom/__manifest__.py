@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Sale Quotation Custom",
-    "version": "18.0.1.0.1",
+    "version": "18.0.1.0.3",
     "category": "Sales",
     "summary": "Customize Sale Quotation Report with commercial terms",
     "author": "Mohamed",
