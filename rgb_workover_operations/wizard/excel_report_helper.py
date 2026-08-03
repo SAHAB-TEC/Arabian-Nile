@@ -210,10 +210,29 @@ SUMMARY_COLUMNS = {
     'operations_summary': 11,
 }
 
+# Template data block: rows 8..18 (11 lines), totals on row 19, footer from 20.
+SUMMARY_DATA_START = 8
+SUMMARY_DATA_END = 18
+SUMMARY_TOTAL_ROW = 19
+
+
+def _clear_summary_data_rows(ws):
+    """Clear sample data without breaking merged header/footer layout."""
+    for row in range(SUMMARY_DATA_START, SUMMARY_DATA_END + 1):
+        for col in range(1, 10):
+            _set_cell_value(ws, row, col, None)
+        _set_cell_value(ws, row, 10, None)  # Type
+        _set_cell_value(ws, row, 11, None)  # Operations Summary
+    for col in range(1, 12):
+        _set_cell_value(ws, SUMMARY_TOTAL_ROW, col, None)
+
 
 def fill_summary_sheet(ws, well, reports, operator_name, rig_name, month_label, company_name):
-    # Shift the template Operations Summary column right to make room for Type.
-    ws.insert_cols(10)
+    """Fill one well summary sheet using the client Excel layout."""
+    from openpyxl.utils import get_column_letter
+
+    _clear_summary_data_rows(ws)
+
     _set_cell_value(ws, 1, 2, company_name)
     _set_cell_value(ws, 2, 2, 'Summary of Workover Operations')
     _set_cell_value(ws, 2, 11, 'Month of  ( %s )' % month_label)
@@ -221,39 +240,46 @@ def fill_summary_sheet(ws, well, reports, operator_name, rig_name, month_label, 
     _set_cell_value(ws, 4, 8, rig_name or '')
     _set_cell_value(ws, 4, 11, 'Wells No.(s):         ( %s )' % (well.name or ''))
 
-    _set_cell_value(ws, 5, 10, 'Type')
-    _set_cell_value(ws, 6, 10, 'Type')
-    _set_cell_value(ws, 7, 10, 'Type')
+    reports = sorted(reports, key=lambda r: r.report_date or fields.Date.today())
+    capacity = SUMMARY_DATA_END - SUMMARY_DATA_START + 1
+    extra = max(len(reports) - capacity, 0)
+    if extra:
+        # Insert rows above the totals row so header/footer merges stay intact.
+        ws.insert_rows(SUMMARY_TOTAL_ROW, amount=extra)
+        for offset in range(extra):
+            row = SUMMARY_DATA_END + 1 + offset
+            ws.merge_cells(start_row=row, start_column=11, end_row=row, end_column=18)
 
-    row = 8
-    totals = {key: 0.0 for key in SUMMARY_COLUMNS if key not in ('type', 'operations_summary')}
-
-    for report in sorted(reports, key=lambda r: r.report_date or fields.Date.today()):
+    for idx, report in enumerate(reports):
+        row = SUMMARY_DATA_START + idx
         hours = report._get_summary_hours()
         _set_cell_value(ws, row, 1, datetime.combine(report.report_date, time()))
         for key, col in SUMMARY_COLUMNS.items():
-            if key in ('type', 'operations_summary'):
+            if key in ('type', 'operations_summary', 'total'):
                 continue
-            value = hours.get(key, 0.0)
+            value = hours.get(key, 0.0) or 0.0
             if value:
                 _set_cell_value(ws, row, col, value)
-            totals[key] += value or 0.0
-        _set_cell_value(ws, row, 10, report.summary_type or '')
-        _set_cell_value(ws, row, 11, report.operations_summary or '')
-        row += 1
+        # Client formula: total hours = sum of daily breakdown columns
+        _set_cell_value(ws, row, SUMMARY_COLUMNS['total'], '=SUM(B%d:H%d)' % (row, row))
+        _set_cell_value(ws, row, SUMMARY_COLUMNS['type'], report.summary_type or '')
+        _set_cell_value(
+            ws, row, SUMMARY_COLUMNS['operations_summary'],
+            report.operations_summary or '',
+        )
 
-    _set_cell_value(ws, row, 2, totals.get('full_ops', 0.0))
-    _set_cell_value(ws, row, 3, totals.get('standby_wcrew', 0.0))
-    _set_cell_value(ws, row, 4, totals.get('standby_wocrew', 0.0))
-    _set_cell_value(ws, row, 5, totals.get('full_repair', 0.0))
-    _set_cell_value(ws, row, 6, totals.get('zero_rate', 0.0))
-    _set_cell_value(ws, row, 7, totals.get('force_majeure', 0.0))
-    _set_cell_value(ws, row, 8, totals.get('rd_ru_rmtime', 0.0))
-    _set_cell_value(ws, row, 9, totals.get('total', 0.0))
-    row += 1
-    for clear_row in range(row, 20):
-        for col in range(1, 12):
-            _set_cell_value(ws, clear_row, col, None)
+    if reports:
+        first = SUMMARY_DATA_START
+        last = SUMMARY_DATA_START + len(reports) - 1
+        total_row = SUMMARY_TOTAL_ROW + extra
+        for key, col in SUMMARY_COLUMNS.items():
+            if key in ('type', 'operations_summary'):
+                continue
+            letter = get_column_letter(col)
+            _set_cell_value(
+                ws, total_row, col,
+                '=SUM(%s%d:%s%d)' % (letter, first, letter, last),
+            )
 
 
 def build_summary_workbook(well_reports_map, operator_name, rig_name, month_label, company_name):
