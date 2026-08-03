@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rgb_ncr_user,rgb.ncr.user,model_rgb_ncr,group_rgb_ncr_user,1,1,1,0
+access_rgb_ncr_manager,rgb.ncr.manager,model_rgb_ncr,group_rgb_ncr_manager,1,1,1,1
+access_rgb_ncr_image_user,rgb.ncr.image.user,model_rgb_ncr_image,group_rgb_ncr_user,1,1,1,0
+access_rgb_ncr_image_manager,rgb.ncr.image.manager,model_rgb_ncr_image,group_rgb_ncr_manager,1,1,1,1
+access_rgb_ncr_construction_user,rgb.ncr.construction.user,model_rgb_ncr,sdlc_construction_management.group_construction_user,1,1,1,0
+access_rgb_ncr_construction_manager,rgb.ncr.construction.manager,model_rgb_ncr,sdlc_construction_management.group_construction_manager,1,1,1,1
+access_rgb_ncr_image_construction_user,rgb.ncr.image.construction.user,model_rgb_ncr_image,sdlc_construction_management.group_construction_user,1,1,1,0
+access_rgb_ncr_image_construction_manager,rgb.ncr.image.construction.manager,model_rgb_ncr_image,sdlc_construction_management.group_construction_manager,1,1,1,1

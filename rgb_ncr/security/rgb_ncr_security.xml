@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_rgb_ncr" model="ir.module.category">
+        <field name="name">NCR</field>
+        <field name="description">Non-Conformance Reports</field>
+        <field name="sequence">55</field>
+    </record>
+
+    <record id="group_rgb_ncr_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="category_id" ref="module_category_rgb_ncr"/>
+    </record>
+
+    <record id="group_rgb_ncr_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="implied_ids" eval="[(4, ref('group_rgb_ncr_user'))]"/>
+        <field name="category_id" ref="module_category_rgb_ncr"/>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

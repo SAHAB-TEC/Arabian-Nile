@@ -1,0 +1,133 @@
+# -*- coding: utf-8 -*-
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* rgb_ncr
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 19:30+0000\n"
+"PO-Revision-Date: 2026-08-03 19:30+0000\n"
+"Language-Team: Arabic\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ar_001\n"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__name
+msgid "NCR Reference"
+msgstr "رقم التقرير"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__project_id
+msgid "Project"
+msgstr "المشروع"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__sub_project_id
+msgid "Sub Project"
+msgstr "المشروع الفرعي"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__partner_id
+msgid "Contractor / Vendor"
+msgstr "المقاول/المورد المسؤول"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__work_order_id
+msgid "Work Order"
+msgstr "أمر العمل المرتبط"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__defect_description
+msgid "Defect Description"
+msgstr "وصف المخالفة"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__latitude
+msgid "Latitude"
+msgstr "خط العرض"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__longitude
+msgid "Longitude"
+msgstr "خط الطول"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__root_cause
+msgid "Root Cause"
+msgstr "السبب الجذري"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__corrective_action
+msgid "Corrective Action"
+msgstr "الإجراء التصحيحي المطلوب"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__before_image_ids
+msgid "Before Images"
+msgstr "صور المخالفة عند الاكتشاف"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__after_image_ids
+msgid "After Images"
+msgstr "صور الموقع بعد الإصلاح"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__ndt_report
+msgid "NDT / X-Ray Report"
+msgstr "تقرير المختبر أو الفحص المرفق"
+
+#. module: rgb_ncr
+#: model:ir.model.fields.selection,name:rgb_ncr.selection__rgb_ncr__state__open
+msgid "Open"
+msgstr "مفتوح"
+
+#. module: rgb_ncr
+#: model:ir.model.fields.selection,name:rgb_ncr.selection__rgb_ncr__state__under_review
+msgid "Under Review"
+msgstr "تحت الإصلاح"
+
+#. module: rgb_ncr
+#: model:ir.model.fields.selection,name:rgb_ncr.selection__rgb_ncr__state__closed
+msgid "Closed"
+msgstr "مغلق"
+
+#. module: rgb_ncr
+#: model:ir.model.fields,field_description:rgb_ncr.field_rgb_ncr__financial_freeze
+msgid "Financial Freeze"
+msgstr "تجميد مالي"
+
+#. module: rgb_ncr
+#: model:ir.actions.act_window,name:rgb_ncr.action_rgb_ncr
+#: model:ir.ui.menu,name:rgb_ncr.menu_rgb_ncr_quality
+#: model:ir.ui.menu,name:rgb_ncr.menu_rgb_ncr_operations
+msgid "NCR Reports"
+msgstr "تقارير NCR"
+
+#. module: rgb_ncr
+#: model_terms:ir.ui.view,arch_db:rgb_ncr.view_rgb_ncr_form
+msgid "Approve &amp; Close"
+msgstr "اعتماد وإغلاق"
+
+#. module: rgb_ncr
+#: model_terms:ir.ui.view,arch_db:rgb_ncr.view_rgb_ncr_form
+msgid "Start Repair"
+msgstr "بدء الإصلاح"
+
+#. module: rgb_ncr
+#: model_terms:ir.ui.view,arch_db:rgb_ncr.view_rgb_ncr_form
+msgid "Linking &amp; Governance"
+msgstr "بيانات الربط والحوكمة"
+
+#. module: rgb_ncr
+#: model_terms:ir.ui.view,arch_db:rgb_ncr.view_rgb_ncr_form
+msgid "Technical &amp; Geographic Description"
+msgstr "التوصيف الفني والجغرافي"
+
+#. module: rgb_ncr
+#: model_terms:ir.ui.view,arch_db:rgb_ncr.view_rgb_ncr_form
+msgid "Corrective Actions"
+msgstr "الحلول والخطوات التصحيحية"
