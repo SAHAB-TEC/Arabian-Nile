@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_requisition_request_type_list_ticket" model="ir.ui.view">
+        <field name="name">requisition.request.type.list.ticket</field>
+        <field name="model">requisition.request.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="ticket_status_color"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_requisition_request_type_form_ticket" model="ir.ui.view">
+        <field name="name">requisition.request.type.form.ticket</field>
+        <field name="model">requisition.request.type</field>
+        <field name="arch" type="xml">
+            <form string="Request Type">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="ticket_status_color"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_requisition_request_type_ticket" model="ir.actions.act_window">
+        <field name="name">Request Types (Ticket Colors)</field>
+        <field name="res_model">requisition.request.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
