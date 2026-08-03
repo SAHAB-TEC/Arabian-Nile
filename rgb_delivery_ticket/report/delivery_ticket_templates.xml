@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_delivery_ticket">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="rgb_delivery_ticket.report_delivery_ticket_document"
+                   t-lang="o._get_report_lang()"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_delivery_ticket_document">
+        <!-- Uses external_layout (logo + ISO seals) but does not alter stock Delivery Slip -->
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o._get_report_lang())"/>
+            <div class="page rgb-delivery-ticket" style="font-size:11px; color:#111;">
+                <t t-set="ticket_company"
+                   t-value="o.ticket_company_id or (o.material_requisition_id.partner_id if o.material_requisition_id else False) or o.partner_id"/>
+                <t t-set="ticket_lines"
+                   t-value="o.move_ids_without_package.filtered(lambda m: m.product_uom_qty or m.quantity)"/>
+
+                <!-- Space under header seals to avoid overlap -->
+                <table style="width:100%; border-collapse:collapse; margin-top:38px; margin-bottom:8px;">
+                    <tr>
+                        <td style="width:55%; vertical-align:middle;">
+                            <div style="font-size:18px; font-weight:700;">
+                                Delivery Ticket No:
+                                <span t-field="o.name" style="font-weight:700;"/>
+                            </div>
+                        </td>
+                        <td style="width:45%; vertical-align:top; text-align:right; padding-top:8px;">
+                            <div style="margin-bottom:3px;">
+                                <strong>تاريخ التسليم / Delivery Date:</strong>
+                                <span t-if="o.state == 'done'" t-field="o.date_done" t-options='{"widget": "date"}'/>
+                                <span t-else="" t-field="o.scheduled_date" t-options='{"widget": "date"}'/>
+                            </div>
+                            <div style="margin-bottom:3px;">
+                                <strong>شحن إلى / Ship To:</strong>
+                                <span t-esc="o.ticket_shipped_to or (o.location_dest_id.display_name if o.location_dest_id else '........................')"/>
+                            </div>
+                            <div>
+                                <strong>اسم الشركة / Company:</strong>
+                                <t t-if="ticket_company">
+                                    <span t-esc="ticket_company.display_name"/>
+                                </t>
+                                <t t-else="">........................</t>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:6px;">
+                    <tr>
+                        <td style="width:50%; padding:2px 0;">
+                            <strong>Order / الطلب:</strong>
+                            <span t-esc="o.origin or (o.material_requisition_id.name if o.material_requisition_id else '-')"/>
+                        </td>
+                        <td style="width:50%; padding:2px 0;">
+                            <strong>شحن من / Ship From:</strong>
+                            <span t-esc="o.ticket_shipped_from or (o.location_id.display_name if o.location_id else '-')"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width:100%; border-collapse:collapse; border:1px solid #222; margin-bottom:10px;">
+                    <tr>
+                        <td style="border:1px solid #222; padding:5px; width:25%;">
+                            <strong>Rig No.</strong><br/>
+                            <span t-esc="o.rig_id.name or '........................'"/>
+                        </td>
+                        <td style="border:1px solid #222; padding:5px; width:25%;">
+                            <strong>Well No.</strong><br/>
+                            <span t-esc="o.well_id.name or '........................'"/>
+                        </td>
+                        <td style="border:1px solid #222; padding:5px; width:25%;">
+                            <strong>Concession</strong><br/>
+                            <span t-esc="o.ticket_concession or '........................'"/>
+                        </td>
+                        <td style="border:1px solid #222; padding:5px; width:25%;">
+                            <strong>وقت التسليم / Delivery Time</strong><br/>
+                            <t t-if="o.ticket_delivery_time">
+                                <span t-field="o.ticket_delivery_time"/>
+                            </t>
+                            <t t-else="">........................</t>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width:100%; border-collapse:collapse; border:1px solid #222; margin-bottom:12px;">
+                    <thead>
+                        <tr style="background:#f0f0f0;">
+                            <th style="border:1px solid #222; padding:5px; width:6%; text-align:center;">I</th>
+                            <th style="border:1px solid #222; padding:5px; width:40%;">Description / البيان</th>
+                            <th style="border:1px solid #222; padding:5px; width:14%; text-align:center;">Unit / الوحدة</th>
+                            <th style="border:1px solid #222; padding:5px; width:14%; text-align:center;">Qty. / الكمية</th>
+                            <th style="border:1px solid #222; padding:5px; width:26%;">Remarks / ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="ticket_lines" t-as="line">
+                            <td style="border:1px solid #222; padding:5px; text-align:center;">
+                                <t t-esc="line_index + 1"/>
+                            </td>
+                            <td style="border:1px solid #222; padding:5px;">
+                                <span t-field="line.product_id.display_name"/>
+                            </td>
+                            <td style="border:1px solid #222; padding:5px; text-align:center;">
+                                <span t-field="line.product_uom"/>
+                            </td>
+                            <td style="border:1px solid #222; padding:5px; text-align:center;">
+                                <span t-esc="'%.2f' % (line.quantity or line.product_uom_qty or 0.0)"/>
+                            </td>
+                            <td style="border:1px solid #222; padding:5px;">
+                                <span t-esc="line.delivery_ticket_note or ''"/>
+                            </td>
+                        </tr>
+                        <t t-set="empty_rows" t-value="max(0, 8 - len(ticket_lines))"/>
+                        <tr t-foreach="range(empty_rows)" t-as="empty_i">
+                            <td style="border:1px solid #222; padding:8px; height:22px;"/>
+                            <td style="border:1px solid #222; padding:8px;"/>
+                            <td style="border:1px solid #222; padding:8px;"/>
+                            <td style="border:1px solid #222; padding:8px;"/>
+                            <td style="border:1px solid #222; padding:8px;"/>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
+                    <tr>
+                        <td style="width:28%; vertical-align:top; padding-right:10px;">
+                            <div style="border:1px solid #222; min-height:90px; padding:6px; text-align:center;">
+                                <div style="font-weight:700; margin-bottom:6px;">أمين المخزن</div>
+                                <div style="min-height:45px;">
+                                    <t t-if="o.ticket_storekeeper_signature">
+                                        <img t-att-src="image_data_uri(o.ticket_storekeeper_signature)"
+                                             style="max-height:45px;"/>
+                                    </t>
+                                </div>
+                                <div style="border-top:1px solid #999; margin-top:4px; padding-top:2px; font-size:10px;">
+                                    <t t-esc="o.ticket_storekeeper_name or 'توقيع'"/>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="width:72%; vertical-align:top; padding-left:6px;">
+                            <div style="margin-bottom:8px;">
+                                <span t-attf-style="display:inline-block;width:12px;height:12px;border:1px solid #000;margin-left:6px;vertical-align:middle;background:{{'#111' if o.ticket_materials_ok else '#fff'}};"/>
+                                <strong style="margin-right:6px;">استلمت المواد بحالة جيدة</strong>
+                            </div>
+                            <div style="margin-bottom:5px;">
+                                <strong>السائق المستلم:</strong>
+                                <span t-esc="o.ticket_driver_name or '........................................'"/>
+                            </div>
+                            <div style="margin-bottom:5px;">
+                                <strong>رقم البطاقة:</strong>
+                                <span t-esc="o.ticket_driver_card_no or '........................................'"/>
+                            </div>
+                            <div style="margin-bottom:5px;">
+                                <strong>رقم الشاحنة:</strong>
+                                <span t-esc="o.ticket_truck_no or '........................................'"/>
+                            </div>
+                            <div>
+                                <strong>التوقيع:</strong>
+                                <span style="display:inline-block; min-width:180px; border-bottom:1px solid #333; min-height:28px; vertical-align:middle;">
+                                    <t t-if="o.ticket_driver_signature">
+                                        <img t-att-src="image_data_uri(o.ticket_driver_signature)"
+                                             style="max-height:28px;"/>
+                                    </t>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr style="border:none; border-top:1px dashed #666; margin:10px 0 12px 0;"/>
+
+                <table style="width:100%; border-collapse:collapse;">
+                    <tr>
+                        <td style="width:50%; vertical-align:top; padding-right:12px;">
+                            <div style="margin-bottom:10px;">
+                                <strong>Company Name:</strong>
+                                <span t-esc="o.ticket_received_company or '................................'"/>
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <strong>Received Name:</strong>
+                                <span t-esc="o.ticket_received_name or '................................'"/>
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <strong>Signature:</strong>
+                                <span style="display:inline-block; min-width:160px; border-bottom:1px solid #333; min-height:28px;">
+                                    <t t-if="o.ticket_received_signature">
+                                        <img t-att-src="image_data_uri(o.ticket_received_signature)"
+                                             style="max-height:28px;"/>
+                                    </t>
+                                </span>
+                            </div>
+                            <div>
+                                <strong>Received:</strong>
+                                <t t-if="o.ticket_received_date">
+                                    <span t-field="o.ticket_received_date"/>
+                                </t>
+                                <t t-else="">........ / ...... / ............</t>
+                            </div>
+                        </td>
+                        <td style="width:50%; vertical-align:top; padding-left:12px; direction:rtl; text-align:right;">
+                            <div style="margin-bottom:10px;">
+                                <strong>اسم الشركة:</strong>
+                                <span t-esc="o.ticket_received_company or '................................'"/>
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <strong>اسم المستلم:</strong>
+                                <span t-esc="o.ticket_received_name or '................................'"/>
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <strong>توقيع المستلم:</strong>
+                                <span style="display:inline-block; min-width:160px; border-bottom:1px solid #333; min-height:28px;">
+                                    <t t-if="o.ticket_received_signature">
+                                        <img t-att-src="image_data_uri(o.ticket_received_signature)"
+                                             style="max-height:28px;"/>
+                                    </t>
+                                </span>
+                            </div>
+                            <div>
+                                <strong>تاريخ الاستلام:</strong>
+                                <t t-if="o.ticket_received_date">
+                                    <span t-field="o.ticket_received_date"/>
+                                </t>
+                                <t t-else="">........ / ...... / ............</t>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

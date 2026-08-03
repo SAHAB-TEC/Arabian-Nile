@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_delivery_ticket" model="ir.ui.view">
+        <field name="name">stock.picking.form.delivery.ticket</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(rgb_delivery_ticket.action_report_delivery_ticket)d"
+                        string="Print Delivery Ticket"
+                        type="action"
+                        groups="base.group_user"
+                        class="btn-secondary"
+                        invisible="state == 'cancel'"/>
+                <button name="action_rgb_fill_delivery_ticket"
+                        type="object"
+                        string="Fill Ticket from Request"
+                        class="btn-secondary"
+                        invisible="state == 'cancel'"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Delivery Ticket" name="rgb_delivery_ticket">
+                    <group string="Load Details">
+                        <group>
+                            <field name="ticket_company_id"/>
+                            <field name="ticket_shipped_from"/>
+                            <field name="ticket_shipped_to"/>
+                            <field name="ticket_delivery_time"/>
+                        </group>
+                        <group>
+                            <field name="ticket_concession"/>
+                            <field name="ticket_status_color"/>
+                            <field name="well_id" readonly="1"/>
+                            <field name="rig_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Storekeeper">
+                        <field name="ticket_storekeeper_name"/>
+                        <field name="ticket_storekeeper_signature" widget="signature"/>
+                    </group>
+                    <group string="Driver Acknowledgment">
+                        <group>
+                            <field name="ticket_materials_ok"/>
+                            <field name="ticket_driver_name"/>
+                            <field name="ticket_driver_card_no"/>
+                            <field name="ticket_truck_no"/>
+                        </group>
+                        <group>
+                            <field name="ticket_driver_signature" widget="signature"/>
+                        </group>
+                    </group>
+                    <group string="Final Receipt">
+                        <group>
+                            <field name="ticket_received_company"/>
+                            <field name="ticket_received_name"/>
+                            <field name="ticket_received_date"/>
+                        </group>
+                        <group>
+                            <field name="ticket_received_signature" widget="signature"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
