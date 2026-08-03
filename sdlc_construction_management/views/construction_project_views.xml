@@ -14,18 +14,17 @@
         </field>
     </record>
 
-    <!-- Kanban View -->
+    <!-- Kanban View: click opens the project form directly -->
     <record id="view_construction_project_kanban" model="ir.ui.view">
         <field name="name">construction.project.kanban</field>
         <field name="model">construction.project</field>
         <field name="arch" type="xml">
             <kanban highlight_color="color"
                     class="o_kanban_mobile"
-                    action="action_view_tasks"
-                    type="object"
                     quick_create_view="sdlc_construction_management.view_construction_project_form_quick_create"
                     sample="1"
-                    default_order="sequence, name, id">
+                    default_order="sequence, name, id"
+                    default_group_by="state">
                 <field name="name"/>
                 <field name="reference"/>
                 <field name="warehouse_id"/>
@@ -36,6 +35,7 @@
                 <field name="stage_id"/>
                 <field name="sub_project_count"/>
                 <field name="task_count"/>
+                <field name="purchase_order_count"/>
                 <field name="active"/>
                 <field name="color"/>
                 <field name="sequence" widget="handle"/>
@@ -77,10 +77,18 @@
                                         <span class="fa fa-check-square-o me-1"/>
                                         <field name="task_count"/>
                                     </a>
+                                    <a class="btn btn-link p-0 text-dark" name="action_view_purchase_orders" type="object" t-if="record.purchase_order_count.raw_value">
+                                        <span class="fa fa-shopping-cart me-1"/>
+                                        <field name="purchase_order_count"/>
+                                    </a>
                                 </div>
                                 <field name="activity_ids" widget="kanban_activity" class="ms-auto"/>
                             </div>
-                            <field name="state" widget="badge" class="mt-1"/>
+                            <field name="state" widget="badge" class="mt-1"
+                                   decoration-success="state == 'ongoing'"
+                                   decoration-warning="state in ('stopped', 'suspended')"
+                                   decoration-danger="state == 'closed'"
+                                   decoration-info="state == 'completed'"/>
                         </footer>
                     </t>
                 </templates>
@@ -88,15 +96,15 @@
         </field>
     </record>
 
-    <!-- Kanban grouped by stage -->
+    <!-- Kanban grouped by state (kept for action binding compatibility) -->
     <record id="view_construction_project_kanban_group_stage" model="ir.ui.view">
-        <field name="name">construction.project.kanban.group.stage</field>
+        <field name="name">construction.project.kanban.group.state</field>
         <field name="model">construction.project</field>
         <field name="mode">primary</field>
         <field name="inherit_id" ref="view_construction_project_kanban"/>
         <field name="arch" type="xml">
             <xpath expr="//kanban" position="attributes">
-                <attribute name="default_group_by">stage_id</attribute>
+                <attribute name="default_group_by">state</attribute>
             </xpath>
         </field>
     </record>
@@ -106,17 +114,25 @@
         <field name="name">construction.project.list</field>
         <field name="model">construction.project</field>
         <field name="arch" type="xml">
-            <list string="Construction Projects" default_group_by="stage_id">
+            <list string="Projects" default_group_by="state"
+                  decoration-success="state == 'ongoing'"
+                  decoration-warning="state in ('stopped', 'suspended')"
+                  decoration-muted="state == 'closed'"
+                  decoration-info="state == 'completed'">
                 <field name="sequence" widget="handle"/>
                 <field name="reference"/>
                 <field name="name"/>
-                <field name="stage_id"/>
                 <field name="warehouse_id"/>
                 <field name="date_start"/>
                 <field name="date_end"/>
                 <field name="city"/>
                 <field name="country_id"/>
-                <field name="state" widget="badge"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'ongoing'"
+                       decoration-warning="state in ('stopped', 'suspended')"
+                       decoration-danger="state == 'closed'"
+                       decoration-info="state == 'completed'"/>
+                <field name="stage_id" optional="hide"/>
             </list>
         </field>
     </record>
@@ -126,21 +142,29 @@
         <field name="name">construction.project.form</field>
         <field name="model">construction.project</field>
         <field name="arch" type="xml">
-            <form string="Construction Project">
+            <form string="Project">
                 <header>
-                    <button name="action_start" string="Start Project" type="object"
-                            class="oe_highlight" invisible="state != 'draft'"/>
-                    <button name="action_complete" string="Complete" type="object"
-                            class="oe_highlight" invisible="state != 'in_progress'"/>
-                    <button name="action_short_close" string="Short Close" type="object"
-                            invisible="state not in ('draft', 'in_progress')"/>
-                    <button name="action_reset_draft" string="Reset to Draft" type="object"
-                            invisible="state in ('draft', 'completed')"/>
-                    <field name="stage_id" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="ongoing,stopped,suspended,closed,completed"
+                           options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <widget name="web_ribbon" title="جاري" bg_color="text-bg-success"
+                            invisible="state != 'ongoing' or not active"/>
+                    <widget name="web_ribbon" title="متوقف" bg_color="text-bg-warning"
+                            invisible="state != 'stopped' or not active"/>
+                    <widget name="web_ribbon" title="معلّق" bg_color="text-bg-warning"
+                            invisible="state != 'suspended' or not active"/>
+                    <widget name="web_ribbon" title="مغلق" bg_color="text-bg-danger"
+                            invisible="state != 'closed' or not active"/>
+                    <widget name="web_ribbon" title="مكتمل" bg_color="text-bg-info"
+                            invisible="state != 'completed' or not active"/>
                     <div class="oe_button_box" name="button_box">
+                        <button name="action_view_purchase_orders" type="object"
+                                class="oe_stat_button" icon="fa-shopping-cart">
+                            <field name="purchase_order_count" widget="statinfo" string="Purchases"/>
+                        </button>
                         <button name="action_view_sub_projects" type="object" class="oe_stat_button" icon="fa-sitemap">
                             <field name="sub_project_count" widget="statinfo" string="Sub Projects"/>
                         </button>
@@ -179,7 +203,7 @@
                         <group>
                             <field name="date_start"/>
                             <field name="date_end"/>
-                            <field name="state" invisible="1"/>
+                            <field name="stage_id" invisible="1"/>
                         </group>
                     </group>
                     <notebook>
@@ -253,20 +277,21 @@
         <field name="name">construction.project.search</field>
         <field name="model">construction.project</field>
         <field name="arch" type="xml">
-            <search string="Construction Projects">
+            <search string="Projects">
                 <field name="name"/>
                 <field name="reference"/>
                 <field name="city"/>
                 <field name="country_id"/>
-                <field name="stage_id"/>
+                <field name="state"/>
                 <separator/>
-                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
-                <filter name="in_progress" string="In Progress" domain="[('state', '=', 'in_progress')]"/>
-                <filter name="completed" string="Completed" domain="[('state', '=', 'completed')]"/>
+                <filter name="ongoing" string="جاري" domain="[('state', '=', 'ongoing')]"/>
+                <filter name="stopped" string="متوقف" domain="[('state', '=', 'stopped')]"/>
+                <filter name="suspended" string="معلّق" domain="[('state', '=', 'suspended')]"/>
+                <filter name="closed" string="مغلق" domain="[('state', '=', 'closed')]"/>
+                <filter name="completed" string="مكتمل" domain="[('state', '=', 'completed')]"/>
                 <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
                 <separator/>
                 <group>
-                    <filter name="group_stage" string="Stage" context="{'group_by': 'stage_id'}"/>
                     <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
                     <filter name="group_country" string="Country" context="{'group_by': 'country_id'}"/>
                     <filter name="group_warehouse" string="Warehouse" context="{'group_by': 'warehouse_id'}"/>
@@ -277,17 +302,17 @@
 
     <!-- Action -->
     <record id="action_construction_project" model="ir.actions.act_window">
-        <field name="name">Construction Projects</field>
+        <field name="name">Projects</field>
         <field name="res_model">construction.project</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="view_id" ref="view_construction_project_kanban"/>
         <field name="search_view_id" ref="view_construction_project_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Create your first Construction Project
+                Create your first Project
             </p>
             <p>
-                Organize construction projects by stage and track progress from planning to completion.
+                Organize projects by status and track progress from start to completion.
             </p>
         </field>
     </record>
@@ -304,5 +329,39 @@
         <field name="view_mode">list</field>
         <field name="view_id" ref="view_construction_project_list"/>
         <field name="act_window_id" ref="action_construction_project"/>
+    </record>
+
+    <!-- Purchase Order: link to construction project -->
+    <record id="view_purchase_order_form_construction_project" model="ir.ui.view">
+        <field name="name">purchase.order.form.construction.project</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="construction_project_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_purchase_order_tree_construction_project" model="ir.ui.view">
+        <field name="name">purchase.order.list.construction.project</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="construction_project_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_purchase_order_kpis_tree_construction_project" model="ir.ui.view">
+        <field name="name">purchase.order.kpis.list.construction.project</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="construction_project_id" optional="show"/>
+            </xpath>
+        </field>
     </record>
 </odoo>

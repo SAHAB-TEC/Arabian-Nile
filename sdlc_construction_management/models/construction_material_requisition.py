@@ -132,6 +132,7 @@ class ConstructionMaterialRequisition(models.Model):
             po = self.env['purchase.order'].create({
                 'partner_id': vendor_id,
                 'origin': self.name,
+                'construction_project_id': self.project_id.id,
             })
             for line in lines:
                 self.env['purchase.order.line'].create({
