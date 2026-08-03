@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rgb_ncr_list" model="ir.ui.view">
+        <field name="name">rgb.ncr.list</field>
+        <field name="model">rgb.ncr</field>
+        <field name="arch" type="xml">
+            <list string="NCR Reports"
+                  decoration-danger="state == 'open'"
+                  decoration-warning="state == 'under_review'"
+                  decoration-success="state == 'closed'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="project_id"/>
+                <field name="sub_project_id"/>
+                <field name="partner_id"/>
+                <field name="work_order_id" optional="hide"/>
+                <field name="root_cause" optional="show"/>
+                <field name="financial_freeze" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-danger="state == 'open'"
+                       decoration-warning="state == 'under_review'"
+                       decoration-success="state == 'closed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rgb_ncr_form" model="ir.ui.view">
+        <field name="name">rgb.ncr.form</field>
+        <field name="model">rgb.ncr</field>
+        <field name="arch" type="xml">
+            <form string="NCR Report">
+                <header>
+                    <button name="action_set_under_review" type="object"
+                            string="Start Repair" class="oe_highlight"
+                            invisible="state != 'open'"/>
+                    <button name="action_approve_close" type="object"
+                            string="Approve &amp; Close" class="oe_highlight"
+                            invisible="state != 'under_review'"
+                            groups="rgb_ncr.group_rgb_ncr_manager,sdlc_construction_management.group_construction_manager"/>
+                    <button name="action_reopen" type="object"
+                            string="Reopen"
+                            invisible="state != 'closed'"
+                            groups="rgb_ncr.group_rgb_ncr_manager,sdlc_construction_management.group_construction_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="open,under_review,closed"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Financial Freeze" bg_color="text-bg-danger"
+                            invisible="not financial_freeze"/>
+                    <widget name="web_ribbon" title="Closed" bg_color="text-bg-success"
+                            invisible="state != 'closed'"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group string="Linking &amp; Governance">
+                        <group>
+                            <field name="project_id"/>
+                            <field name="analytic_account_id"/>
+                            <field name="sub_project_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="work_order_id"/>
+                            <field name="date"/>
+                            <field name="financial_freeze" invisible="1"/>
+                            <field name="after_images_editable" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Technical &amp; Geographic Description">
+                        <group colspan="2">
+                            <field name="defect_description" placeholder="Describe the defect with engineering detail..."/>
+                        </group>
+                        <group>
+                            <field name="latitude"/>
+                        </group>
+                        <group>
+                            <field name="longitude"/>
+                        </group>
+                    </group>
+                    <group string="Corrective Actions">
+                        <group>
+                            <field name="root_cause"/>
+                        </group>
+                        <group colspan="2">
+                            <field name="corrective_action" placeholder="Mandatory corrective steps..."/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Before Images" name="before_images">
+                            <field name="before_image_ids" context="{'default_image_type': 'before'}">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="image" widget="image" options="{'size': [100, 100]}"/>
+                                    <field name="image_filename" column_invisible="1"/>
+                                    <field name="image_type" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="NDT / X-Ray Report" name="ndt_report">
+                            <group>
+                                <field name="ndt_report" filename="ndt_report_filename"/>
+                                <field name="ndt_report_filename" invisible="1"/>
+                            </group>
+                        </page>
+                        <page string="After Images" name="after_images">
+                            <div class="alert alert-warning" role="alert"
+                                 invisible="after_images_editable">
+                                After-repair images are available only when the NCR is Under Review.
+                            </div>
+                            <field name="after_image_ids"
+                                   context="{'default_image_type': 'after'}"
+                                   readonly="not after_images_editable">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="image" widget="image" options="{'size': [100, 100]}"/>
+                                    <field name="image_filename" column_invisible="1"/>
+                                    <field name="image_type" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rgb_ncr_search" model="ir.ui.view">
+        <field name="name">rgb.ncr.search</field>
+        <field name="model">rgb.ncr</field>
+        <field name="arch" type="xml">
+            <search string="NCR Reports">
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="sub_project_id"/>
+                <field name="partner_id"/>
+                <field name="work_order_id"/>
+                <separator/>
+                <filter name="open" string="Open" domain="[('state', '=', 'open')]"/>
+                <filter name="under_review" string="Under Review" domain="[('state', '=', 'under_review')]"/>
+                <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <filter name="frozen" string="Financial Freeze" domain="[('financial_freeze', '=', True)]"/>
+                <separator/>
+                <group>
+                    <filter name="group_project" string="Project" context="{'group_by': 'project_id'}"/>
+                    <filter name="group_partner" string="Contractor" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rgb_ncr" model="ir.actions.act_window">
+        <field name="name">NCR Reports</field>
+        <field name="res_model">rgb.ncr</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_rgb_ncr_search"/>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first NCR report
+            </p>
+            <p>
+                Record non-conformances, freeze contractor payments for the project,
+                and close only after successful repair evidence.
+            </p>
+        </field>
+    </record>
+</odoo>

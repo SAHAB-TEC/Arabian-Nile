@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_rgb_ncr" model="ir.ui.view">
+        <field name="name">account.move.form.rgb.ncr</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="construction_project_id"
+                       invisible="move_type not in ('in_invoice', 'in_refund', 'in_receipt')"
+                       readonly="state != 'draft'"/>
+                <field name="ncr_financial_freeze" invisible="1"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="before">
+                <div class="alert alert-danger" role="alert"
+                     invisible="not ncr_financial_freeze">
+                    Financial freeze is active for this contractor on the selected construction project due to an open NCR.
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
