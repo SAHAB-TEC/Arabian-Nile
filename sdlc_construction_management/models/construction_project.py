@@ -60,15 +60,22 @@ class ConstructionProject(models.Model):
         domain="[('company_id', 'in', (company_id, False))]",
     )
     state = fields.Selection([
-        ('draft', 'Draft'),
-        ('in_progress', 'In Progress'),
-        ('completed', 'Completed'),
-        ('short_closed', 'Short Closed'),
-    ], string='Status', default='draft', tracking=True)
+        ('ongoing', 'جاري'),
+        ('stopped', 'متوقف'),
+        ('suspended', 'معلّق'),
+        ('closed', 'مغلق'),
+        ('completed', 'مكتمل'),
+    ], string='Status', default='ongoing', tracking=True, required=True,
+       group_expand='_group_expand_states')
 
     # Relational
     sub_project_ids = fields.One2many('construction.sub.project', 'project_id', string='Sub Projects')
     image_ids = fields.One2many('construction.project.image', 'project_id', string='Images')
+    purchase_order_ids = fields.One2many(
+        'purchase.order',
+        'construction_project_id',
+        string='Purchase Orders',
+    )
 
     # Computed
     sub_project_count = fields.Integer(compute='_compute_counts', string='Sub Projects')
@@ -78,9 +85,14 @@ class ConstructionProject(models.Model):
     task_count = fields.Integer(compute='_compute_counts', string='Tasks')
     phase_count = fields.Integer(compute='_compute_counts', string='Phases')
     expense_count = fields.Integer(compute='_compute_counts', string='Expenses')
+    purchase_order_count = fields.Integer(compute='_compute_counts', string='Purchases')
 
     # Permits
     permit_ids = fields.One2many('construction.permit', 'project_id', string='Permits & Approvals')
+
+    @api.model
+    def _group_expand_states(self, states, domain):
+        return [key for key, _label in self._fields['state'].selection]
 
     @api.onchange('company_id')
     def _onchange_company_id(self):
@@ -123,6 +135,7 @@ class ConstructionProject(models.Model):
         return super().write(vals)
 
     def _compute_counts(self):
+        PurchaseOrder = self.env['purchase.order']
         for rec in self:
             rec.sub_project_count = self.env['construction.sub.project'].search_count([('project_id', '=', rec.id)])
             rec.budget_count = self.env['construction.budget'].search_count([('project_id', '=', rec.id)])
@@ -131,18 +144,37 @@ class ConstructionProject(models.Model):
             rec.task_count = self.env['construction.task'].search_count([('project_id', '=', rec.id)])
             rec.phase_count = self.env['construction.phase'].search_count([('project_id', '=', rec.id)])
             rec.expense_count = self.env['construction.extra.expense'].search_count([('project_id', '=', rec.id)])
+            rec.purchase_order_count = PurchaseOrder.search_count([
+                ('construction_project_id', '=', rec.id),
+            ])
 
-    def action_start(self):
-        self.write({'state': 'in_progress'})
+    def action_set_ongoing(self):
+        self.write({'state': 'ongoing'})
+
+    def action_set_stopped(self):
+        self.write({'state': 'stopped'})
+
+    def action_set_suspended(self):
+        self.write({'state': 'suspended'})
+
+    def action_set_closed(self):
+        self.write({'state': 'closed'})
 
     def action_complete(self):
         self.write({'state': 'completed'})
 
-    def action_short_close(self):
-        self.write({'state': 'short_closed'})
-
-    def action_reset_draft(self):
-        self.write({'state': 'draft'})
+    def action_view_purchase_orders(self):
+        self.ensure_one()
+        return {
+            'name': _('Purchases'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'purchase.order',
+            'view_mode': 'list,form',
+            'domain': [('construction_project_id', '=', self.id)],
+            'context': {
+                'default_construction_project_id': self.id,
+            },
+        }
 
     def action_view_sub_projects(self):
         return {

@@ -2,24 +2,28 @@
 <odoo noupdate="1">
     <record id="construction_project_stage_todo" model="construction.project.stage">
         <field name="sequence">10</field>
-        <field name="name">To Do</field>
+        <field name="name">جاري</field>
     </record>
 
     <record id="construction_project_stage_in_progress" model="construction.project.stage">
         <field name="sequence">15</field>
-        <field name="name">In Progress</field>
+        <field name="name">متوقف</field>
     </record>
 
     <record id="construction_project_stage_done" model="construction.project.stage">
         <field name="sequence">20</field>
-        <field name="name">Done</field>
-        <field name="fold" eval="True"/>
+        <field name="name">معلّق</field>
     </record>
 
     <record id="construction_project_stage_cancelled" model="construction.project.stage">
         <field name="sequence">25</field>
-        <field name="name">Cancelled</field>
+        <field name="name">مغلق</field>
         <field name="fold" eval="True"/>
     </record>
 
+    <record id="construction_project_stage_completed" model="construction.project.stage">
+        <field name="sequence">30</field>
+        <field name="name">مكتمل</field>
+        <field name="fold" eval="True"/>
+    </record>
 </odoo>
