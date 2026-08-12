@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "RGB Material Requisition Custom",
-    "version": "18.0.1.0.11",
+    "version": "18.0.1.0.12",
     "category": "Human Resources/Employees",
     "summary": "Al-Abar customizations for material requisitions",
     "description": """
@@ -9,6 +9,7 @@ Custom material requisition extensions for Al-Abar:
 - Customer (required), well and rig on requisitions and linked documents
 - Project (project.project) and analytic account auto-filled from the project
 - Analytic account on stock locations for transfer journal entries
+- Product analytic account combined with MR analytic on transfer journal entries
 - Allowed users per stock location for requisition destination selection
 - Purchase receipts for material-requisition POs use the requisition location
     """,
@@ -21,13 +22,16 @@ Custom material requisition extensions for Al-Abar:
         "project",
         "analytic",
         "stock_account",
+        "product",
     ],
     "data": [
+        "security/rgb_material_requisition_security.xml",
         "views/material_requisition_views.xml",
         "views/material_requisition_line_views.xml",
         "views/material_requisition_approval_views.xml",
         "views/stock_purchase_views.xml",
         "views/stock_location_views.xml",
+        "views/product_views.xml",
         "report/material_requisition_summary_report.xml",
     ],
     "installable": True,

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_rgb_mr_custom" model="ir.module.category">
+        <field name="name">Material Requisition Custom</field>
+        <field name="sequence">56</field>
+    </record>
+
+    <record id="group_product_analytic_manager" model="res.groups">
+        <field name="name">Edit Product Analytic Account</field>
+        <field name="category_id" ref="module_category_rgb_mr_custom"/>
+        <field name="implied_ids" eval="[(4, ref('stock.group_stock_user'))]"/>
+        <field name="comment">
+            Can set the analytic account on product cards used by Material Requisitions.
+        </field>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

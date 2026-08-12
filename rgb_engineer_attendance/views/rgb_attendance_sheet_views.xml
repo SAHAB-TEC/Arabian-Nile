@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="view_product_product_form_inherit_engineer_attendance" model="ir.ui.view">
-        <field name="name">product.product.form.inherit.engineer.attendance</field>
-        <field name="model">product.product</field>
-        <field name="inherit_id" ref="product.product_normal_form_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='default_code']" position="after">
-                <field name="is_engineer_attendance_product"/>
-            </xpath>
-        </field>
-    </record>
     <record id="view_partner_form_inherit_engineer" model="ir.ui.view">
         <field name="name">res.partner.form.inherit.engineer</field>
         <field name="model">res.partner</field>
@@ -18,6 +8,29 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='category_id']" position="after">
                 <field name="is_engineer"/>
+            </xpath>
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page string="Payroll" name="engineer_payroll" invisible="not is_engineer">
+                    <group>
+                        <group>
+                            <field name="daily_rate"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="engineer_salary_line_ids" readonly="1">
+                        <list create="0" delete="0" edit="0">
+                            <field name="month_name" string="Month"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="days_count"/>
+                            <field name="daily_rate"/>
+                            <field name="net_salary"/>
+                            <field name="basic_salary"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                        </list>
+                    </field>
+                </page>
             </xpath>
         </field>
     </record>
@@ -53,7 +66,6 @@
                 <field name="analytic_account_id"/>
                 <field name="partner_company_id" string="Company"/>
                 <field name="days_count" string="Number of Days"/>
-                <field name="product_id"/>
                 <field name="period_label" string="Period"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'to_approve'" decoration-success="state in ('approved', 'invoiced')"/>
             </list>
@@ -97,7 +109,6 @@
                             <field name="rig_id" readonly="state != 'draft'"/>
                             <field name="well_id" readonly="state != 'draft'"/>
                             <field name="analytic_account_id" readonly="state != 'draft'"/>
-                            <field name="product_id" readonly="state != 'draft'"/>
                         </group>
                         <group string="Period">
                             <field name="month" readonly="state != 'draft'"/>
@@ -348,7 +359,6 @@
                 <field name="partner_company_id" string="Company"/>
                 <field name="rig_id" string="Rig"/>
                 <field name="well_id" string="Well"/>
-                <field name="product_id"/>
                 <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                 <filter name="filter_to_approve" string="To Approve" domain="[('state', '=', 'to_approve')]"/>
                 <filter name="filter_approved" string="Approved" domain="[('state', 'in', ('approved', 'invoiced'))]"/>

@@ -11,3 +11,13 @@ class ResPartner(models.Model):
         index=True,
         help="Mark contacts who are engineers for attendance sheets and vendor bills.",
     )
+    daily_rate = fields.Monetary(
+        string="Daily Rate",
+        currency_field="currency_id",
+        help="Daily attendance rate used to compute monthly net salary.",
+    )
+    engineer_salary_line_ids = fields.One2many(
+        "rgb.engineer.salary.line",
+        "partner_id",
+        string="Monthly Salaries",
+    )

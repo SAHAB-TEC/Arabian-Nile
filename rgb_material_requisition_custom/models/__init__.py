@@ -1,6 +1,7 @@
 from . import material_requisition
 from . import material_requisition_line
 from . import material_requisition_approval
+from . import product
 from . import stock_location
 from . import stock_picking
 from . import stock_move
