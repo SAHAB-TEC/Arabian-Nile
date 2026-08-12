@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "RGB Material Requisition Custom",
-    "version": "18.0.1.0.12",
+    "version": "18.0.1.0.13",
     "category": "Human Resources/Employees",
     "summary": "Al-Abar customizations for material requisitions",
     "description": """
