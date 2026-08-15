@@ -2,6 +2,7 @@
 import calendar
 
 from odoo import api, fields, models, _
+from odoo.tools import float_round
 
 
 class RgbEngineerSalaryLine(models.Model):
@@ -69,7 +70,7 @@ class RgbEngineerSalaryLine(models.Model):
         string="Basic Salary",
         currency_field="currency_id",
         readonly=True,
-        help="Computed from net salary using Libyan payroll brackets (pending client formulas).",
+        help="Computed from monthly net salary using Libyan payroll reverse formulas.",
     )
     attendance_sheet_ids = fields.Many2many(
         "rgb.attendance.sheet",
@@ -97,20 +98,32 @@ class RgbEngineerSalaryLine(models.Model):
             else:
                 line.month_name = ""
 
+    # Reverse net → basic constants from customer workbook (ODOO.xlsx, Sheet2!D17).
+    _NET_BASIC_TIER1_MAX = 937.33
+    _NET_BASIC_TIER1_DIVISOR = 0.7547861875
+    _NET_BASIC_TIER2_MAX = 11479.41
+    _NET_BASIC_TIER2_OFFSET = 50.25
+    _NET_BASIC_TIER2_DIVISOR = 0.714322375
+    _NET_BASIC_TIER3_OFFSET = 2752.592
+    _NET_BASIC_TIER3_DIVISOR = 0.8895
+
     @api.model
     def _compute_basic_salary_from_net(self, net_salary):
-        """Compute basic salary from net salary using Libyan payroll brackets.
+        """Reverse-calculate basic salary from monthly net salary.
 
-        TODO(client-formulas): Replace this stub when the customer provides the
-        exact reverse-calculation formulas for the three net-salary brackets:
-          - net < 1000
-          - 1000 <= net <= 16000
-          - net > 16000
-        Example shared by customer: Daily/Net amount 900 → Basic 1192.33
-        (first bracket). Until then basic_salary stays 0.0.
+        Applied on the aggregated monthly net (days × daily rate), not per day.
+        Formulas match the customer payroll workbook reverse brackets.
         """
-        # TODO(client-formulas): implement bracket formulas from customer.
-        return 0.0
+        net = net_salary or 0.0
+        if net <= 0:
+            return 0.0
+        if net <= self._NET_BASIC_TIER1_MAX:
+            basic = net / self._NET_BASIC_TIER1_DIVISOR
+        elif net <= self._NET_BASIC_TIER2_MAX:
+            basic = (net - self._NET_BASIC_TIER2_OFFSET) / self._NET_BASIC_TIER2_DIVISOR
+        else:
+            basic = (net + self._NET_BASIC_TIER3_OFFSET) / self._NET_BASIC_TIER3_DIVISOR
+        return float_round(basic, precision_digits=2)
 
     @api.model
     def sync_from_attendance(self, engineer, month, year, company=None):
