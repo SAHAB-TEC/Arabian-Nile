@@ -152,10 +152,11 @@ class RgbEngineerSalaryLine(models.Model):
         if not sheets:
             if line:
                 line.unlink()
+            self._rgb_refresh_contract_last_salaries(engineer, company=company)
             return self.browse()
 
         days_count = sum(sheets.mapped("days_count"))
-        daily_rate = engineer.daily_rate or 0.0
+        daily_rate = engineer._rgb_get_daily_rate(company=company)
         net_salary = days_count * daily_rate
         basic_salary = self._compute_basic_salary_from_net(net_salary)
 
@@ -176,8 +177,19 @@ class RgbEngineerSalaryLine(models.Model):
         }
         if line:
             line.write(vals)
-            return line
-        return self.create(vals)
+        else:
+            line = self.create(vals)
+        self._rgb_refresh_contract_last_salaries(engineer, company=company)
+        return line
+
+    @api.model
+    def _rgb_refresh_contract_last_salaries(self, engineer, company=None):
+        """Recompute last basic/net on contracts linked to this engineer."""
+        contracts = self.env["hr.contract"]._rgb_contracts_for_engineer(
+            engineer, company=company
+        )
+        if contracts:
+            contracts._compute_last_salaries()
 
     @api.model
     def _attendance_date_bounds(self, sheets, month, year):

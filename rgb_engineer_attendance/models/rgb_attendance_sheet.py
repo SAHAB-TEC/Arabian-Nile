@@ -317,9 +317,9 @@ class RgbAttendanceSheet(models.Model):
             sheet._check_editable()
             if sheet.days_count <= 0:
                 raise UserError(_("Select at least one attendance day before submitting."))
-            if not sheet.engineer_id.daily_rate:
+            if not sheet.engineer_id._rgb_get_daily_rate(company=sheet.company_id):
                 raise UserError(_(
-                    "Set a Daily Rate on engineer %(engineer)s (Payroll tab) before generating.",
+                    "Set a Daily Rate on the employee contract of %(engineer)s before generating.",
                     engineer=sheet.engineer_id.display_name,
                 ))
             sheet._check_day_types()
@@ -396,10 +396,10 @@ class RgbAttendanceSheet(models.Model):
             return self.invoice_id
         if self.days_count <= 0:
             raise UserError(_("Cannot create invoice without attendance days."))
-        daily_rate = self.engineer_id.daily_rate or 0.0
+        daily_rate = self.engineer_id._rgb_get_daily_rate(company=self.company_id)
         if not daily_rate:
             raise UserError(_(
-                "Set a Daily Rate on engineer %(engineer)s before creating the vendor bill.",
+                "Set a Daily Rate on the employee contract of %(engineer)s before creating the vendor bill.",
                 engineer=self.engineer_id.display_name,
             ))
         move = self.env["account.move"].create({

@@ -9,29 +9,6 @@
             <xpath expr="//field[@name='category_id']" position="after">
                 <field name="is_engineer"/>
             </xpath>
-            <xpath expr="//page[@name='internal_notes']" position="after">
-                <page string="Payroll" name="engineer_payroll" invisible="not is_engineer">
-                    <group>
-                        <group>
-                            <field name="daily_rate"/>
-                            <field name="currency_id" invisible="1"/>
-                        </group>
-                    </group>
-                    <field name="engineer_salary_line_ids" readonly="1">
-                        <list create="0" delete="0" edit="0">
-                            <field name="month_name" string="Month"/>
-                            <field name="date_start"/>
-                            <field name="date_end"/>
-                            <field name="days_count"/>
-                            <field name="daily_rate"/>
-                            <field name="net_salary"/>
-                            <field name="basic_salary"/>
-                            <field name="currency_id" column_invisible="1"/>
-                            <field name="company_id" groups="base.group_multi_company" optional="hide"/>
-                        </list>
-                    </field>
-                </page>
-            </xpath>
         </field>
     </record>
 

@@ -37,7 +37,7 @@
                         <th>Rig</th><td><span t-field="o.rig_id"/></td>
                     </tr>
                     <tr>
-                        <th>Daily Rate</th><td><span t-field="o.engineer_id.daily_rate"/></td>
+                        <th>Daily Rate</th><td><span t-esc="o.engineer_id._rgb_get_daily_rate(company=o.company_id)"/></td>
                         <th>Days</th><td><span t-field="o.days_count"/></td>
                     </tr>
                 </table>
