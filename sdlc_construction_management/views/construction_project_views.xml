@@ -85,6 +85,7 @@
                                 <field name="activity_ids" widget="kanban_activity" class="ms-auto"/>
                             </div>
                             <field name="state" widget="badge" class="mt-1"
+                                   decoration-muted="state == 'draft'"
                                    decoration-success="state == 'ongoing'"
                                    decoration-warning="state in ('stopped', 'suspended')"
                                    decoration-danger="state == 'closed'"
@@ -115,9 +116,9 @@
         <field name="model">construction.project</field>
         <field name="arch" type="xml">
             <list string="Projects" default_group_by="state"
+                  decoration-muted="state in ('draft', 'closed')"
                   decoration-success="state == 'ongoing'"
                   decoration-warning="state in ('stopped', 'suspended')"
-                  decoration-muted="state == 'closed'"
                   decoration-info="state == 'completed'">
                 <field name="sequence" widget="handle"/>
                 <field name="reference"/>
@@ -128,6 +129,7 @@
                 <field name="city"/>
                 <field name="country_id"/>
                 <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
                        decoration-success="state == 'ongoing'"
                        decoration-warning="state in ('stopped', 'suspended')"
                        decoration-danger="state == 'closed'"
@@ -144,12 +146,21 @@
         <field name="arch" type="xml">
             <form string="Project">
                 <header>
+                    <button name="action_set_ongoing" type="object" string="بدء (جاري)"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"
+                            groups="sdlc_construction_management.group_construction_project_start"/>
+                    <button name="action_set_closed" type="object" string="إغلاق (مغلق)"
+                            invisible="state in ('draft', 'closed', 'completed')"
+                            groups="sdlc_construction_management.group_construction_project_close"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="ongoing,stopped,suspended,closed,completed"
+                           statusbar_visible="draft,ongoing,stopped,suspended,closed,completed"
                            options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <widget name="web_ribbon" title="مسودة" bg_color="text-bg-secondary"
+                            invisible="state != 'draft' or not active"/>
                     <widget name="web_ribbon" title="جاري" bg_color="text-bg-success"
                             invisible="state != 'ongoing' or not active"/>
                     <widget name="web_ribbon" title="متوقف" bg_color="text-bg-warning"
@@ -284,6 +295,7 @@
                 <field name="country_id"/>
                 <field name="state"/>
                 <separator/>
+                <filter name="draft" string="مسودة" domain="[('state', '=', 'draft')]"/>
                 <filter name="ongoing" string="جاري" domain="[('state', '=', 'ongoing')]"/>
                 <filter name="stopped" string="متوقف" domain="[('state', '=', 'stopped')]"/>
                 <filter name="suspended" string="معلّق" domain="[('state', '=', 'suspended')]"/>

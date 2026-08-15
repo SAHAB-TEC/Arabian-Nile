@@ -5,9 +5,6 @@ from odoo import api, fields, models
 class HrContract(models.Model):
     _inherit = "hr.contract"
 
-    # Job titles allowed to sync wage from last_basic_salary.
-    _RGB_WAGE_SYNC_JOB_KEYWORDS = ("عامل", "سائق", "worker", "driver")
-
     daily_rate = fields.Monetary(
         string="Daily Rate",
         currency_field="currency_id",
@@ -58,7 +55,7 @@ class HrContract(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if any(key in vals for key in ("last_basic_salary", "job_id", "employee_id")):
+        if any(key in vals for key in ("last_basic_salary", "employee_id", "engineer_partner_id", "wage_type")):
             self._rgb_sync_wage_from_last_basic()
         return res
 
@@ -68,31 +65,54 @@ class HrContract(models.Model):
         contracts._rgb_sync_wage_from_last_basic()
         return contracts
 
-    @api.onchange("job_id", "last_basic_salary", "employee_id")
+    @api.onchange("last_basic_salary", "employee_id", "engineer_partner_id", "wage_type")
     def _onchange_rgb_wage_from_last_basic(self):
         for contract in self:
-            if contract._rgb_is_worker_or_driver() and contract.last_basic_salary > 0:
-                contract.wage = contract.last_basic_salary
+            contract._rgb_apply_wage_from_last_basic_in_memory()
 
-    def _rgb_is_worker_or_driver(self):
-        """True when contract/employee job is Worker (عامل) or Driver (سائق)."""
+    def _rgb_related_partner(self):
+        """Contact linked to the employee (work contact)."""
         self.ensure_one()
-        job = self.job_id or self.employee_id.job_id
-        if not job:
+        return self.engineer_partner_id or self.employee_id.work_contact_id
+
+    def _rgb_should_sync_wage_from_partner(self):
+        """True when related contact is Engineer or Contractor."""
+        self.ensure_one()
+        partner = self._rgb_related_partner()
+        if not partner:
             return False
-        name = (job.name or "").strip().lower()
-        return any(keyword.lower() in name for keyword in self._RGB_WAGE_SYNC_JOB_KEYWORDS)
+        is_engineer = bool(getattr(partner, "is_engineer", False))
+        is_contractor = bool(getattr(partner, "is_contractor", False))
+        return is_engineer or is_contractor
+
+    def _rgb_wage_field_name(self):
+        """Field shown/used as contract wage (hourly_wage or wage)."""
+        self.ensure_one()
+        if hasattr(self, "_get_contract_wage_field"):
+            return self._get_contract_wage_field() or "wage"
+        if getattr(self, "wage_type", None) == "hourly":
+            return "hourly_wage"
+        return "wage"
+
+    def _rgb_apply_wage_from_last_basic_in_memory(self):
+        self.ensure_one()
+        if self._rgb_should_sync_wage_from_partner() and self.last_basic_salary > 0:
+            self[self._rgb_wage_field_name()] = self.last_basic_salary
 
     def _rgb_sync_wage_from_last_basic(self):
-        """Set wage = last_basic_salary for worker/driver contracts only."""
+        """Set wage/hourly_wage = last_basic_salary for engineer/contractor contacts."""
         if self.env.context.get("rgb_skip_wage_sync"):
             return
         for contract in self:
-            if not contract._rgb_is_worker_or_driver():
+            if not contract._rgb_should_sync_wage_from_partner():
                 continue
-            if contract.last_basic_salary > 0 and contract.wage != contract.last_basic_salary:
+            if not contract.last_basic_salary or contract.last_basic_salary <= 0:
+                continue
+            wage_field = contract._rgb_wage_field_name()
+            current = contract[wage_field] or 0.0
+            if current != contract.last_basic_salary:
                 contract.with_context(rgb_skip_wage_sync=True).write({
-                    "wage": contract.last_basic_salary,
+                    wage_field: contract.last_basic_salary,
                 })
 
     @api.model

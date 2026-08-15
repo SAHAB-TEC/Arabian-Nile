@@ -23,6 +23,15 @@ class ResPartner(models.Model):
         string="Monthly Salaries",
     )
 
+    def write(self, vals):
+        res = super().write(vals)
+        if any(key in vals for key in ("is_engineer", "is_contractor")):
+            contracts = self.env["hr.contract"].search([
+                ("employee_id.work_contact_id", "in", self.ids),
+            ])
+            contracts._rgb_sync_wage_from_last_basic()
+        return res
+
     def _rgb_get_daily_rate(self, company=None):
         """Daily rate from the engineer active contract, else partner fallback."""
         self.ensure_one()
