@@ -5,6 +5,9 @@ from odoo import api, fields, models
 class HrContract(models.Model):
     _inherit = "hr.contract"
 
+    # Job titles allowed to sync wage from last_basic_salary.
+    _RGB_WAGE_SYNC_JOB_KEYWORDS = ("عامل", "سائق", "worker", "driver")
+
     daily_rate = fields.Monetary(
         string="Daily Rate",
         currency_field="currency_id",
@@ -52,6 +55,45 @@ class HrContract(models.Model):
             last = lines[:1]
             contract.last_basic_salary = last.basic_salary if last else 0.0
             contract.last_net_salary = last.net_salary if last else 0.0
+
+    def write(self, vals):
+        res = super().write(vals)
+        if any(key in vals for key in ("last_basic_salary", "job_id", "employee_id")):
+            self._rgb_sync_wage_from_last_basic()
+        return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        contracts = super().create(vals_list)
+        contracts._rgb_sync_wage_from_last_basic()
+        return contracts
+
+    @api.onchange("job_id", "last_basic_salary", "employee_id")
+    def _onchange_rgb_wage_from_last_basic(self):
+        for contract in self:
+            if contract._rgb_is_worker_or_driver() and contract.last_basic_salary > 0:
+                contract.wage = contract.last_basic_salary
+
+    def _rgb_is_worker_or_driver(self):
+        """True when contract/employee job is Worker (عامل) or Driver (سائق)."""
+        self.ensure_one()
+        job = self.job_id or self.employee_id.job_id
+        if not job:
+            return False
+        name = (job.name or "").strip().lower()
+        return any(keyword.lower() in name for keyword in self._RGB_WAGE_SYNC_JOB_KEYWORDS)
+
+    def _rgb_sync_wage_from_last_basic(self):
+        """Set wage = last_basic_salary for worker/driver contracts only."""
+        if self.env.context.get("rgb_skip_wage_sync"):
+            return
+        for contract in self:
+            if not contract._rgb_is_worker_or_driver():
+                continue
+            if contract.last_basic_salary > 0 and contract.wage != contract.last_basic_salary:
+                contract.with_context(rgb_skip_wage_sync=True).write({
+                    "wage": contract.last_basic_salary,
+                })
 
     @api.model
     def _rgb_contracts_for_engineer(self, partner, company=None):

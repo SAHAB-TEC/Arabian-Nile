@@ -190,6 +190,7 @@ class RgbEngineerSalaryLine(models.Model):
         )
         if contracts:
             contracts._compute_last_salaries()
+            contracts._rgb_sync_wage_from_last_basic()
 
     @api.model
     def _attendance_date_bounds(self, sheets, month, year):
