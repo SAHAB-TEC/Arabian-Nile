@@ -10,7 +10,8 @@
                         invisible="not rgb_invisible"/>
             </xpath>
             <xpath expr="//field[@name='code']" position="after">
-                <field name="rgb_invisible"/>
+                <field name="rgb_invisible"
+                         groups="rgb_analytic_invisible.group_analytic_invisible_manager"/>
             </xpath>
         </field>
     </record>
@@ -21,7 +22,8 @@
         <field name="inherit_id" ref="analytic.view_account_analytic_account_list"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="before">
-                <field name="rgb_invisible" optional="show" widget="boolean_toggle"/>
+                <field name="rgb_invisible" optional="show" widget="boolean_toggle"
+                         groups="rgb_analytic_invisible.group_analytic_invisible_manager"/>
             </xpath>
         </field>
     </record>
@@ -33,9 +35,11 @@
         <field name="arch" type="xml">
             <xpath expr="//filter[@name='inactive']" position="after">
                 <filter string="Invisible" name="rgb_invisible"
-                        domain="[('rgb_invisible', '=', True)]"/>
+                        domain="[('rgb_invisible', '=', True)]"
+                        groups="rgb_analytic_invisible.group_analytic_invisible_manager"/>
                 <filter string="Visible" name="rgb_visible"
-                        domain="[('rgb_invisible', '=', False)]"/>
+                        domain="[('rgb_invisible', '=', False)]"
+                        groups="rgb_analytic_invisible.group_analytic_invisible_manager"/>
             </xpath>
         </field>
     </record>

@@ -6,7 +6,8 @@
         <field name="inherit_id" ref="analytic.account_analytic_plan_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='parent_id']" position="after">
-                <field name="rgb_invisible"/>
+                <field name="rgb_invisible"
+                         groups="rgb_analytic_invisible.group_analytic_invisible_manager"/>
             </xpath>
         </field>
     </record>
@@ -17,7 +18,8 @@
         <field name="inherit_id" ref="analytic.account_analytic_plan_tree_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="before">
-                <field name="rgb_invisible" optional="show" widget="boolean_toggle"/>
+                <field name="rgb_invisible" optional="show" widget="boolean_toggle"
+                         groups="rgb_analytic_invisible.group_analytic_invisible_manager"/>
             </xpath>
         </field>
     </record>
