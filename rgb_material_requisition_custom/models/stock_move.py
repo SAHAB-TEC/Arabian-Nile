@@ -60,14 +60,58 @@ class StockMove(models.Model):
             or self.location_id.analytic_account_id
         )
 
+    def _rgb_resolve_product_analytic_account(self):
+        """Analytic account configured on the product card."""
+        self.ensure_one()
+        product = self.product_id
+        if not product:
+            return self.env["account.analytic.account"]
+        return (
+            product.rgb_analytic_account_id
+            or product.product_tmpl_id.rgb_analytic_account_id
+        )
+
+    def _rgb_build_analytic_distribution(self, accounts):
+        """Build Odoo analytic_distribution from one or more accounts.
+
+        Accounts on different analytic plans are combined in one key (100%).
+        Accounts on the same plan are percentage-split equally.
+        """
+        accounts = accounts.exists()
+        if not accounts:
+            return {}
+        if len(accounts) == 1:
+            return {str(accounts.id): 100}
+
+        by_plan = {}
+        for account in accounts:
+            plan = account.root_plan_id or account.plan_id
+            by_plan.setdefault(plan.id if plan else 0, self.env["account.analytic.account"])
+            by_plan[plan.id if plan else 0] |= account
+
+        # Different plans: one account per plan → single multi-plan distribution key.
+        if all(len(accs) == 1 for accs in by_plan.values()):
+            key = ",".join(str(acc.id) for accs in by_plan.values() for acc in accs)
+            return {key: 100}
+
+        # Same-plan collision: split percentage across accounts.
+        share = round(100.0 / len(accounts), 4)
+        distribution = {str(acc.id): share for acc in accounts}
+        # Fix rounding remainder on the last account.
+        total = sum(distribution.values())
+        if accounts and abs(total - 100.0) > 0.0001:
+            last = str(accounts[-1].id)
+            distribution[last] = round(distribution[last] + (100.0 - total), 4)
+        return distribution
+
     def _get_analytic_distribution(self):
         distribution = super()._get_analytic_distribution()
         if distribution:
             return distribution
-        account = self._rgb_resolve_analytic_account()
-        if account:
-            return {str(account.id): 100}
-        return distribution
+        mr_account = self._rgb_resolve_analytic_account()
+        product_account = self._rgb_resolve_product_analytic_account()
+        accounts = mr_account | product_account
+        return self._rgb_build_analytic_distribution(accounts) or distribution
 
     def _generate_valuation_lines_data(
         self,

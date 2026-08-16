@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class ConstructionProject(models.Model):
@@ -60,12 +60,13 @@ class ConstructionProject(models.Model):
         domain="[('company_id', 'in', (company_id, False))]",
     )
     state = fields.Selection([
+        ('draft', 'مسودة'),
         ('ongoing', 'جاري'),
         ('stopped', 'متوقف'),
         ('suspended', 'معلّق'),
         ('closed', 'مغلق'),
         ('completed', 'مكتمل'),
-    ], string='Status', default='ongoing', tracking=True, required=True,
+    ], string='Status', default='draft', tracking=True, required=True,
        group_expand='_group_expand_states')
 
     # Relational
@@ -105,7 +106,7 @@ class ConstructionProject(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        stages = self.env['construction.project.stage'].search([])
+        stages = self.env['construction.project.stage'].search([], order='sequence, id')
         for vals in vals_list:
             if vals.get('reference', 'New') == 'New':
                 vals['reference'] = self.env['ir.sequence'].next_by_code('construction.project') or 'New'
@@ -116,9 +117,18 @@ class ConstructionProject(models.Model):
                 )[:1]
                 if stage:
                     vals['stage_id'] = stage.id
+            vals.setdefault('state', 'draft')
         return super().create(vals_list)
 
     def write(self, vals):
+        if 'state' in vals and vals.get('state') == 'ongoing':
+            draft_projects = self.filtered(lambda p: p.state == 'draft')
+            if draft_projects:
+                draft_projects._check_can_start_project()
+        if 'state' in vals and vals.get('state') == 'closed':
+            to_close = self.filtered(lambda p: p.state != 'closed')
+            if to_close:
+                to_close._check_can_close_project()
         company_id = vals.get('company_id')
         if company_id is not None:
             projects_with_wrong_stage = self.filtered(
@@ -132,7 +142,38 @@ class ConstructionProject(models.Model):
                 )
                 if new_stage:
                     super(ConstructionProject, projects_with_wrong_stage).write({'stage_id': new_stage.id})
-        return super().write(vals)
+        res = super().write(vals)
+        if vals.get('state') == 'ongoing':
+            ongoing_stage = self.env.ref(
+                'sdlc_construction_management.construction_project_stage_todo',
+                raise_if_not_found=False,
+            )
+            if ongoing_stage:
+                to_sync = self.filtered(lambda p: p.stage_id != ongoing_stage)
+                if to_sync:
+                    super(ConstructionProject, to_sync).write({'stage_id': ongoing_stage.id})
+        if vals.get('state') == 'closed':
+            closed_stage = self.env.ref(
+                'sdlc_construction_management.construction_project_stage_cancelled',
+                raise_if_not_found=False,
+            )
+            if closed_stage:
+                to_sync = self.filtered(lambda p: p.stage_id != closed_stage)
+                if to_sync:
+                    super(ConstructionProject, to_sync).write({'stage_id': closed_stage.id})
+        return res
+
+    def _check_can_start_project(self):
+        if not self.env.user.has_group('sdlc_construction_management.group_construction_project_start'):
+            raise UserError(_(
+                "You do not have permission to start a project (Draft → Ongoing)."
+            ))
+
+    def _check_can_close_project(self):
+        if not self.env.user.has_group('sdlc_construction_management.group_construction_project_close'):
+            raise UserError(_(
+                "You do not have permission to close a project."
+            ))
 
     def _compute_counts(self):
         PurchaseOrder = self.env['purchase.order']
@@ -149,6 +190,10 @@ class ConstructionProject(models.Model):
             ])
 
     def action_set_ongoing(self):
+        self._check_can_start_project()
+        for project in self:
+            if project.state != 'draft':
+                raise UserError(_("Only draft projects can be started."))
         self.write({'state': 'ongoing'})
 
     def action_set_stopped(self):
@@ -158,6 +203,10 @@ class ConstructionProject(models.Model):
         self.write({'state': 'suspended'})
 
     def action_set_closed(self):
+        self._check_can_close_project()
+        for project in self:
+            if project.state in ('closed', 'draft'):
+                raise UserError(_("Draft or already closed projects cannot be closed this way."))
         self.write({'state': 'closed'})
 
     def action_complete(self):

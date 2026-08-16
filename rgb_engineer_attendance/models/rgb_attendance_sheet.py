@@ -5,11 +5,6 @@ from datetime import date
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
-class ProductProduct(models.Model):
-    _inherit = "product.product"
-    
-    is_engineer_attendance_product = fields.Boolean(string="Is Engineer Attendance Product", default=False)
-
 class RgbAttendanceSheet(models.Model):
     _name = "rgb.attendance.sheet"
     _description = "Engineer Attendance Sheet"
@@ -84,13 +79,6 @@ class RgbAttendanceSheet(models.Model):
     rig_id = fields.Many2one(
         "workover.rig",
         string="Rig",
-        tracking=True,
-    )
-    product_id = fields.Many2one(
-        "product.product",
-        string="Product",
-        required=True,
-        domain="[('is_engineer_attendance_product', '=', True)]",
         tracking=True,
     )
     month = fields.Selection(
@@ -324,14 +312,20 @@ class RgbAttendanceSheet(models.Model):
             raise UserError(_("Only draft attendance sheets can be edited."))
 
     def action_submit(self):
-        """Submit for approval (Generate / Confirm)."""
+        """Submit for approval (Generate / Confirm) and sync monthly salary."""
         for sheet in self:
             sheet._check_editable()
             if sheet.days_count <= 0:
                 raise UserError(_("Select at least one attendance day before submitting."))
+            if not sheet.engineer_id._rgb_get_daily_rate(company=sheet.company_id):
+                raise UserError(_(
+                    "Set a Daily Rate on the employee contract of %(engineer)s before generating.",
+                    engineer=sheet.engineer_id.display_name,
+                ))
             sheet._check_day_types()
             sheet.state = "to_approve"
             sheet.message_post(body=_("Attendance sheet submitted for approval (%(days)s days).") % {"days": sheet.days_count})
+            sheet._sync_engineer_monthly_salary()
             approvers = self.env.ref("rgb_engineer_attendance.group_rgb_attendance_approver").users
             for user in approvers:
                 sheet.activity_schedule(
@@ -345,6 +339,16 @@ class RgbAttendanceSheet(models.Model):
                 )
         return True
 
+    def _sync_engineer_monthly_salary(self):
+        """Aggregate all sheets for the same engineer + month into one salary line."""
+        SalaryLine = self.env["rgb.engineer.salary.line"]
+        for sheet in self:
+            SalaryLine.sync_from_attendance(
+                sheet.engineer_id,
+                sheet.month,
+                sheet.year,
+                company=sheet.company_id,
+            )
     def action_approve(self):
         if not self.env.user.has_group("rgb_engineer_attendance.group_rgb_attendance_approver"):
             raise UserError(_("You are not allowed to approve attendance sheets."))
@@ -366,6 +370,7 @@ class RgbAttendanceSheet(models.Model):
             if sheet.state == "invoiced" and sheet.invoice_id and sheet.invoice_id.state == "posted":
                 raise UserError(_("Cannot cancel: linked vendor bill is already posted."))
             sheet.state = "cancel"
+            sheet._sync_engineer_monthly_salary()
         return True
 
     def action_reset_draft(self):
@@ -391,22 +396,25 @@ class RgbAttendanceSheet(models.Model):
             return self.invoice_id
         if self.days_count <= 0:
             raise UserError(_("Cannot create invoice without attendance days."))
-        product = self.product_id
+        daily_rate = self.engineer_id._rgb_get_daily_rate(company=self.company_id)
+        if not daily_rate:
+            raise UserError(_(
+                "Set a Daily Rate on the employee contract of %(engineer)s before creating the vendor bill.",
+                engineer=self.engineer_id.display_name,
+            ))
         move = self.env["account.move"].create({
             "move_type": "in_invoice",
             "partner_id": self.engineer_id.id,
             "invoice_date": date(int(self.year), int(self.month), 1),
             "ref": self.name,
             "invoice_line_ids": [(0, 0, {
-                "product_id": product.id,
-                "name": _("%(product)s — %(period)s — %(well)s / %(rig)s") % {
-                    "product": product.display_name,
+                "name": _("Engineer attendance — %(period)s — %(well)s / %(rig)s") % {
                     "period": self.period_label,
                     "well": self.well_id.name if self.well_id else "",
                     "rig": self.rig_id.name if self.rig_id else "",
                 },
                 "quantity": self.days_count,
-                "price_unit": product.standard_price,
+                "price_unit": daily_rate,
                 "analytic_distribution": {self.analytic_account_id.id: 100},
             })],
         })
@@ -418,7 +426,6 @@ class RgbAttendanceSheet(models.Model):
             }
         )
         return move
-
     def _get_day_values(self):
         """Return list of booleans for each calendar day (for reports)."""
         self.ensure_one()

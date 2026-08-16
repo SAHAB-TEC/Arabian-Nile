@@ -15,10 +15,24 @@
         <field name="category_id" ref="module_category_construction"/>
     </record>
 
+    <!-- Permission to move project from Draft to Ongoing -->
+    <record id="group_construction_project_start" model="res.groups">
+        <field name="name">Start Project</field>
+        <field name="implied_ids" eval="[(4, ref('group_construction_user'))]"/>
+        <field name="category_id" ref="module_category_construction"/>
+    </record>
+
+    <!-- Permission to move project to Closed -->
+    <record id="group_construction_project_close" model="res.groups">
+        <field name="name">Close Project</field>
+        <field name="implied_ids" eval="[(4, ref('group_construction_user'))]"/>
+        <field name="category_id" ref="module_category_construction"/>
+    </record>
+
     <!-- Construction Manager Group -->
     <record id="group_construction_manager" model="res.groups">
         <field name="name">Manager</field>
-        <field name="implied_ids" eval="[(4, ref('group_construction_user'))]"/>
+        <field name="implied_ids" eval="[(4, ref('group_construction_user')), (4, ref('group_construction_project_start')), (4, ref('group_construction_project_close'))]"/>
         <field name="category_id" ref="module_category_construction"/>
         <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>

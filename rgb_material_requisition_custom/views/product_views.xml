@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_template_form_rgb_analytic" model="ir.ui.view">
+        <field name="name">product.template.form.rgb.analytic</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="before">
+                <group>
+                <field name="rgb_analytic_account_id"
+                           string="Analytic Account"
+                           options="{'no_create': True}"
+                           groups="rgb_material_requisition_custom.group_product_analytic_manager"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

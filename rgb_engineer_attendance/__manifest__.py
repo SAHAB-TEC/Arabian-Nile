@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 {
     "name": "RGB Engineer Attendance",
-    "version": "18.0.1.0.5",
+    "version": "18.0.1.0.12",
     "category": "Human Resources",
-    "summary": "Monthly engineer attendance grid, approval, and vendor invoice",
+    "summary": "Monthly engineer attendance grid, approval, payroll lines, and vendor invoice",
     "description": """
 Engineer attendance at wells/rigs per company.
 Monthly day checkboxes, approval workflow, vendor bill generation, PDF/Excel export.
+Payroll (daily rate, monthly salary lines, last basic/net) on the employee contract.
     """,
     "author": "RGB / Al-Abar",
     "license": "LGPL-3",
@@ -14,6 +15,7 @@ Monthly day checkboxes, approval workflow, vendor bill generation, PDF/Excel exp
         "account",
         "mail",
         "product",
+        "hr_contract",
         "rgb_workover_operations",
     ],
     "data": [
@@ -21,6 +23,8 @@ Monthly day checkboxes, approval workflow, vendor bill generation, PDF/Excel exp
         "security/ir.model.access.csv",
         "data/sequence.xml",
         "views/rgb_attendance_sheet_views.xml",
+        "views/hr_contract_views.xml",
+        "views/hr_employee_views.xml",
         "views/menu.xml",
         "reports/attendance_report.xml",
         "wizard/attendance_export_wizard_views.xml",

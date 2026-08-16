@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_analytic_plan_form_rgb_invisible" model="ir.ui.view">
+        <field name="name">account.analytic.plan.form.rgb.invisible</field>
+        <field name="model">account.analytic.plan</field>
+        <field name="inherit_id" ref="analytic.account_analytic_plan_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="rgb_invisible"
+                         groups="rgb_analytic_invisible.group_analytic_invisible_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_analytic_plan_list_rgb_invisible" model="ir.ui.view">
+        <field name="name">account.analytic.plan.list.rgb.invisible</field>
+        <field name="model">account.analytic.plan</field>
+        <field name="inherit_id" ref="analytic.account_analytic_plan_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="rgb_invisible" optional="show" widget="boolean_toggle"
+                         groups="rgb_analytic_invisible.group_analytic_invisible_manager"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="analytic.account_analytic_plan_action" model="ir.actions.act_window">
+        <field name="context">{'rgb_show_invisible_analytic': True}</field>
+    </record>
+</odoo>
