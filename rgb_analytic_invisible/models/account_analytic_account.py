@@ -3,6 +3,8 @@ from odoo import api, fields, models, _
 from odoo.exceptions import AccessError
 from odoo.osv import expression
 
+from .rgb_invisible_utils import rgb_domain_resolves_ids
+
 
 class AccountAnalyticAccount(models.Model):
     _inherit = "account.analytic.account"
@@ -34,7 +36,11 @@ class AccountAnalyticAccount(models.Model):
     @api.model
     def _search(self, domain, offset=0, limit=None, order=None):
         domain = list(domain or [])
-        if not self.env.context.get("rgb_show_invisible_analytic"):
+        # Hide from selection/search only. Keep id lookups so old moves/invoices open.
+        if (
+            not self.env.context.get("rgb_show_invisible_analytic")
+            and not rgb_domain_resolves_ids(domain)
+        ):
             domain = expression.AND([
                 domain,
                 [

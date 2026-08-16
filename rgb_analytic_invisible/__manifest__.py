@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "RGB Analytic Invisible",
-    "version": "18.0.1.0.1",
+    "version": "18.0.1.0.2",
     "category": "Accounting/Accounting",
     "summary": "Hide analytic accounts and plans from all business screens",
     "description": """
