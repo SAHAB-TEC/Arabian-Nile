@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'RGB Workover Operations',
-    'version': '18.0.1.0.14',
+    'version': '18.0.1.0.16',
     'category': 'Operations',
     'summary': 'Daily workover operation reports and monthly summary Excel export',
     'description': """

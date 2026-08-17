@@ -50,11 +50,20 @@
                 <div t-field="o.indicative_number"/>
             </div>
         </xpath>
-        <!-- Terms and Conditions: visible label above narration -->
+        <!-- Terms and Conditions: visible label + LTR isolate to avoid Arabic/English overlap -->
         <xpath expr="//div[@name='comment']" position="before">
             <div class="mb-1" t-if="not is_html_empty(o.narration)" name="terms_title">
                 <strong>Terms and Conditions</strong>
             </div>
+        </xpath>
+        <xpath expr="//div[@name='comment']" position="attributes">
+            <attribute name="class">mb-3</attribute>
+            <attribute name="dir">ltr</attribute>
+            <attribute name="style">clear: both; direction: ltr; unicode-bidi: isolate; text-align: left; white-space: pre-wrap; font-size: 11px; line-height: 1.35;</attribute>
+        </xpath>
+        <xpath expr="//div[@name='comment']/span" position="attributes">
+            <attribute name="dir">ltr</attribute>
+            <attribute name="style">direction: ltr; unicode-bidi: plaintext; white-space: pre-wrap; display: block; font-size: 11px; line-height: 1.35;</attribute>
         </xpath>
     </template>
 </odoo>
