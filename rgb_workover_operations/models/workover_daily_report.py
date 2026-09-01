@@ -38,6 +38,7 @@ class WorkoverDailyReport(models.Model):
         'res.company',
         default=lambda self: self.env.company,
         required=True,
+        index=True,
     )
     rig_id = fields.Many2one('workover.rig', required=True, tracking=True)
     well_id = fields.Many2one('workover.well', required=True, tracking=True)

@@ -39,6 +39,7 @@ class WorkoverDailyReportExportWizard(models.TransientModel):
         domain = [
             ('report_date', '>=', self.date_from),
             ('report_date', '<=', self.date_to),
+            ('company_id', 'in', self.env.companies.ids),
         ]
         if self.state == 'confirmed':
             domain.append(('state', '=', 'confirmed'))

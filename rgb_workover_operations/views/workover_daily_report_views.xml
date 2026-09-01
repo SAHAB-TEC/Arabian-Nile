@@ -11,6 +11,7 @@
                 <field name="rig_id"/>
                 <field name="well_id"/>
                 <field name="operator_id"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 <field name="summary_type"/>
                 <field name="time_breakdown_total"/>
                 <field name="state" widget="badge"

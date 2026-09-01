@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 {
     "name": "RGB Material Requisition Custom",
-    "version": "18.0.1.0.13",
+    "version": "18.0.1.0.14",
     "category": "Human Resources/Employees",
-    "summary": "Al-Abar customizations for material requisitions",
+    "summary": "Arabian Nile customizations for material requisitions",
     "description": """
-Custom material requisition extensions for Al-Abar:
+Custom material requisition extensions for Arabian Nile:
 - Customer (required), well and rig on requisitions and linked documents
 - Project (project.project) and analytic account auto-filled from the project
 - Analytic account on stock locations for transfer journal entries
 - Product analytic account combined with MR analytic on transfer journal entries
 - Allowed users per stock location for requisition destination selection
 - Purchase receipts for material-requisition POs use the requisition location
+- Internal transfers: one picking per source/destination with all products
     """,
-    "author": "RGB / Al-Abar",
+    "author": "RGB / Arabian Nile",
     "license": "LGPL-3",
     "depends": [
         "material_requisition_and_approval",
