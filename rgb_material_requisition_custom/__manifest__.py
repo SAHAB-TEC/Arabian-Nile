@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 {
     "name": "RGB Material Requisition Custom",
-    "version": "18.0.1.0.14",
+    "version": "18.0.1.0.15",
     "category": "Human Resources/Employees",
     "summary": "Arabian Nile customizations for material requisitions",
     "description": """
 Custom material requisition extensions for Arabian Nile:
 - Customer (required), well and rig on requisitions and linked documents
-- Project (project.project) and analytic account auto-filled from the project
+- Project (construction.project) and analytic account auto-filled from the project
 - Analytic account on stock locations for transfer journal entries
 - Product analytic account combined with MR analytic on transfer journal entries
 - Allowed users per stock location for requisition destination selection
@@ -19,8 +19,8 @@ Custom material requisition extensions for Arabian Nile:
     "depends": [
         "material_requisition_and_approval",
         "rgb_crm_project_custom",
+        "sdlc_construction_management",
         "purchase_stock",
-        "project",
         "analytic",
         "stock_account",
         "product",

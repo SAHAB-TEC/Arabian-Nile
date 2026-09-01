@@ -135,6 +135,7 @@
                        decoration-danger="state == 'closed'"
                        decoration-info="state == 'completed'"/>
                 <field name="stage_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
             </list>
         </field>
     </record>
@@ -208,7 +209,8 @@
                             <field name="name"/>
                             <field name="active" invisible="1"/>
                             <field name="warehouse_id"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="analytic_account_id" options="{'no_create': True}"/>
                             <field name="color" widget="color_picker"/>
                         </group>
                         <group>
@@ -293,6 +295,7 @@
                 <field name="reference"/>
                 <field name="city"/>
                 <field name="country_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
                 <field name="state"/>
                 <separator/>
                 <filter name="draft" string="مسودة" domain="[('state', '=', 'draft')]"/>
@@ -307,6 +310,7 @@
                     <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
                     <filter name="group_country" string="Country" context="{'group_by': 'country_id'}"/>
                     <filter name="group_warehouse" string="Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
                 </group>
             </search>
         </field>

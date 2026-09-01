@@ -16,7 +16,7 @@ class MaterialRequisitionLine(models.Model):
         domain="[('well_id', '=', well_id)]",
     )
     project_id = fields.Many2one(
-        "project.project",
+        "construction.project",
         related="requisition_id.project_id",
         store=True,
         readonly=False,

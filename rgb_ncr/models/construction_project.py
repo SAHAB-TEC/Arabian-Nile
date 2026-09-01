@@ -5,12 +5,6 @@ from odoo import fields, models, _
 class ConstructionProject(models.Model):
     _inherit = 'construction.project'
 
-    analytic_account_id = fields.Many2one(
-        'account.analytic.account',
-        string='Analytic Account',
-        tracking=True,
-        help='Analytic account used by linked NCR reports and financial documents.',
-    )
     ncr_ids = fields.One2many('rgb.ncr', 'project_id', string='NCR Reports')
     ncr_count = fields.Integer(string='NCR Count', compute='_compute_ncr_count')
     ncr_open_count = fields.Integer(string='Open NCR Count', compute='_compute_ncr_count')

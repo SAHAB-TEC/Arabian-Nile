@@ -27,10 +27,10 @@ class MaterialRequisition(models.Model):
         domain="[('well_id', '=', well_id)]",
     )
     project_id = fields.Many2one(
-        "project.project",
+        "construction.project",
         string="Project",
         tracking=True,
-        help="Standard Odoo project (project.project).",
+        help="Construction project linked to this requisition.",
     )
     analytic_account_id = fields.Many2one(
         "account.analytic.account",
@@ -103,19 +103,19 @@ class MaterialRequisition(models.Model):
 
     @api.onchange("project_id")
     def _onchange_project_id(self):
-        if self.project_id and self.project_id.account_id:
-            self.analytic_account_id = self.project_id.account_id
+        if self.project_id and self.project_id.analytic_account_id:
+            self.analytic_account_id = self.project_id.analytic_account_id
         elif not self.project_id:
             self.analytic_account_id = False
 
     @api.model
     def _rgb_analytic_from_project_vals(self, vals):
-        """Fill analytic_account_id from project.account_id when project is set."""
+        """Fill analytic_account_id from project analytic account when project is set."""
         if vals.get("analytic_account_id") or not vals.get("project_id"):
             return vals
-        project = self.env["project.project"].browse(vals["project_id"])
-        if project.account_id:
-            vals = dict(vals, analytic_account_id=project.account_id.id)
+        project = self.env["construction.project"].browse(vals["project_id"])
+        if project.analytic_account_id:
+            vals = dict(vals, analytic_account_id=project.analytic_account_id.id)
         return vals
 
     @api.model_create_multi
@@ -172,7 +172,7 @@ class MaterialRequisition(models.Model):
 
     def _get_analytic_account(self):
         self.ensure_one()
-        return self.analytic_account_id or self.project_id.account_id
+        return self.analytic_account_id or self.project_id.analytic_account_id
 
     def _rgb_find_from_origin(self, origin):
         if not origin:
