@@ -1,16 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="view_partner_form_sale_quotation_custom" model="ir.ui.view">
+        <field name="name">res.partner.form.sale.quotation.custom</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group/group/field[@name='vat']" position="after">
+                <field name="abco_customer_code" placeholder="AG"/>
+                <field name="customer_ref_label" placeholder="AGOCO"/>
+            </xpath>
+        </field>
+    </record>
+
     <record id="view_order_form_sale_quotation_custom" model="ir.ui.view">
         <field name="name">sale.order.form.sale.quotation.custom</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="abco_ref" readonly="1"/>
+                <field name="abco_revision" readonly="state in ('sale', 'cancel')"/>
+                <field name="customer_ref_display_label" invisible="1"/>
+                <label for="customer_offer_ref" string="Customer Offer Ref"/>
+                <div class="o_row">
+                    <span class="me-2 text-muted" invisible="not customer_ref_label">
+                        <field name="customer_ref_label" readonly="1" class="oe_inline"/> Ref.
+                    </span>
+                    <field name="customer_offer_ref"
+                           nolabel="1"
+                           placeholder="e.g. 147-2024-21-03-XX"
+                           readonly="state in ('sale', 'cancel')"/>
+                </div>
                 <field name="offer_validity"
                        readonly="state in ('sale', 'cancel')"/>
                 <field name="offer_validity_date" readonly="1"/>
-                <field name="country_of_origin_id"
-                       readonly="state in ('sale', 'cancel')"/>
+                <field name="country_of_origin_ids"
+                       widget="many2many_tags"
+                       options="{'no_create': True}"
+                       readonly="1"/>
                 <label for="delivery_time_from" string="Delivery Time (Weeks)"/>
                 <div class="o_row" name="delivery_time_range">
                     <field name="delivery_time_from"
@@ -24,10 +51,94 @@
                            readonly="state in ('sale', 'cancel')"/>
                     <span class="mx-2 text-muted">Weeks</span>
                 </div>
+                <field name="print_incoterm"
+                       readonly="state in ('sale', 'cancel')"/>
+                <field name="print_payment"
+                       readonly="state in ('sale', 'cancel')"/>
                 <field name="signatory_name"
+                       readonly="state in ('sale', 'cancel')"/>
+                <field name="signatory_title"
                        readonly="state in ('sale', 'cancel')"/>
                 <field name="show_taxes"
                        readonly="state in ('sale', 'cancel')"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="ABCO Cover Letter" name="abco_cover_letter">
+                    <group>
+                        <group string="Letter">
+                            <field name="cover_to"
+                                   readonly="state == 'cancel'"/>
+                            <field name="cover_subject"
+                                   placeholder="Commercial Priced Submission"
+                                   readonly="state == 'cancel'"/>
+                        </group>
+                        <group string="Signatory">
+                            <field name="signatory_name" readonly="state == 'cancel'"/>
+                            <field name="signatory_title" readonly="state == 'cancel'"/>
+                        </group>
+                    </group>
+                    <separator string="Body"/>
+                    <field name="cover_body"
+                           nolabel="1"
+                           readonly="state == 'cancel'"
+                           placeholder="Cover letter body..."/>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='name']" position="after">
+                <field name="country_of_origin_id"
+                       optional="show"
+                       readonly="parent.state in ('sale', 'cancel')"
+                       options="{'no_create': True}"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_id']/.." position="after">
+                <field name="country_of_origin_id"
+                       invisible="display_type"
+                       readonly="parent.state in ('sale', 'cancel')"
+                       options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_order_tree_sale_quotation_custom" model="ir.ui.view">
+        <field name="name">sale.order.list.sale.quotation.custom</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="abco_ref" optional="show"/>
+                <field name="customer_offer_ref" optional="hide"/>
+                <field name="country_of_origin_ids"
+                       widget="many2many_tags"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_sales_order_filter_sale_quotation_custom" model="ir.ui.view">
+        <field name="name">sale.order.search.sale.quotation.custom</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="abco_ref"/>
+                <field name="customer_offer_ref"/>
+                <field name="country_of_origin_ids"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter name="groupby_country_of_origin"
+                        string="Country of Origin"
+                        context="{'group_by': 'country_of_origin_ids'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_purchase_order_form_abco" model="ir.ui.view">
+        <field name="name">purchase.order.form.abco.ref</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_ref']" position="after">
+                <field name="abco_po_ref" readonly="1"/>
             </xpath>
         </field>
     </record>

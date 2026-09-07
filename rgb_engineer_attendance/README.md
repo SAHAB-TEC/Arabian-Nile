@@ -7,7 +7,7 @@ Monthly attendance grid for engineers at wells/rigs (Al-Abar).
 - List view: engineer, well, rig, company, days count, product, period
 - Form: month/year (defaults to today), checkboxes for days 1–31
 - **Generate**: submit for approval + activities for approvers
-- **Approve**: creates vendor bill (`in_invoice`) with quantity = number of checked days
+- **Approve**: marks the sheet as approved (no vendor bill)
 - Chatter audit trail on all changes
 - **Print → Attendance PDF** and **Action → Export Excel (CSV)**
 
@@ -17,7 +17,7 @@ Monthly attendance grid for engineers at wells/rigs (Al-Abar).
 |-------|--------|
 | User | Create/edit draft sheets |
 | Approver | Approve + submit workflow |
-| Manager | Full access + reset to draft + accounting |
+| Manager | Full access + reset to draft |
 
 Assign **only** `Engineer Attendance / User` to users who must not see other apps (do not add Sales/Accounting groups unless needed).
 

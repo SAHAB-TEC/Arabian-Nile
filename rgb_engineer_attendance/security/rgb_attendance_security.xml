@@ -2,7 +2,7 @@
 <odoo>
     <record id="module_category_rgb_attendance" model="ir.module.category">
         <field name="name">Engineer Attendance</field>
-        <field name="description">Attendance sheets, approval, and vendor bills.</field>
+        <field name="description">Attendance sheets and approval.</field>
         <field name="sequence">25</field>
     </record>
 
@@ -22,6 +22,6 @@
     <record id="group_rgb_attendance_manager" model="res.groups">
         <field name="name">Manager</field>
         <field name="category_id" ref="module_category_rgb_attendance"/>
-        <field name="implied_ids" eval="[(4, ref('group_rgb_attendance_approver')), (4, ref('account.group_account_invoice'))]"/>
+        <field name="implied_ids" eval="[(4, ref('group_rgb_attendance_approver'))]"/>
     </record>
 </odoo>

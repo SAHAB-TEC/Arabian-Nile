@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_sale_order_abco_ref" model="ir.sequence">
+        <field name="name">ABCO Offer Reference</field>
+        <field name="code">sale.order.abco.ref</field>
+        <field name="prefix"/>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+        <field name="use_date_range" eval="True"/>
+    </record>
+
+    <record id="seq_purchase_order_abco_ref" model="ir.sequence">
+        <field name="name">ABCO Purchase Reference</field>
+        <field name="code">purchase.order.abco.ref</field>
+        <field name="prefix"/>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+        <field name="company_id" eval="False"/>
+        <field name="use_date_range" eval="True"/>
+    </record>
+</odoo>
