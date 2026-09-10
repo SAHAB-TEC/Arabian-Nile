@@ -22,4 +22,17 @@
         <field name="category_id" ref="module_category_workover"/>
         <field name="implied_ids" eval="[(4, ref('group_workover_user')), (4, ref('group_workover_rig_summary'))]"/>
     </record>
+
+    <!-- Multi-company: each user sees only reports of allowed companies -->
+    <record id="rule_workover_daily_report_company" model="ir.rule">
+        <field name="name">Workover Daily Report: multi-company</field>
+        <field name="model_id" ref="model_workover_daily_report"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="rule_workover_rig_summary_company" model="ir.rule">
+        <field name="name">Workover Rig Summary: multi-company</field>
+        <field name="model_id" ref="model_workover_rig_summary"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>

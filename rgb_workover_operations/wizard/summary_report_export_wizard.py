@@ -36,6 +36,7 @@ class WorkoverSummaryReportExportWizard(models.TransientModel):
             ('state', '=', 'confirmed'),
             ('report_date', '>=', self.date_from),
             ('report_date', '<=', self.date_to),
+            ('company_id', 'in', self.env.companies.ids),
         ]
         if self.rig_id:
             domain.append(('rig_id', '=', self.rig_id.id))

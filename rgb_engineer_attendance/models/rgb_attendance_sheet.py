@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import calendar
-from datetime import date
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
@@ -113,13 +112,6 @@ class RgbAttendanceSheet(models.Model):
         string="Number of Days",
         compute="_compute_days_count",
         store=True,
-        tracking=True,
-    )
-    invoice_id = fields.Many2one(
-        "account.move",
-        string="Vendor Bill",
-        copy=False,
-        readonly=True,
         tracking=True,
     )
     approver_id = fields.Many2one(
@@ -299,7 +291,7 @@ class RgbAttendanceSheet(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        allowed_after_submit = {"state", "invoice_id", "approver_id", "approval_date", "message_main_attachment_id"}
+        allowed_after_submit = {"state", "approver_id", "approval_date", "message_main_attachment_id"}
         if not self.env.user.has_group("rgb_engineer_attendance.group_rgb_attendance_manager"):
             for sheet in self:
                 if sheet.state != "draft" and set(vals) - allowed_after_submit:
@@ -362,13 +354,10 @@ class RgbAttendanceSheet(models.Model):
                 lambda act: act.summary and "Approve attendance" in (act.summary or "")
             ).action_done()
             sheet.message_post(body=_("Attendance approved by %s.") % self.env.user.display_name)
-            sheet._create_vendor_bill()
         return True
 
     def action_cancel(self):
         for sheet in self:
-            if sheet.state == "invoiced" and sheet.invoice_id and sheet.invoice_id.state == "posted":
-                raise UserError(_("Cannot cancel: linked vendor bill is already posted."))
             sheet.state = "cancel"
             sheet._sync_engineer_monthly_salary()
         return True
@@ -380,52 +369,6 @@ class RgbAttendanceSheet(models.Model):
         self.write({"state": "draft", "approver_id": False, "approval_date": False})
         return True
 
-    def action_view_invoice(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": _("Vendor Bill"),
-            "res_model": "account.move",
-            "view_mode": "form",
-            "res_id": self.invoice_id.id,
-        }
-
-    def _create_vendor_bill(self):
-        self.ensure_one()
-        if self.invoice_id:
-            return self.invoice_id
-        if self.days_count <= 0:
-            raise UserError(_("Cannot create invoice without attendance days."))
-        daily_rate = self.engineer_id._rgb_get_daily_rate(company=self.company_id)
-        if not daily_rate:
-            raise UserError(_(
-                "Set a Daily Rate on the employee contract of %(engineer)s before creating the vendor bill.",
-                engineer=self.engineer_id.display_name,
-            ))
-        move = self.env["account.move"].create({
-            "move_type": "in_invoice",
-            "partner_id": self.engineer_id.id,
-            "invoice_date": date(int(self.year), int(self.month), 1),
-            "ref": self.name,
-            "invoice_line_ids": [(0, 0, {
-                "name": _("Engineer attendance — %(period)s — %(well)s / %(rig)s") % {
-                    "period": self.period_label,
-                    "well": self.well_id.name if self.well_id else "",
-                    "rig": self.rig_id.name if self.rig_id else "",
-                },
-                "quantity": self.days_count,
-                "price_unit": daily_rate,
-                "analytic_distribution": {self.analytic_account_id.id: 100},
-            })],
-        })
-        self.write({"invoice_id": move.id, "state": "invoiced"})
-        self.message_post(
-            body=_("Vendor bill %(bill)s created with quantity %(qty)s.") % {
-                "bill": move._get_html_link(),
-                "qty": self.days_count,
-            }
-        )
-        return move
     def _get_day_values(self):
         """Return list of booleans for each calendar day (for reports)."""
         self.ensure_one()

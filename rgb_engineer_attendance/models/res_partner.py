@@ -9,7 +9,7 @@ class ResPartner(models.Model):
         string="Is Engineer",
         default=False,
         index=True,
-        help="Mark contacts who are engineers for attendance sheets and vendor bills.",
+        help="Mark contacts who are engineers for attendance sheets.",
     )
     # Kept for migration / fallback; UI lives on hr.contract.
     daily_rate = fields.Monetary(

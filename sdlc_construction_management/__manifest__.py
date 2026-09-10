@@ -1,6 +1,6 @@
 {
     'name': 'Construction Management',
-    'version': '18.0.1.0.3',
+    'version': '18.0.1.0.4',
     'summary': 'Construction Management | Job Costing | BOQ | Work Orders | RA Billing | Material Requisition | Subcontracting | Budget',
     'description': """
 Construction Management
@@ -27,7 +27,7 @@ Free lifetime support by SDLC Corp.
         'stock',
         'purchase',
         'account',
-        'project',
+        'analytic',
     ],
     'data': [
         # Security

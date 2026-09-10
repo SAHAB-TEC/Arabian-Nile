@@ -14,10 +14,11 @@ class PurchaseOrder(models.Model):
         domain="[('well_id', '=', well_id)]",
     )
     project_id = fields.Many2one(
-        "project.project",
+        "construction.project",
         string="Project",
         copy=False,
         tracking=True,
+        check_company=True,
     )
     analytic_account_id = fields.Many2one(
         "account.analytic.account",
@@ -33,8 +34,8 @@ class PurchaseOrder(models.Model):
 
     @api.onchange("project_id")
     def _onchange_project_id(self):
-        if self.project_id and self.project_id.account_id:
-            self.analytic_account_id = self.project_id.account_id
+        if self.project_id and self.project_id.analytic_account_id:
+            self.analytic_account_id = self.project_id.analytic_account_id
 
     def _get_well_rig_vals(self):
         self.ensure_one()

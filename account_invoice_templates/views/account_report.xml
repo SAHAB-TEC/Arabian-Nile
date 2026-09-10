@@ -283,74 +283,82 @@
 
         </xpath>
 
-        <xpath expr="//div[@id='total']" position="after">
-
-            <div t-if="o.partner_bank_id"
-                id="akakos_bank_details"
-                class="clearfix row mt-3"
-                style="page-break-inside: avoid; break-inside: avoid; display: block;">
-
-                <div class="ms-auto"
-                    style="page-break-inside: avoid; break-inside: avoid;">
-
-                    <table class="o_total_table table table-borderless"
-                        style="page-break-inside: avoid; break-inside: avoid;">
-                        <tr>
-                            <td>
-                                <strong>Bank Name:</strong>
-                            </td>
-                            <td class="text-end">
-                                <span t-out="o.partner_bank_id.bank_id.name or ''"/>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <strong>Bank Address:</strong>
-                            </td>
-                            <td class="text-end">
-                                <span t-out="', '.join(filter(None, [
-                                    o.partner_bank_id.bank_id.street,
-                                    o.partner_bank_id.bank_id.street2,
-                                    o.partner_bank_id.bank_id.city,
-                                    o.partner_bank_id.bank_id.zip,
-                                    o.partner_bank_id.bank_id.country.name
-                                ]))"/>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <strong>Beneficiary Name:</strong>
-                            </td>
-                            <td class="text-end">
-                                <span t-out="o.partner_bank_id.partner_id.name or o.company_id.name"/>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <strong>Account Number:</strong>
-                            </td>
-                            <td class="text-end">
-                                <span t-out="o.partner_bank_id.acc_number or ''"/>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <strong>Currency:</strong>
-                            </td>
-                            <td class="text-end">
-                                <span t-out="o.partner_bank_id.currency_id.name or o.currency_id.name"/>
-                            </td>
-                        </tr>
-
-                    </table>
-                </div>
-            </div>
-
+        <!-- Show bank block even when payment reference is empty -->
+        <xpath expr="//p[@name='payment_communication']/parent::div" position="attributes">
+            <attribute name="t-if">o.move_type in ('out_invoice', 'in_refund') and (o.payment_reference or o.partner_bank_id)</attribute>
         </xpath>
+        <!-- Structured bilingual bank details instead of one mixed paragraph -->
+        <xpath expr="//p[@name='payment_communication']" position="replace">
+            <div name="payment_communication">
+                <p t-if="o.payment_reference" class="mb-1">
+                    Payment Communication: <span class="fw-bold" t-field="o.payment_reference"/>
+                </p>
+                <t t-if="o.partner_bank_id and o.partner_bank_id._ait_has_print_details()">
+                    <t t-set="bank" t-value="o.partner_bank_id"/>
+                    <table class="table table-borderless mb-0" style="font-size: 11px; width: 100%;">
+                        <tr t-if="bank.ait_print_instruction or bank.ait_print_instruction_ar">
+                            <td style="padding: 1px 8px 1px 0; vertical-align: top; direction: ltr; unicode-bidi: isolate; text-align: left;">
+                                <span t-field="bank.ait_print_instruction"/>
+                            </td>
+                            <td style="padding: 1px 0; vertical-align: top; direction: rtl; unicode-bidi: isolate; text-align: right;">
+                                <span t-field="bank.ait_print_instruction_ar"/>
+                            </td>
+                        </tr>
+                        <tr t-if="bank._ait_print_bank_name() or bank.ait_print_bank_name_ar">
+                            <td style="padding: 1px 8px 1px 0; vertical-align: top; direction: ltr; unicode-bidi: isolate; text-align: left;">
+                                <strong>Bank Name:</strong>
+                                <span t-out="bank._ait_print_bank_name()"/>
+                            </td>
+                            <td style="padding: 1px 0; vertical-align: top; direction: rtl; unicode-bidi: isolate; text-align: right;">
+                                <strong>اسم المصرف:</strong>
+                                <span t-field="bank.ait_print_bank_name_ar"/>
+                            </td>
+                        </tr>
+                        <tr t-if="bank._ait_print_bank_address() or bank.ait_print_bank_address_ar">
+                            <td style="padding: 1px 8px 1px 0; vertical-align: top; direction: ltr; unicode-bidi: isolate; text-align: left;">
+                                <strong>Bank Address:</strong>
+                                <span t-out="bank._ait_print_bank_address()"/>
+                            </td>
+                            <td style="padding: 1px 0; vertical-align: top; direction: rtl; unicode-bidi: isolate; text-align: right;">
+                                <strong>عنوان المصرف:</strong>
+                                <span t-field="bank.ait_print_bank_address_ar"/>
+                            </td>
+                        </tr>
+                        <tr t-if="bank._ait_print_swift()">
+                            <td style="padding: 1px 8px 1px 0; vertical-align: top; direction: ltr; unicode-bidi: isolate; text-align: left;">
+                                <strong>SWIFT:</strong>
+                                <span t-out="bank._ait_print_swift()"/>
+                            </td>
+                            <td style="padding: 1px 0; vertical-align: top; direction: rtl; unicode-bidi: isolate; text-align: right;">
+                                <strong>سويفت:</strong>
+                                <span t-out="bank._ait_print_swift()"/>
+                            </td>
+                        </tr>
+                        <tr t-if="bank._ait_print_acc_holder() or bank.ait_print_acc_holder_ar">
+                            <td style="padding: 1px 8px 1px 0; vertical-align: top; direction: ltr; unicode-bidi: isolate; text-align: left;">
+                                <strong>Account Holder:</strong>
+                                <span t-out="bank._ait_print_acc_holder()"/>
+                            </td>
+                            <td style="padding: 1px 0; vertical-align: top; direction: rtl; unicode-bidi: isolate; text-align: right;">
+                                <strong>صاحب الحساب:</strong>
+                                <span t-field="bank.ait_print_acc_holder_ar"/>
+                            </td>
+                        </tr>
+                        <tr t-if="bank._ait_print_acc_number()">
+                            <td style="padding: 1px 8px 1px 0; vertical-align: top; direction: ltr; unicode-bidi: isolate; text-align: left;">
+                                <strong t-out="bank._ait_print_acc_number_label_en()"/>:
+                                <span t-out="bank._ait_print_acc_number()"/>
+                            </td>
+                            <td style="padding: 1px 0; vertical-align: top; direction: rtl; unicode-bidi: isolate; text-align: right;">
+                                <strong t-out="bank._ait_print_acc_number_label_ar()"/>:
+                                <span t-out="bank._ait_print_acc_number()"/>
+                            </td>
+                        </tr>
+                    </table>
+                </t>
+            </div>
+        </xpath>
+
     </template>
 
     <template id="report_invoice_document_akakos" inherit_id="account_invoice_templates.report_invoice_document_all" primary="True">

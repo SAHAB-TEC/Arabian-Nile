@@ -16,10 +16,11 @@ class StockMove(models.Model):
         domain="[('well_id', '=', well_id)]",
     )
     project_id = fields.Many2one(
-        "project.project",
+        "construction.project",
         string="Project",
         copy=False,
         index=True,
+        check_company=True,
     )
     analytic_account_id = fields.Many2one(
         "account.analytic.account",
@@ -38,8 +39,8 @@ class StockMove(models.Model):
         self.ensure_one()
         if self.analytic_account_id:
             return self.analytic_account_id
-        if self.project_id and self.project_id.account_id:
-            return self.project_id.account_id
+        if self.project_id and self.project_id.analytic_account_id:
+            return self.project_id.analytic_account_id
         origin = (self.picking_id.origin if self.picking_id else False) or self.origin
         if origin:
             requisition = self.env["material.requisition"]._rgb_find_from_origin(origin)
@@ -52,9 +53,9 @@ class StockMove(models.Model):
         if (
             self.picking_id
             and self.picking_id.project_id
-            and self.picking_id.project_id.account_id
+            and self.picking_id.project_id.analytic_account_id
         ):
-            return self.picking_id.project_id.account_id
+            return self.picking_id.project_id.analytic_account_id
         return (
             self.location_dest_id.analytic_account_id
             or self.location_id.analytic_account_id

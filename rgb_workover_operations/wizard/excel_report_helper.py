@@ -55,13 +55,13 @@ def _format_report_date(value):
 
 def _clear_daily_template_samples(ws):
     """Remove sample/demo values that ship with the Excel template."""
-    # Present operations sample rows (FROM/TO/type/description)
+    # Present operations sample rows (FROM/TO/description)
     for row in range(23, 40):
-        for col in (1, 2, 3, 4):
+        for col in (1, 2, 3):
             _set_cell_value(ws, row, col, None)
     # Time breakdown sample rows only (keep consumable/drilling labels below)
-    for row in range(23, 32):
-        for col in (11, 12, 13, 14):
+    for row in range(23, 31):
+        for col in (10, 12):
             _set_cell_value(ws, row, col, None)
     # Present operation title / transport sample counts
     _set_cell_value(ws, 21, 3, None)
@@ -134,7 +134,6 @@ def fill_daily_report_sheet(ws, report, company_name):
     _set_cell_value(ws, 19, 9, report.transport_truck or 0)
 
     _set_cell_value(ws, 21, 3, report.present_operation_title or '')
-    _set_cell_value(ws, 22, 3, 'type')
 
     present_start = 23
     for idx, line in enumerate(report.present_operation_ids):
@@ -142,19 +141,18 @@ def fill_daily_report_sheet(ws, report, company_name):
         if idx == 0:
             _set_cell_value(ws, row, 1, _value_to_time(line.time_from, report.env))
             _set_cell_value(ws, row, 2, _value_to_time(line.time_to, report.env))
-        _set_cell_value(ws, row, 3, line.operation_type or '')
-        _set_cell_value(ws, row, 4, line.description or '')
+        _set_cell_value(ws, row, 3, line.description or '')
 
     tb_start = 23
     total_hours = 0.0
     for idx, line in enumerate(report.time_breakdown_ids):
         row = tb_start + idx
-        _set_cell_value(ws, row, 11, line.category_id.name or '')
-        _set_cell_value(ws, row, 14, line.hours or 0)
+        _set_cell_value(ws, row, 10, line.category_id.name or '')
+        _set_cell_value(ws, row, 12, line.hours or 0)
         total_hours += line.hours or 0
     total_row = tb_start + max(len(report.time_breakdown_ids), 7)
-    _set_cell_value(ws, total_row, 12, 'TOTAL')
-    _set_cell_value(ws, total_row, 14, float_round(total_hours, precision_digits=2))
+    _set_cell_value(ws, total_row, 10, 'TOTAL')
+    _set_cell_value(ws, total_row, 12, float_round(total_hours, precision_digits=2))
 
 
 def copy_sheet_style(source_ws, target_ws):

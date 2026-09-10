@@ -6,6 +6,7 @@ class ConstructionProject(models.Model):
     _name = 'construction.project'
     _description = 'Construction Project'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _check_company_auto = True
     _order = 'sequence, name, id'
 
     def _default_stage_id(self):
@@ -24,7 +25,20 @@ class ConstructionProject(models.Model):
     color = fields.Integer(string='Color Index')
     reference = fields.Char(string='Reference', readonly=True, default='New', copy=False)
     warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse', tracking=True)
-    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        required=True,
+        default=lambda self: self.env.company,
+        index=True,
+    )
+    analytic_account_id = fields.Many2one(
+        'account.analytic.account',
+        string='Analytic Account',
+        tracking=True,
+        check_company=True,
+        help='Analytic account used by linked documents and financial entries.',
+    )
 
     # Address
     street = fields.Char(string='Street')
