@@ -9,3 +9,4 @@ from . import purchase_order
 from . import purchase_order_line
 from . import res_users
 from . import hr_employee
+from . import construction_project
