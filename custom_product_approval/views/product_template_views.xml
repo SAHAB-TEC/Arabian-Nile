@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Main Product Template form: statusbar, Approve button, smart button -->
+    <record id="view_product_template_form_approval_inherit" model="ir.ui.view">
+        <field name="name">product.template.form.approval.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Header with statusbar + Approve button -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_approve"
+                            type="object"
+                            string="Approve"
+                            class="oe_highlight"
+                            invisible="not can_approve"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved"/>
+                </header>
+            </xpath>
+
+            <!-- Technical field backing the Approve button's visibility -->
+            <xpath expr="//sheet" position="before">
+                <field name="can_approve" invisible="1"/>
+            </xpath>
+
+            <!-- Smart button -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_approval_info"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-history">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Approval Info</span>
+                    </div>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Small popup form used by the smart button -->
+    <record id="view_product_template_approval_info_form" model="ir.ui.view">
+        <field name="name">product.template.approval.info.form</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <form string="Approval Info">
+                <sheet>
+                    <group>
+                        <group string="Creation">
+                            <field name="created_by_user_id" readonly="1"/>
+                            <field name="created_on_date" readonly="1"/>
+                        </group>
+                        <group string="Approval">
+                            <field name="state" readonly="1"/>
+                            <field name="approved_by_user_id" readonly="1"/>
+                            <field name="approved_on_date" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Close" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
