@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>دليل تجربة عروض ABCO — النيل العربي</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      direction: rtl;
+      text-align: right;
+      line-height: 1.8;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 3rem;
+      color: #222;
+      background: #fff;
+    }
+    h1, h2, h3 { color: #1a365d; }
+    h1 { border-bottom: 2px solid #1a365d; padding-bottom: .4rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #cbd5e0; padding-bottom: .3rem; }
+    h3 { margin-top: 1.4rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      border: 1px solid #cbd5e0;
+      padding: .55rem .7rem;
+      text-align: right;
+      vertical-align: top;
+    }
+    th { background: #edf2f7; }
+    ul, ol { padding-right: 1.4rem; padding-left: 0; }
+    li { margin: .35rem 0; }
+    blockquote {
+      margin: 1rem 0;
+      padding: .7rem 1rem;
+      background: #f7fafc;
+      border-right: 4px solid #3182ce;
+      border-left: none;
+    }
+    code, .mono {
+      font-family: Consolas, monospace;
+      background: #edf2f7;
+      padding: 0 .25rem;
+      border-radius: 3px;
+    }
+    .check { list-style: none; padding-right: 0; }
+    .check li::before { content: "☐ "; }
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 2rem 0; }
+    @media print {
+      body { margin: 0; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>دليل تجربة عروض ABCO — النيل العربي</h1>
+
+  <h2>قبل البدء</h2>
+  <ol>
+    <li>تأكد أن الموديول <strong>Sale Quotation Custom</strong> محدّث (الإصدار <span class="mono">18.0.1.0.6</span> أو أحدث).</li>
+    <li>أعد تشغيل السيرفر بعد تحديث بايثون (أو حدّث الصفحة إذا كان يعمل بـ <span class="mono">--dev=xml</span> لتعديلات XML فقط).</li>
+    <li>ادخل بمستخدم لديه صلاحيات: <strong>مبيعات + جهات اتصال + مشتريات</strong>.</li>
+  </ol>
+
+  <hr/>
+
+  <h2>أولاً: الإعدادات المطلوبة (مرة واحدة)</h2>
+
+  <h3>1) إعداد العميل</h3>
+  <p>افتح: <strong>جهات الاتصال / العملاء</strong> → اختر عميل الشركة (مثل Arabian Gulf Oil Company)</p>
+  <p>املأ الحقلين:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>الحقل</th>
+        <th>مثال</th>
+        <th>الغرض</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>ABCO Customer Code</strong></td>
+        <td><span class="mono">AG</span></td>
+        <td>يدخل في رقم ABCO Ref</td>
+      </tr>
+      <tr>
+        <td><strong>Customer Ref Label</strong></td>
+        <td><span class="mono">AGOCO</span></td>
+        <td>يظهر في الطباعة كـ <span class="mono">AGOCO Ref.</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p>احفظ العميل.</p>
+  <blockquote>بدون <strong>ABCO Customer Code</strong> لن يتم تأكيد أمر البيع (سيظهر خطأ).</blockquote>
+
+  <h3>2) إعداد أمر البيع / عرض السعر</h3>
+  <p>افتح: <strong>المبيعات → عروض الأسعار → إنشاء</strong></p>
+
+  <h4>أ) البيانات الأساسية</h4>
+  <ul>
+    <li>اختر نفس <strong>العميل</strong> المعد أعلاه.</li>
+    <li>أضف منتجاً واحداً على الأقل (كمية + سعر).</li>
+    <li>(اختياري) حدّد <strong>بلد المنشأ</strong> على السطر — يظهر مجمّعاً في الأعلى.</li>
+  </ul>
+
+  <h4>ب) حقول ABCO في الشاشة</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>الحقل</th>
+        <th>ماذا تفعل</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Customer Offer Ref</strong></td>
+        <td>أدخل رقم العميل يدوياً مثل <span class="mono">147-2024-21-03-XX</span></td>
+      </tr>
+      <tr>
+        <td><strong>Revision</strong></td>
+        <td>مثل <span class="mono">1</span> أو <span class="mono">2</span></td>
+      </tr>
+      <tr>
+        <td><strong>Offer Validity</strong></td>
+        <td>30 / 60 / 90</td>
+      </tr>
+      <tr>
+        <td><strong>Delivery From / To</strong></td>
+        <td>مثل <span class="mono">12</span> و <span class="mono">13</span></td>
+      </tr>
+      <tr>
+        <td><strong>Incoterm (Print)</strong></td>
+        <td>مثل <span class="mono">FCA USA</span></td>
+      </tr>
+      <tr>
+        <td><strong>Payment (Print)</strong></td>
+        <td>مثل <span class="mono">100% USD CAD</span></td>
+      </tr>
+      <tr>
+        <td><strong>Signatory Name</strong></td>
+        <td>مثل <span class="mono">Walid Aldejawi</span></td>
+      </tr>
+      <tr>
+        <td><strong>Signatory Title</strong></td>
+        <td>مثل <span class="mono">Supply and Sales Manager | ABCO</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>ج) تبويب ABCO Cover Letter</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>الحقل</th>
+        <th>مثال</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cover Addressee</strong></td>
+        <td><span class="mono">Department Manager, Supply Department</span></td>
+      </tr>
+      <tr>
+        <td><strong>Cover Subject</strong></td>
+        <td><span class="mono">Commercial Priced Submission</span> أو اتركه فارغاً ليأخذ الافتراضي حسب التقرير</td>
+      </tr>
+      <tr>
+        <td><strong>Cover Body</strong></td>
+        <td>نص الخطاب (موجود افتراضي ويمكن تعديله)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>احفظ العرض <strong>بدون تأكيد</strong> أولاً إن أردت تجربة الطباعة قبل التأكيد.</p>
+
+  <hr/>
+
+  <h2>ثانياً: تجربة الطباعة</h2>
+
+  <h3>أ) الطباعة القديمة (يجب أن تظل تعمل)</h3>
+  <p>من أمر البيع → <strong>طباعة / Print</strong> → <strong>عرض السعر / أمر البيع</strong> القياسي</p>
+  <p>تأكد أنها بنفس شكل الشركة المعتاد.</p>
+
+  <h3>ب) طباعة ABCO Commercial (مسعّر)</h3>
+  <p><strong>Print → ABCO Commercial Offer</strong></p>
+  <p>النتيجة المتوقعة <strong>3 صفحات</strong>:</p>
+  <ol>
+    <li>صفحة عنوان: <span class="mono">Commercial Priced</span> + ABCO Ref + مرجع العميل + Rev</li>
+    <li>صفحة خطاب: Date / To / Subject / Body / الموقّع</li>
+    <li>صفحة العرض الأصلية للشركة <strong>مع الأسعار</strong></li>
+  </ol>
+
+  <h3>ج) طباعة ABCO Unpriced (بدون أسعار)</h3>
+  <p><strong>Print → ABCO Unpriced Offer</strong></p>
+  <p>نفس الهيكل (3 صفحات)، لكن في صفحة العرض:</p>
+  <ul>
+    <li>الأسعار والمجاميع تظهر <span class="mono">-</span></li>
+    <li>العنوان يكون <span class="mono">Technical Unpriced</span></li>
+  </ul>
+  <blockquote>ملاحظة: إذا لم يتم التأكيد بعد، <span class="mono">ABCO Ref</span> قد يظهر فارغاً وهذا متوقع حسب الاتفاق (التوليد عند التأكيد).</blockquote>
+
+  <hr/>
+
+  <h2>ثالثاً: تجربة توليد ABCO Ref</h2>
+  <ol>
+    <li>تأكد أن العميل عليه <strong>ABCO Customer Code</strong>.</li>
+    <li>من العرض اضغط <strong>تأكيد / Confirm</strong>.</li>
+    <li>راقب الحقل <strong>ABCO Ref</strong> — مثال متوقع: <span class="mono">O_AB-AG-260001</span>
+      <ul>
+        <li><span class="mono">AG</span> = كود العميل</li>
+        <li><span class="mono">26</span> = السنة</li>
+        <li><span class="mono">0001</span> = التسلسل السنوي</li>
+      </ul>
+    </li>
+    <li>اطبع Commercial أو Unpriced مرة أخرى وتأكد ظهور الرقم في الصفحات.</li>
+  </ol>
+
+  <hr/>
+
+  <h2>رابعاً: تجربة عنوان مرجع العميل الديناميكي</h2>
+  <ol>
+    <li>غيّر على العميل <strong>Customer Ref Label</strong> من <span class="mono">AGOCO</span> إلى مثلاً <span class="mono">AKAKUS</span>.</li>
+    <li>افتح العرض / أنشئ عرضاً جديداً لنفس العميل.</li>
+    <li>في الشاشة والطابعة يجب أن يظهر: <span class="mono">AKAKUS Ref.</span> وليس <span class="mono">AGOCO Ref.</span></li>
+  </ol>
+
+  <hr/>
+
+  <h2>خامساً: تجربة ترقيم المشتريات</h2>
+  <ol>
+    <li><strong>المشتريات → طلبات الشراء / أوامر الشراء → إنشاء</strong></li>
+    <li>اختر مورد + أضف بنداً.</li>
+    <li>اضغط <strong>تأكيد الطلب</strong>.</li>
+    <li>المتوقع:
+      <ul>
+        <li>ظهور <strong>ABCO PO Ref</strong> مثل <span class="mono">PO_AB-260001</span></li>
+        <li>يصبح <strong>اسم أمر الشراء</strong> بنفس الرقم</li>
+      </ul>
+    </li>
+  </ol>
+
+  <hr/>
+
+  <h2>قائمة تحقق سريعة</h2>
+  <ul class="check">
+    <li>كود العميل + Label محفوظان</li>
+    <li>مرجع العميل اليدوي مُدخل</li>
+    <li>الغلاف (To / Subject / Body / Signatory) مكتمل</li>
+    <li>الطباعة القديمة تعمل</li>
+    <li>Commercial = 3 صفحات + أسعار</li>
+    <li>Unpriced = 3 صفحات بدون أسعار</li>
+    <li>بعد التأكيد يظهر <span class="mono">O_AB-...</span></li>
+    <li>تأكيد المشتريات يعطي <span class="mono">PO_AB-...</span></li>
+  </ul>
+
+  <hr/>
+
+  <h2>مشاكل شائعة</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>المشكلة</th>
+        <th>السبب المحتمل</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>فشل التأكيد</td>
+        <td>لم يُضبط <span class="mono">ABCO Customer Code</span> على العميل</td>
+      </tr>
+      <tr>
+        <td>ABCO Ref فارغ في الطباعة</td>
+        <td>العرض لم يُؤكَّد بعد</td>
+      </tr>
+      <tr>
+        <td>العنوان ثابت AGOCO</td>
+        <td>لم يُملأ <span class="mono">Customer Ref Label</span> على العميل</td>
+      </tr>
+      <tr>
+        <td>الطباعة بلا هيدر الشركة</td>
+        <td>تأكد أنك تطبع <strong>ABCO Commercial/Unpriced</strong> بعد التحديث <span class="mono">18.0.1.0.6</span> وليس نسخة قديمة من الكاش</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
