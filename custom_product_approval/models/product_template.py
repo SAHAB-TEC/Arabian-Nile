@@ -71,11 +71,40 @@ class ProductTemplate(models.Model):
         for vals in vals_list:
             vals.setdefault('created_by_user_id', self.env.user.id)
             vals.setdefault('created_on_date', fields.Datetime.now())
+            # A product is only usable once approved. Force `active` to
+            # follow `state` on creation (overriding whatever was passed
+            # in) so a Draft product is archived - and therefore hidden
+            # from every standard list/kanban/report/selection screen -
+            # from the moment it exists.
+            vals['active'] = vals.get('state', 'draft') == 'approved'
         products = super().create(vals_list)
         for product in products:
             if product.state == 'draft':
                 product._notify_approvers()
+                # Belt-and-suspenders: make sure the auto-created variant(s)
+                # are archived too, in case core doesn't cascade it during
+                # the create flow itself.
+                product.product_variant_ids.write({'active': False})
         return products
+
+    def write(self, vals):
+        # Block anyone from reactivating a Draft product via the generic
+        # Archived/Unarchive action instead of the Approve button.
+        # Archiving (active -> False) is always allowed; only
+        # (re)activating a non-approved product is blocked.
+        if vals.get('active') and not self.env.context.get('from_action_approve'):
+            for product in self:
+                if product.state != 'approved':
+                    raise UserError(_(
+                        "Draft products can only be activated through the "
+                        "approval workflow. Use the 'Approve' button instead "
+                        "of Unarchive."
+                    ))
+        res = super().write(vals)
+        if 'active' in vals:
+            # Keep variants in sync with the template.
+            self.mapped('product_variant_ids').write({'active': vals['active']})
+        return res
 
     # ------------------------------------------------------------
     # Business logic
@@ -116,10 +145,11 @@ class ProductTemplate(models.Model):
                 raise UserError(_(
                     "Only products in the Draft state can be approved."
                 ))
-            product.write({
+            product.with_context(from_action_approve=True).write({
                 'state': 'approved',
                 'approved_by_user_id': self.env.user.id,
                 'approved_on_date': fields.Datetime.now(),
+                'active': True,
             })
             product._done_approval_activities()
         return True
@@ -150,13 +180,15 @@ class ProductTemplate(models.Model):
         }
 
     # ------------------------------------------------------------
-    # Restrict draft products from standard selection widgets
-    # (Sales, Purchase, Inventory, ...) without adding a hard
-    # dependency on those modules: any Many2one field pointing to
-    # product.template / product.product uses name_search to build
-    # its drop-down, so filtering it here is enough to keep
-    # unapproved products out of those operations while still
-    # letting approvers manage them from the Products menu.
+    # Draft products are archived (active=False) on creation, which is
+    # what actually keeps them off every standard list/kanban/report/
+    # selection screen in Odoo - Sales, Purchase and Inventory all
+    # exclude inactive products by default, with no extra dependency
+    # needed. This name_search override is a secondary safety net (in
+    # case some flow passes an explicit domain including inactive
+    # records) and also lets approvers/admins still find and open a
+    # Draft product - which is otherwise archived - from a selection
+    # widget when they explicitly need to.
     # ------------------------------------------------------------
     @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):
@@ -166,6 +198,9 @@ class ProductTemplate(models.Model):
             or self.env.user.has_product_approval_rights
             or self.env.user.has_group('base.group_system')
         )
-        if not bypass:
+        model = self
+        if bypass:
+            model = self.with_context(active_test=False)
+        else:
             args = expression.AND([args, [('state', '=', 'approved')]])
-        return super().name_search(name=name, args=args, operator=operator, limit=limit)
+        return super(ProductTemplate, model).name_search(name=name, args=args, operator=operator, limit=limit)
