@@ -18,9 +18,21 @@ This module adds a simple approval workflow on top of Product Templates:
   related approval activities as Done.
 * Adds a smart button showing who created / approved the product and
   when.
-* Prevents Draft (unapproved) products from being picked in the
-  standard product selection widgets (Sales, Purchase, Inventory, ...)
-  by filtering them out of name_search by default.
+
+A Draft product is never archived and stays fully visible and
+selectable everywhere - it just cannot be *used* in a transaction yet.
+Enforcing that in Sales, Purchase and Inventory requires this module's
+optional companion modules, since actually blocking a sale/purchase
+order line or a stock move has to live in code that depends on those
+apps:
+
+* custom_product_approval_sale
+* custom_product_approval_purchase
+* custom_product_approval_stock
+
+Each one auto-installs only when its corresponding app is already
+installed, so this core module stays lightweight (product + mail
+only) on its own.
 """,
     'author': 'Your Company',
     'website': 'https://www.yourcompany.com',

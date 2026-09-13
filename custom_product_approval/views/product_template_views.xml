@@ -66,18 +66,12 @@
         </field>
     </record>
 
-    <!-- Draft products are archived (active=False), so they're hidden
-         from the standard Products list by default - same as any other
-         archived record. This dedicated action/menu gives approvers a
-         direct, always-working way to see what's pending, without
-         depending on the exact internal id of product's search view
-         (which can change between versions). -->
+    <!-- Quick access for approvers: all products still awaiting review. -->
     <record id="action_product_pending_approval" model="ir.actions.act_window">
         <field name="name">Products Pending Approval</field>
         <field name="res_model">product.template</field>
         <field name="view_mode">list,form</field>
         <field name="domain">[('state', '=', 'draft')]</field>
-        <field name="context">{'active_test': False}</field>
     </record>
 
     <menuitem id="menu_product_approval_root"

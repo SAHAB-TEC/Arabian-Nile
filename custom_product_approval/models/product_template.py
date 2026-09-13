@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
-from odoo.osv import expression
 
 APPROVAL_ACTIVITY_XMLID = 'mail.mail_activity_data_todo'
 
@@ -22,9 +21,10 @@ class ProductTemplate(models.Model):
         default='draft',
         copy=False,
         tracking=True,
-        help='A newly created product starts as Draft and must be '
-             'approved by an authorized user before it can be freely '
-             'selected in Sales, Purchase or Inventory operations.',
+        help='A newly created product starts as Draft. It stays fully '
+             'visible everywhere, but cannot be used in a Sales, '
+             'Purchase or Inventory transaction until an authorized '
+             'user approves it.',
     )
 
     created_by_user_id = fields.Many2one(
@@ -71,40 +71,11 @@ class ProductTemplate(models.Model):
         for vals in vals_list:
             vals.setdefault('created_by_user_id', self.env.user.id)
             vals.setdefault('created_on_date', fields.Datetime.now())
-            # A product is only usable once approved. Force `active` to
-            # follow `state` on creation (overriding whatever was passed
-            # in) so a Draft product is archived - and therefore hidden
-            # from every standard list/kanban/report/selection screen -
-            # from the moment it exists.
-            vals['active'] = vals.get('state', 'draft') == 'approved'
         products = super().create(vals_list)
         for product in products:
             if product.state == 'draft':
                 product._notify_approvers()
-                # Belt-and-suspenders: make sure the auto-created variant(s)
-                # are archived too, in case core doesn't cascade it during
-                # the create flow itself.
-                product.product_variant_ids.write({'active': False})
         return products
-
-    def write(self, vals):
-        # Block anyone from reactivating a Draft product via the generic
-        # Archived/Unarchive action instead of the Approve button.
-        # Archiving (active -> False) is always allowed; only
-        # (re)activating a non-approved product is blocked.
-        if vals.get('active') and not self.env.context.get('from_action_approve'):
-            for product in self:
-                if product.state != 'approved':
-                    raise UserError(_(
-                        "Draft products can only be activated through the "
-                        "approval workflow. Use the 'Approve' button instead "
-                        "of Unarchive."
-                    ))
-        res = super().write(vals)
-        if 'active' in vals:
-            # Keep variants in sync with the template.
-            self.mapped('product_variant_ids').write({'active': vals['active']})
-        return res
 
     # ------------------------------------------------------------
     # Business logic
@@ -145,11 +116,10 @@ class ProductTemplate(models.Model):
                 raise UserError(_(
                     "Only products in the Draft state can be approved."
                 ))
-            product.with_context(from_action_approve=True).write({
+            product.write({
                 'state': 'approved',
                 'approved_by_user_id': self.env.user.id,
                 'approved_on_date': fields.Datetime.now(),
-                'active': True,
             })
             product._done_approval_activities()
         return True
@@ -180,27 +150,17 @@ class ProductTemplate(models.Model):
         }
 
     # ------------------------------------------------------------
-    # Draft products are archived (active=False) on creation, which is
-    # what actually keeps them off every standard list/kanban/report/
-    # selection screen in Odoo - Sales, Purchase and Inventory all
-    # exclude inactive products by default, with no extra dependency
-    # needed. This name_search override is a secondary safety net (in
-    # case some flow passes an explicit domain including inactive
-    # records) and also lets approvers/admins still find and open a
-    # Draft product - which is otherwise archived - from a selection
-    # widget when they explicitly need to.
+    # Shared guard, called by the optional bridge modules
+    # (custom_product_approval_sale / _purchase / _stock) at the point
+    # where a product is actually put to use - added to an order line,
+    # or moved in stock. Kept here so the check and its wording live in
+    # one place. This module itself never calls it: with only
+    # `product` + `mail` installed there is no "use" to block yet.
     # ------------------------------------------------------------
-    @api.model
-    def name_search(self, name='', args=None, operator='ilike', limit=100):
-        args = list(args or [])
-        bypass = (
-            self.env.context.get('show_draft_products')
-            or self.env.user.has_product_approval_rights
-            or self.env.user.has_group('base.group_system')
-        )
-        model = self
-        if bypass:
-            model = self.with_context(active_test=False)
-        else:
-            args = expression.AND([args, [('state', '=', 'approved')]])
-        return super(ProductTemplate, model).name_search(name=name, args=args, operator=operator, limit=limit)
+    def _ensure_approved_for_use(self):
+        unapproved = self.filtered(lambda p: p.state != 'approved')
+        if unapproved:
+            raise UserError(_(
+                "The following product(s) are still pending approval and "
+                "cannot be used yet: %s"
+            ) % ', '.join(unapproved.mapped('display_name')))
