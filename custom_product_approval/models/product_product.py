@@ -11,6 +11,22 @@ class ProductProduct(models.Model):
     dependencies of this module."""
     _inherit = 'product.product'
 
+    # NOTE: product.product's own form view (product_normal_form_view)
+    # inherits its arch from product.template's form view (Odoo's
+    # _inherits delegation copies the arch, but NOT the Python methods,
+    # across the two models). That means the Approve button and the
+    # Approval Info smart button we added on product.template also
+    # render on the Product Variant form, bound to product.product.
+    # These two delegate methods make sure clicking them from a
+    # variant record works exactly like clicking them from the
+    # template record.
+    def action_approve(self):
+        return self.mapped('product_tmpl_id').action_approve()
+
+    def action_open_approval_info(self):
+        self.ensure_one()
+        return self.product_tmpl_id.action_open_approval_info()
+
     @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):
         args = list(args or [])

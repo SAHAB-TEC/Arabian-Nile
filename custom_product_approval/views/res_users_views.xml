@@ -6,11 +6,16 @@
         <field name="model">res.users</field>
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='preferences']" position="inside">
-                <group string="Product Approval" name="product_approval_group">
-                    <field name="has_product_approval_rights"
-                           groups="base.group_system"/>
-                </group>
+            <!-- Added as its own notebook tab (rather than appended inside
+                 the existing 'preferences' page) so it's always visible
+                 in its own right, and doesn't depend on the exact
+                 internal layout of the base Preferences tab. -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Product Approval" name="product_approval">
+                    <group>
+                        <field name="has_product_approval_rights"/>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>
