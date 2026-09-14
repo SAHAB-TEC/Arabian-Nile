@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "RGB Material Requisition Custom",
-    "version": "18.0.1.0.16",
+    "version": "18.0.1.0.17",
     "category": "Human Resources/Employees",
     "summary": "Arabian Nile customizations for material requisitions",
     "description": """
@@ -14,6 +14,7 @@ Custom material requisition extensions for Arabian Nile:
 - Purchase receipts for material-requisition POs use the requisition location
 - Internal transfers: one picking per source/destination with all products
 - Compatibility with sale_project_stock when validating pickings
+- Internal transfer wizard: allow selecting any stock location as source
     """,
     "author": "RGB / Arabian Nile",
     "license": "LGPL-3",
@@ -35,6 +36,7 @@ Custom material requisition extensions for Arabian Nile:
         "views/stock_purchase_views.xml",
         "views/stock_location_views.xml",
         "views/product_views.xml",
+        "views/fulfillment_wizard_views.xml",
         "report/material_requisition_summary_report.xml",
     ],
     "installable": True,

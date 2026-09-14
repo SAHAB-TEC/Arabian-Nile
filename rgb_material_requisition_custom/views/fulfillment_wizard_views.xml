@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fulfillment_wizard_internal_transfer_form_all_locations"
+            model="ir.ui.view">
+        <field name="name">material.requisition.fulfillment.wizard.form.all.locations</field>
+        <field name="model">material.requisition.fulfillment.wizard</field>
+        <field name="inherit_id"
+                  ref="material_requisition_and_approval.view_fulfillment_wizard_internal_transfer_form"/>
+        <field name="arch" type="xml">
+            <!-- Show all stock locations in Source Location (remove stock-only domain). -->
+            <xpath expr="//field[@name='line_ids']/list/field[@name='stock_location_id']"
+                   position="attributes">
+                <attribute name="domain">[]</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
