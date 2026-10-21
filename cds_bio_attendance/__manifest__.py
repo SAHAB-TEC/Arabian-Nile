@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "ZKTeco Biometric Integration",
+    'name': "ZKTeco Biometric Integration.",
 
     'summary': """
     ZK Machines Biometric Integrations, zkteco, biometric, biometric machine ,attendance, employee""",
